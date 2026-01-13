@@ -75,6 +75,17 @@ const loginUser = async (req, res) => {
         const user = await User.findOne({ email });
 
         if (user && (await bcrypt.compare(password, user.passwordHash))) {
+            
+            // Check School Verification
+            if (user.schoolId) {
+                const school = await School.findById(user.schoolId);
+                if (school && !school.isVerified) {
+                    return res.status(403).json({ 
+                        message: 'School account is pending verification. Please contact support.' 
+                    });
+                }
+            }
+
             res.json({
                 _id: user.id,
                 name: user.name,

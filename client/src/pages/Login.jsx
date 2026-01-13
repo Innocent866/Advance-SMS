@@ -29,6 +29,10 @@ const Login = () => {
                 {error && (
                     <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">
                         {error}
+                        <br />
+                        <br />
+                        <p>Contact: goldimatech@gmail.com</p>
+                        <p>Quick Contact: +234 913 809 5613</p>
                     </div>
                 )}
 
