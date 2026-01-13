@@ -7,6 +7,7 @@ const StudentDetails = () => {
     const { id } = useParams();
     const [student, setStudent] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchStudent = async () => {
@@ -16,6 +17,7 @@ const StudentDetails = () => {
                 setLoading(false);
             } catch (error) {
                 console.error(error);
+                setError(error.response?.data?.message || 'Failed to load student');
                 setLoading(false);
             }
         };
@@ -23,6 +25,10 @@ const StudentDetails = () => {
     }, [id]);
 
     if (loading) return <div>Loading...</div>;
+    if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
+    
+    console.log('Rendering Student Details:', student);
+
     if (!student) return <div>Student not found</div>;
 
     return (
@@ -36,10 +42,18 @@ const StudentDetails = () => {
                 <div className="h-32 bg-gradient-to-r from-primary/10 to-green-50"></div>
                 <div className="px-8 pb-8">
                     <div className="relative -mt-16 mb-6">
-                        <div className="w-32 h-32 bg-white rounded-full p-2 shadow-lg inline-block">
-                            <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
-                                <User size={48} />
-                            </div>
+                        <div className="w-32 h-32 bg-white rounded-full p-2 shadow-lg inline-block overflow-hidden relative">
+                            {student.profilePicture ? (
+                                <img 
+                                    src={student.profilePicture} 
+                                    alt={`${student.firstName} ${student.lastName}`}
+                                    className="w-full h-full rounded-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
+                                    <User size={48} />
+                                </div>
+                            )}
                         </div>
                     </div>
 

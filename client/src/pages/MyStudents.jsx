@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import { Users, Search, Mail, BookOpen } from 'lucide-react';
 
@@ -77,9 +78,17 @@ const MyStudents = () => {
                                 filteredStudents.map(student => (
                                     <tr key={student._id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
-                                                {student.name.charAt(0)}
-                                            </div>
+                                            {student.profilePicture ? (
+                                                <img 
+                                                    src={student.profilePicture} 
+                                                    alt={student.name}
+                                                    className="w-8 h-8 rounded-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+                                                    {student.name.charAt(0)}
+                                                </div>
+                                            )}
                                             {student.name}
                                         </td>
                                         <td className="px-6 py-4">
@@ -92,9 +101,9 @@ const MyStudents = () => {
                                             {student.email}
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <button className="text-gray-400 hover:text-primary transition-colors text-xs font-medium border border-gray-200 px-3 py-1.5 rounded-lg hover:border-primary">
+                                            <Link to={`/students/${student._id}`} className="text-gray-400 hover:text-primary transition-colors text-xs font-medium border border-gray-200 px-3 py-1.5 rounded-lg hover:border-primary">
                                                 View Profile
-                                            </button>
+                                            </Link>
                                         </td>
                                     </tr>
                                 ))

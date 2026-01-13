@@ -10,6 +10,6 @@ router.route('/')
 
 router.get('/my-students', protect, teacher, getTeacherStudents);
 router.get('/me', protect, getMyProfile);
-router.get('/:id', protect, admin, getStudentById);
+router.get('/:id', protect, getStudentById);
 
 module.exports = router;

@@ -78,7 +78,7 @@ const createStudent = async (req, res) => {
 // @access  Private (School Admin/Teacher)
 const getStudents = async (req, res) => {
     try {
-        const students = await Student.find({ schoolId: req.user.schoolId })
+        const students = await Student.find({ schoolId: req.user.schoolId._id || req.user.schoolId })
             .populate('classId', 'name');
         res.json(students);
     } catch (error) {
@@ -92,24 +92,49 @@ const getStudents = async (req, res) => {
 // @access  Private (Teacher)
 const getTeacherStudents = async (req, res) => {
     try {
-        // 1. Get Teacher's assigned classes
-        const teacher = await User.findById(req.user.id);
-        if (!teacher.subjects || teacher.subjects.length === 0) {
-            return res.json([]); // No classes assigned
+        // 1. Get Teacher's assigned classes from Teacher Profile
+        const teacherProfile = await require('../models/Teacher').findOne({ userId: req.user._id });
+        if (!teacherProfile || !teacherProfile.subjects || teacherProfile.subjects.length === 0) {
+            // Check teachingAssignments as well?
+             if (!teacherProfile.teachingAssignments || teacherProfile.teachingAssignments.length === 0) {
+                 return res.json([]); 
+             }
         }
 
-        const classIds = teacher.subjects.map(s => s.classId);
+        // Collect Class IDs from assignments (more accurate) or subjects
+        let classIds = [];
+        if (teacherProfile.teachingAssignments) {
+            classIds = teacherProfile.teachingAssignments.map(a => a.classId);
+        } else if (teacherProfile.classes) {
+            classIds = teacherProfile.classes;
+        }
+
+        // Fallback or unique
+        classIds = [...new Set(classIds)];
 
         // 2. Find students in these classes
-        const students = await User.find({
-            schoolId: req.user.schoolId,
-            role: 'student',
+        // 2. Find students in these classes (Query Student model for profile info)
+        const students = await Student.find({
+            schoolId: req.user.schoolId._id || req.user.schoolId,
             classId: { $in: classIds }
         })
         .populate('classId', 'name')
-        .select('-passwordHash');
+        .select('firstName lastName email profilePicture classId studentId');
 
-        res.json(students);
+        // Transform to match expected frontend structure if needed (frontend expects name, but Student has firstName/lastName)
+        // Or updated frontend to use firstName/lastName? MyStudents.jsx uses student.name.
+        // Let's map it.
+        
+        const studentsWithFullName = students.map(s => ({
+            _id: s._id,
+            name: `${s.firstName} ${s.lastName}`,
+            email: s.email,
+            profilePicture: s.profilePicture,
+            classId: s.classId,
+            studentId: s.studentId
+        }));
+
+        res.json(studentsWithFullName);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
@@ -149,9 +174,22 @@ const getStudentById = async (req, res) => {
             return res.status(404).json({ message: 'Student not found' });
         }
 
-        // Verify school ownership
-        if (student.schoolId.toString() !== req.user.schoolId.toString()) {
-             return res.status(401).json({ message: 'Not authorized' });
+        // Verify school ownership (Robust Check)
+        // Handle fully populated school object vs raw ID string
+        const userSchoolIdRaw = req.user.schoolId;
+        const userSchoolId = userSchoolIdRaw?._id ? userSchoolIdRaw._id.toString() : userSchoolIdRaw.toString();
+        const studentSchoolId = student.schoolId.toString();
+
+        // Bypass for Super Admin
+        if (req.user.role === 'super_admin') {
+            return res.json(student);
+        }
+
+        if (studentSchoolId !== userSchoolId) {
+             console.log(`Auth Error: Mismatch. User School: ${userSchoolId}, Student School: ${studentSchoolId}`);
+             return res.status(401).json({ 
+                 message: `Permission Denied: School ID Mismatch. Your School: ${userSchoolId}, Student School: ${studentSchoolId}` 
+             });
         }
 
         res.json(student);

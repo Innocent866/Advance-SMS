@@ -39,7 +39,7 @@ const TeacherDetails = () => {
                         <div className="w-32 h-32 bg-white rounded-full p-2 shadow-lg inline-block overflow-hidden relative">
                             {teacher.profilePicture ? (
                                 <img 
-                                    src={`http://localhost:5001/${teacher.profilePicture}`} 
+                                    src={teacher.profilePicture} 
                                     alt={`${teacher.firstName} ${teacher.lastName}`}
                                     className="w-full h-full rounded-full object-cover"
                                 />
