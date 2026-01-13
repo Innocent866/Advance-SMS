@@ -17,6 +17,12 @@ const schoolSchema = new mongoose.Schema({
         email: { type: Boolean, default: true },
         sms: { type: Boolean, default: false }
     },
+    // Media Usage Tracking
+    mediaUsage: {
+        storageBytes: { type: Number, default: 0 },
+        uploadCount: { type: Number, default: 0 },
+        lastResetDate: { type: Date, default: Date.now }
+    },
     // Subscription Details (Manual Model)
     subscription: {
         plan: { type: String, enum: ['Free', 'Basic', 'Standard', 'Premium'], default: 'Free' },

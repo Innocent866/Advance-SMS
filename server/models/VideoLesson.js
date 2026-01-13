@@ -9,6 +9,9 @@ const videoLessonSchema = new mongoose.Schema({
     title: { type: String, required: true },
     description: { type: String },
     videoUrl: { type: String, required: true },
+    publicId: { type: String }, // Cloudinary Public ID for deletion
+    duration: { type: Number }, // Duration in seconds
+    format: { type: String },   // e.g., mp4, mov
     lessonNotes: { type: String },
     views: { type: Number, default: 0 },
     isPublished: { type: Boolean, default: false },

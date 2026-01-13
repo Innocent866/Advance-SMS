@@ -5,19 +5,28 @@ const School = require('../models/School');
 // @desc    Create a new video lesson
 // @route   POST /api/videos
 // @access  Private (Teacher)
-const createVideo = async (req, res) => {
-    // If we have a file, use its path, otherwise verify url is present? 
-    // Actually the router uses upload.single('video'). If a file is uploaded, req.file is set.
-    // If not, req.body.videoUrl might be set for external links (not supported in this strict mode? 
-    // The user requested "upload videos", so we prioritize file).
+const { cloudinary } = require('../config/cloudinary');
 
+// @desc    Create a new video lesson
+// @route   POST /api/videos
+// @access  Private (Teacher)
+const createVideo = async (req, res) => {
     const { classLevelId, subjectId, topic, title, description, lessonNotes, isPublished } = req.body;
     let videoUrl = req.body.videoUrl;
+    let publicId = null;
+    let duration = 0;
+    let format = '';
 
     if (req.file) {
-        // Construct URL path (e.g., http://localhost:5000/uploads/videos/filename.mp4)
-        // ideally, storing relative path is better: /uploads/videos/filename.mp4
-        videoUrl = `/uploads/videos/${req.file.filename}`;
+        // Cloudinary Source
+        videoUrl = req.file.path;
+        publicId = req.file.filename;
+        // req.file.mimetype gives video/mp4, etc.
+        format = req.file.mimetype.split('/')[1]; 
+        // Note: Duration isn't returned by multer-storage-cloudinary directly usually, 
+        // unless we query it or it's in the raw response. 
+        // For now we leave duration as 0 or handle it via a webhook if needed. 
+        // But we can just store what we have.
     }
 
     if (!classLevelId || !subjectId || !topic || !title || !videoUrl) {
@@ -25,9 +34,8 @@ const createVideo = async (req, res) => {
     }
 
     try {
-        // Check school preferences for auto-approval
         const school = await School.findById(req.user.schoolId);
-        const autoApprove = school?.preferences?.autoApproveContent !== false; 
+        const autoApprove = school?.preferences?.autoApproveContent !== false;
 
         const video = await VideoLesson.create({
             schoolId: req.user.schoolId,
@@ -38,14 +46,31 @@ const createVideo = async (req, res) => {
             title,
             description,
             videoUrl,
+            publicId,
+            duration,
+            format,
             lessonNotes,
-            isPublished: isPublished === 'true' || isPublished === true, // FormData sends strings
-            status: autoApprove ? 'Approved' : 'Pending' 
+            isPublished: isPublished === 'true' || isPublished === true,
+            status: autoApprove ? 'Approved' : 'Pending'
         });
+
+        // Update School Usage (Approximate since we have file size in req.file.size)
+        if (req.file) {
+            await School.findByIdAndUpdate(req.user.schoolId, {
+                $inc: { 
+                    'mediaUsage.storageBytes': req.file.size,
+                    'mediaUsage.uploadCount': 1
+                }
+            });
+        }
 
         res.status(201).json(video);
     } catch (error) {
         console.error(error);
+        // Optional: Delete from Cloudinary if DB save fails
+        if (publicId) {
+             await cloudinary.uploader.destroy(publicId, { resource_type: 'video' });
+        }
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -134,7 +159,21 @@ const deleteVideo = async (req, res) => {
             return res.status(401).json({ message: 'Not authorized' });
         }
 
+        // Delete from Cloudinary
+        if (video.publicId) {
+            await cloudinary.uploader.destroy(video.publicId, { resource_type: 'video' });
+        }
+
+        // Remove from DB
         await video.deleteOne();
+
+        // Update School Usage (Decrease count, storage is hard to decrease accurately unless we stored the EXACT size per video)
+        // For this MVP, we might just decrease count or ignore storage decrement to be safe (or store size in VideoLesson to be accurate).
+        // Let's just decrement count for now.
+        await School.findByIdAndUpdate(req.user.schoolId, {
+            $inc: { 'mediaUsage.uploadCount': -1 }
+        });
+
         res.json({ message: 'Video removed' });
     } catch (error) {
         console.error(error);

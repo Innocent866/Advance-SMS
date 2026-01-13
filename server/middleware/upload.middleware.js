@@ -1,43 +1,44 @@
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const { cloudinary } = require('../config/cloudinary');
 
-// Ensure uploads directory exists
-const uploadDir = 'uploads/videos';
-if (!fs.existsSync(uploadDir)){
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req, file) => {
+        // Dynamic folder based on school/teacher (Requires req.user populated by auth middleware previously)
+        // If auth middleware runs before upload, we have req.user.
+        // If not, we use a generic 'uploads' folder.
+        
+        let folder = 'school_hub/general';
+        if (req.user && req.user.schoolId) {
+             folder = `school_hub/${req.user.schoolId}/videos`;
+        }
 
-// Set storage engine
-const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        cb(null, uploadDir);
+        return {
+            folder: folder,
+            resource_type: 'auto', // auto detects image or video
+            allowed_formats: ['jpg', 'png', 'jpeg', 'mp4', 'mov', 'avi', 'mkv'],
+            // public_id: '...', // Use default random string
+        };
     },
-    filename: function(req, file, cb) {
-        cb(null, 'video-' + Date.now() + path.extname(file.originalname));
-    }
 });
 
-// Check file type
+// Check file type (Double check, though Cloudinary allowed_formats handles extension)
 function checkFileType(file, cb) {
-    // Allowed extensions
-    const filetypes = /mp4|mov|avi|wmv|mkv/;
-    // Check ext
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    // Check mime
+    const filetypes = /jpeg|jpg|png|mp4|mov|avi|wmv|mkv/;
     const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(file.originalname.toLowerCase());
 
     if (mimetype && extname) {
         return cb(null, true);
     } else {
-        cb('Error: Videos Only!');
+        cb(new Error('Error: Invalid File Type!'));
     }
 }
 
-// Init upload
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 100000000 }, // 100MB limit
+    limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit (Should match Free plan max file size)
     fileFilter: function(req, file, cb) {
         checkFileType(file, cb);
     }

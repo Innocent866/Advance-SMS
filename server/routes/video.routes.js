@@ -11,8 +11,9 @@ const {
 } = require('../controllers/video.controller');
 const { protect, teacher } = require('../middleware/auth.middleware');
 const { checkSubscription } = require('../middleware/subscription.middleware');
+const { checkQuota } = require('../middleware/quota.middleware');
 
-router.post('/', protect, teacher, checkSubscription, upload.single('video'), createVideo);
+router.post('/', protect, teacher, checkSubscription, checkQuota, upload.single('video'), createVideo);
 router.get('/', protect, checkSubscription, getVideos);
 
 router.get('/:id', protect, getVideoById);
