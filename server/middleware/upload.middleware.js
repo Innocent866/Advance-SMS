@@ -9,9 +9,9 @@ const storage = new CloudinaryStorage({
         // If auth middleware runs before upload, we have req.user.
         // If not, we use a generic 'uploads' folder.
         
-        let folder = 'school_hub/general';
+        let folder = 'GT_SchoolHub/general';
         if (req.user && req.user.schoolId) {
-             folder = `school_hub/${req.user.schoolId}/videos`;
+             folder = `GT_SchoolHub/${req.user.schoolId}/videos`;
         }
 
         return {
