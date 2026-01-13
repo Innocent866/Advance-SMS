@@ -23,6 +23,14 @@ const TeacherProfile = () => {
     const fetchAssignments = async () => {
         try {
             const res = await api.get('/teachers/me');
+            if (res.data) {
+                setProfile(prev => ({ 
+                    ...prev, 
+                    name: `${res.data.firstName} ${res.data.lastName}`, 
+                    email: res.data.email,
+                    profilePicture: res.data.profilePicture
+                }));
+            }
             if (res.data.teachingAssignments) {
                 setAssignments(res.data.teachingAssignments);
             }
@@ -82,6 +90,21 @@ const TeacherProfile = () => {
                 <div className="space-y-6">
                     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                         <h3 className="font-bold text-gray-700 mb-4 border-b pb-2">Personal Information</h3>
+                        
+                        <div className="flex justify-center mb-6">
+                            {profile.profilePicture ? (
+                                <img 
+                                    src={profile.profilePicture} 
+                                    alt="Profile" 
+                                    className="w-24 h-24 rounded-full object-cover border-4 border-gray-100"
+                                />
+                            ) : (
+                                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
+                                    <User size={48} />
+                                </div>
+                            )}
+                        </div>
+
                         <form onSubmit={handleUpdateProfile} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium mb-1">Full Name</label>

@@ -36,9 +36,17 @@ const StudentProfile = () => {
                 {/* Personal Information Card */}
                 <div className="md:col-span-1">
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center text-gray-400">
-                             <User size={48} />
-                        </div>
+                        {profile?.profilePicture ? (
+                            <img 
+                                src={profile.profilePicture} 
+                                alt="Profile" 
+                                className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-gray-100"
+                            />
+                        ) : (
+                            <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center text-gray-400">
+                                <User size={48} />
+                            </div>
+                        )}
                         <h2 className="text-xl font-bold text-center text-gray-900">{profile?.firstName || user.name} {profile?.lastName}</h2>
                         <div className="text-center mb-6">
                             <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">

@@ -211,7 +211,7 @@ const StudentsList = () => {
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
                                           {student.profilePicture ? (
-                                            <img src={`http://localhost:5001/${student.profilePicture}`} className="w-10 h-10 rounded-full object-cover" alt="" />
+                                            <img src={student.profilePicture} className="w-10 h-10 rounded-full object-cover" alt="" />
                                         ) : (
                                             <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
                                                 <div className="font-bold text-lg">{student.firstName[0]}</div>
