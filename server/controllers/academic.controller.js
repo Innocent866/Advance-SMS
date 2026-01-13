@@ -8,7 +8,7 @@ const createSubject = async (req, res) => {
     const { name, code } = req.body;
     try {
         const subject = await Subject.create({
-            schoolId: req.user.schoolId,
+            schoolId: req.user.schoolId._id || req.user.schoolId,
             name,
             code
         });
@@ -21,7 +21,7 @@ const createSubject = async (req, res) => {
 
 const getSubjects = async (req, res) => {
     try {
-        const subjects = await Subject.find({ schoolId: req.user.schoolId });
+        const subjects = await Subject.find({ schoolId: req.user.schoolId._id || req.user.schoolId });
         res.json(subjects);
     } catch (error) {
         console.error(error);
@@ -34,7 +34,7 @@ const createClassLevel = async (req, res) => {
     const { name, category } = req.body; // category: JSS or SSS
     try {
         const classLevel = await ClassLevel.create({
-            schoolId: req.user.schoolId,
+            schoolId: req.user.schoolId._id || req.user.schoolId,
             name,
             category,
             arms: [],
@@ -50,7 +50,7 @@ const createClassLevel = async (req, res) => {
 const updateClassArms = async (req, res) => {
     const { classId, armName } = req.body;
     try {
-        const classLevel = await ClassLevel.findOne({ _id: classId, schoolId: req.user.schoolId });
+        const classLevel = await ClassLevel.findOne({ _id: classId, schoolId: req.user.schoolId._id || req.user.schoolId });
         if (!classLevel) return res.status(404).json({ message: 'Class not found' });
 
         classLevel.arms.push({ name: armName });
@@ -65,7 +65,7 @@ const updateClassArms = async (req, res) => {
 const assignSubjectToClass = async (req, res) => {
     const { classId, subjectId } = req.body; // Toggle assignment
     try {
-        const classLevel = await ClassLevel.findOne({ _id: classId, schoolId: req.user.schoolId });
+        const classLevel = await ClassLevel.findOne({ _id: classId, schoolId: req.user.schoolId._id || req.user.schoolId });
         if (!classLevel) return res.status(404).json({ message: 'Class not found' });
 
         const index = classLevel.subjects.indexOf(subjectId);
@@ -84,7 +84,7 @@ const assignSubjectToClass = async (req, res) => {
 
 const getClassLevels = async (req, res) => {
     try {
-        const classLevels = await ClassLevel.find({ schoolId: req.user.schoolId })
+        const classLevels = await ClassLevel.find({ schoolId: req.user.schoolId._id || req.user.schoolId })
             .populate('subjects');
         res.json(classLevels);
     } catch (error) {
@@ -100,7 +100,7 @@ const createSession = async (req, res) => {
         // Deactivate others? Maybe explicitly.
         
         const session = await AcademicSession.create({
-            schoolId: req.user.schoolId,
+            schoolId: req.user.schoolId._id || req.user.schoolId,
             name,
             terms, // array of {name, startDate, endDate}
             isActive: false
@@ -114,7 +114,7 @@ const createSession = async (req, res) => {
 
 const getSessions = async (req, res) => {
     try {
-        const sessions = await AcademicSession.find({ schoolId: req.user.schoolId }).sort({ createdAt: -1 });
+        const sessions = await AcademicSession.find({ schoolId: req.user.schoolId._id || req.user.schoolId }).sort({ createdAt: -1 });
         res.json(sessions);
     } catch (error) {
          console.error(error);
@@ -126,7 +126,7 @@ const activateSession = async (req, res) => {
     const { sessionId, currentTerm } = req.body;
     try {
         // Deactivate all others
-        await AcademicSession.updateMany({ schoolId: req.user.schoolId }, { isActive: false });
+        await AcademicSession.updateMany({ schoolId: req.user.schoolId._id || req.user.schoolId }, { isActive: false });
         
         const session = await AcademicSession.findByIdAndUpdate(
             sessionId, 
@@ -188,7 +188,7 @@ const assignTeacherToSubject = async (req, res) => {
 const updateClassSettings = async (req, res) => {
     const { classId, hasAfterSchoolLearning, videoSubjects } = req.body;
     try {
-        const classLevel = await ClassLevel.findOne({ _id: classId, schoolId: req.user.schoolId });
+        const classLevel = await ClassLevel.findOne({ _id: classId, schoolId: req.user.schoolId._id || req.user.schoolId });
         if (!classLevel) return res.status(404).json({ message: 'Class not found' });
 
         if (hasAfterSchoolLearning !== undefined) classLevel.hasAfterSchoolLearning = hasAfterSchoolLearning;

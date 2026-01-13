@@ -10,7 +10,7 @@ const Submission = require('../models/Submission');
 const createVideo = async (req, res) => {
     try {
         const video = await VideoLesson.create({
-            schoolId: req.user.schoolId,
+            schoolId: req.user.schoolId._id || req.user.schoolId,
             teacherId: req.user._id,
             ...req.body
         });
@@ -28,7 +28,7 @@ const ClassLevel = require('../models/ClassLevel');
 // @access  Private (Student/Teacher)
 const getVideos = async (req, res) => {
     const { classLevelId, subjectId } = req.query;
-    let query = { schoolId: req.user.schoolId };
+    let query = { schoolId: req.user.schoolId._id || req.user.schoolId };
 
     if (classLevelId) query.classLevelId = classLevelId;
     if (subjectId) query.subjectId = subjectId;
@@ -161,7 +161,7 @@ const submitQuiz = async (req, res) => {
         const passed = score >= quiz.passingScore;
 
         const submission = await Submission.create({
-            schoolId: req.user.schoolId,
+            schoolId: req.user.schoolId._id || req.user.schoolId,
             studentId: req.user._id,
             quizId,
             answers: processedAnswers,
@@ -203,7 +203,7 @@ const markVideoComplete = async (req, res) => {
             { 
                 studentId: req.user._id, 
                 videoId: req.params.videoId,
-                schoolId: req.user.schoolId
+                schoolId: req.user.schoolId._id || req.user.schoolId
             },
             { completed: true, watchedAt: Date.now() },
             { upsert: true, new: true }

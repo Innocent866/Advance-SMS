@@ -14,7 +14,7 @@ const createQuiz = async (req, res) => {
 
     try {
         const quiz = await Quiz.create({
-            schoolId: req.user.schoolId,
+            schoolId: req.user.schoolId._id || req.user.schoolId,
             teacherId: req.user._id,
             videoId,
             title,
@@ -40,7 +40,7 @@ const getQuizzes = async (req, res) => {
     if (!videoId) return res.status(400).json({ message: 'Video ID required' });
 
     try {
-        let query = { videoId, schoolId: req.user.schoolId };
+        let query = { videoId, schoolId: req.user.schoolId._id || req.user.schoolId };
         
         // Students only see published
         if (req.user.role === 'student') {
@@ -100,7 +100,7 @@ const submitQuiz = async (req, res) => {
         // Let's store raw score
         
         const submission = await QuizSubmission.create({
-            schoolId: req.user.schoolId,
+            schoolId: req.user.schoolId._id || req.user.schoolId,
             studentId: req.user._id,
             quizId: quiz._id,
             answers,

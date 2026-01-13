@@ -25,7 +25,7 @@ const generateLesson = async (req, res) => {
 
     try {
         // 1. Check Usage Limits
-        const school = await School.findById(req.user.schoolId);
+        const school = await School.findById(req.user.schoolId._id || req.user.schoolId);
         const currentPlan = school.subscription?.plan || 'Basic'; // Default to basic if missing
         
         // Calculate start of current month
@@ -35,7 +35,7 @@ const generateLesson = async (req, res) => {
 
         const usageStats = await AIUsageLog.aggregate([
             { $match: { 
-                schoolId: req.user.schoolId, 
+                schoolId: req.user.schoolId._id || req.user.schoolId, 
                 createdAt: { $gte: startOfMonth } 
             }},
             { $group: { _id: null, totalTokens: { $sum: "$tokensUsed" } } }
@@ -65,7 +65,7 @@ const generateLesson = async (req, res) => {
             topic, 
             term, 
             week,
-            schoolId: req.user.schoolId,
+            schoolId: req.user.schoolId._id || req.user.schoolId,
             teacherId: req.user._id,
             generateNotes,
             generateSlides
@@ -96,7 +96,7 @@ const saveLesson = async (req, res) => {
 
     try {
         const lesson = await LessonPlan.create({
-            schoolId: req.user.schoolId,
+            schoolId: req.user.schoolId._id || req.user.schoolId,
             teacherId: req.user._id,
             classLevelId,
             subjectId,
@@ -120,7 +120,7 @@ const saveLesson = async (req, res) => {
 // @access  Private (Teacher/Admin)
 const getLessons = async (req, res) => {
     const { classLevelId, subjectId, term, week } = req.query;
-    let query = { schoolId: req.user.schoolId };
+    let query = { schoolId: req.user.schoolId._id || req.user.schoolId };
 
     if (classLevelId) query.classLevelId = classLevelId;
     if (subjectId) query.subjectId = subjectId;
