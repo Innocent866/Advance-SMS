@@ -2,9 +2,12 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
-import { Plus, Search, Mail, Phone, Briefcase } from 'lucide-react';
+import { Users, Search, Plus, Mail, Phone, MapPin, MoreVertical, Briefcase } from 'lucide-react';
+ 
+import usePageTitle from '../hooks/usePageTitle';
 
 const TeachersList = () => {
+    usePageTitle('Teachers');
     const { user } = useAuth();
     const [teachers, setTeachers] = useState([]);
     const [loading, setLoading] = useState(true);

@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import { Users, Search, Mail, BookOpen } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const MyStudents = () => {
+    usePageTitle('My Students');
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');

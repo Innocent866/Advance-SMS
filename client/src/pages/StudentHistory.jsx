@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { Clock, CheckCircle, Video, FileText, BarChart } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const StudentHistory = () => {
+    usePageTitle('Learning History');
     const [history, setHistory] = useState({ completedVideos: [], submissions: [] });
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('all'); // all, lessons, quizzes

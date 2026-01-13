@@ -4,6 +4,7 @@ import {
     CheckCircle, XCircle, ShieldCheck, Building, 
     CreditCard, Users, TrendingUp, DollarSign, Activity, Plus
 } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const StatCard = ({ label, value, icon: Icon, color }) => (
     <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">

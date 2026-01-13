@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import usePageTitle from '../hooks/usePageTitle';
 
 const RegisterSchool = () => {
+    usePageTitle('Register School');
     const [formData, setFormData] = useState({
         schoolName: '',
         schoolEmail: '',

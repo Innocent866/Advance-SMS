@@ -1,10 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { User, Mail, GraduationCap, School, BookOpen, ArrowLeft, Hash, Camera } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Calendar, Book, Award, Clock, ArrowLeft, Edit2, Save, X, Camera } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const StudentDetails = () => {
+    usePageTitle('Student Details');
     const { id } = useParams();
+    const navigate = useNavigate();
     const [student, setStudent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);

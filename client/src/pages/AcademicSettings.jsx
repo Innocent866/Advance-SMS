@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { Plus, Trash2, CheckCircle, Layers, Calendar, Book, User } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const AcademicSettings = () => {
+    usePageTitle('Academic Settings');
     const [activeTab, setActiveTab] = useState('classes');
     
     return (

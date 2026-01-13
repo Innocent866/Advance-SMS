@@ -17,13 +17,15 @@ import {
     Clock,
     ShieldCheck
 } from 'lucide-react';
+import logo from '../assets/efba533e-777e-442e-8343-9c94e7443783-removebg-preview.png'
+
 
 const Sidebar = () => {
     const { user, logout } = useAuth();
     const location = useLocation();
 
     // Derive logo: Check user's school logo first, else default
-    const schoolLogo = user?.schoolId?.logoUrl; 
+    const schoolLogo = logo || user?.schoolId?.logoUrl; 
     const defaultLogo = '/logo.png'; 
 
     const isActive = (path) => location.pathname === path;
@@ -51,11 +53,11 @@ const Sidebar = () => {
 
     return (
         <div className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
-            <div className="p-6 flex items-center justify-center border-b border-gray-200">
+            <div className="p-1 flex items-center justify-center border-b border-gray-200">
                 <img 
                     src={schoolLogo || defaultLogo} 
                     alt="School Logo" 
-                    className="h-12 w-auto object-contain"
+                    className="h-24 w-auto object-contain"
                 />
             </div>
             

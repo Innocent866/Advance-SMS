@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import usePageTitle from '../hooks/usePageTitle';
 import { Video, Play, Eye, CheckCircle, Trash2, Loader, Upload } from 'lucide-react';
 import QuizManager from '../components/QuizManager';
 
 const VideoManager = () => {
+    usePageTitle('Video Manager');
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState('list'); // 'list' or 'upload'
     

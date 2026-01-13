@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
-import { Save, Building, Bell, Sliders, Upload, Image as ImageIcon } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
+import { Save, Upload, Building, Bell, Palette, Globe, Mail, Sliders, Image as ImageIcon } from 'lucide-react';
 
 const SchoolSettings = () => {
+    usePageTitle('School Settings');
     const { refreshUser } = useAuth(); // Destructure
     
     const [activeTab, setActiveTab] = useState('profile');

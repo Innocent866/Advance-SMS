@@ -1,6 +1,7 @@
 import { useAuth } from '../context/AuthContext';
 import { BookOpen, Video, CheckCircle, Clock, User, Trophy, PlayCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import usePageTitle from '../hooks/usePageTitle';
 
 const StatCard = ({ label, value, icon: Icon, color, to }) => (
     <Link to={to} className="block group">
@@ -17,6 +18,7 @@ const StatCard = ({ label, value, icon: Icon, color, to }) => (
 );
 
 const StudentDashboard = () => {
+    usePageTitle('Student Dashboard');
     const { user } = useAuth();
     // In a real app, we would fetch student specific stats here (e.g. % completed, pending tasks)
 

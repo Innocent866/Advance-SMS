@@ -1,9 +1,12 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import { User, BookOpen, GraduationCap, Mail, School } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const StudentProfile = () => {
+    usePageTitle('My Profile');
     const { user } = useAuth();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);

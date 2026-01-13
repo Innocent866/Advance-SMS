@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { User, Mail, Phone, BookOpen, Layers, Briefcase, ArrowLeft, School } from 'lucide-react';
+import { User, Mail, Phone, Briefcase, BookOpen, Users, Calendar, ArrowLeft } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const TeacherDetails = () => {
+    usePageTitle('Teacher Details');
     const { id } = useParams();
+    const navigate = useNavigate();
     const [teacher, setTeacher] = useState(null);
     const [loading, setLoading] = useState(true);
 

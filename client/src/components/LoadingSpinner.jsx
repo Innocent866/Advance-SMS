@@ -1,9 +1,10 @@
 import { useAuth } from '../context/AuthContext';
+import logo from '../assets/efba533e-777e-442e-8343-9c94e7443783-removebg-preview.png'
 
 const LoadingSpinner = () => {
     const { user } = useAuth();
     // Use school logo if available (e.g. from local storage user), else default
-    const logoUrl = user?.schoolId?.logoUrl || '/logo.png';
+    const logoUrl = logo;
 
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
@@ -14,10 +15,9 @@ const LoadingSpinner = () => {
                 <img 
                     src={logoUrl} 
                     alt="Loading..." 
-                    className="h-16 w-16 object-contain relative z-10 animate-pulse"
+                    className="h-32 w-32 object-contain relative z-10 animate-pulse"
                 />
             </div>
-            <p className="mt-4 text-gray-500 text-sm font-medium animate-pulse">Loading...</p>
         </div>
     );
 };

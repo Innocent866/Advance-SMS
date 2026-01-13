@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { ToggleLeft, ToggleRight, Save } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const LearningSettings = () => {
+    usePageTitle('Learning Settings');
     const [classes, setClasses] = useState([]);
     const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(true);

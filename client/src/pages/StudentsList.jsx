@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { Plus, Search, Mail, Hash, User as UserIcon } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const StudentsList = () => {
+    usePageTitle('Students');
     const { user } = useAuth();
     const [students, setStudents] = useState([]);
     const [classes, setClasses] = useState([]); // For dropdown

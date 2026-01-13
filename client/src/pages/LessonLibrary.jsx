@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { BookOpen, Calendar, ArrowRight, Plus, Copy, Trash2, Edit2, Filter } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import usePageTitle from '../hooks/usePageTitle';
 
 const LessonLibrary = () => {
+    usePageTitle('Lesson Library');
     const navigate = useNavigate();
     const [lessons, setLessons] = useState([]);
     const [filteredLessons, setFilteredLessons] = useState([]);

@@ -18,8 +18,10 @@ import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import TeacherDashboard from './TeacherDashboard'; 
 import StudentDashboard from './StudentDashboard'; // Import
+import usePageTitle from '../hooks/usePageTitle';
 
 const DashboardHome = () => {
+    usePageTitle('Dashboard');
     const { user } = useAuth();
     const [stats, setStats] = useState(null);
     const navigate = useNavigate();

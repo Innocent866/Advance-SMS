@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
-import { Play, CheckCircle, Video, BookOpen, GraduationCap, Clock, Check } from 'lucide-react';
+import { Play, CheckCircle, Clock, BookOpen, Search, X, Award, Video, Check } from 'lucide-react';
 import QuizModal from '../components/QuizModal';
 
+import usePageTitle from '../hooks/usePageTitle';
+
 const StudentVideos = () => {
+    usePageTitle('Video Lessons');
     const { user } = useAuth();
     const [videos, setVideos] = useState([]);
     const [subjects, setSubjects] = useState([]);

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { CheckCircle, XCircle, Clock, FileText } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, FileText, Upload } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const StudentSubmissions = () => {
+    usePageTitle('My Tasks');
     const [submissions, setSubmissions] = useState([]);
     const [loading, setLoading] = useState(true);
 

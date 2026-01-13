@@ -1,8 +1,11 @@
+
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { BarChart2, Users, FileText, CheckCircle, PlayCircle, Download } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const AnalyticsDashboard = () => {
+    usePageTitle('Analytics');
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 

@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
-import { User, Lock, Save, BookOpen, Layers } from 'lucide-react';
+import { User, Mail, Phone, Briefcase, BookOpen, Users, Calendar, Lock, Layers } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const TeacherProfile = () => {
-    const { user, login } = useAuth(); // login is helper to update user state
+    usePageTitle('My Profile');
+    const { user } = useAuth();
+    const [teacher, setTeacher] = useState(null);
     const [profile, setProfile] = useState({ name: '', email: '' });
     const [assignments, setAssignments] = useState([]);
     

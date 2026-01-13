@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { Sparkles, Save, Loader, FileText, Presentation } from 'lucide-react';
+import { BookOpen, Sparkles, Save, Clock, Copy, AlignLeft, List, MonitorPlay } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import usePageTitle from '../hooks/usePageTitle';
 
 const LessonGenerator = () => {
+    usePageTitle('Lesson Generator');
     const { user } = useAuth();
     const location = useLocation();
 

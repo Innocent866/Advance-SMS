@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { CheckCircle, XCircle, FileText, Video, Filter } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle';
 
 const ContentOversight = () => {
+    usePageTitle('Content Oversight');
     const [contentType, setContentType] = useState('lesson-plan');
     const [content, setContent] = useState([]);
     const [loading, setLoading] = useState(false);
