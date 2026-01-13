@@ -14,7 +14,8 @@ const storage = new CloudinaryStorage({
         const subFolder = isVideo ? 'videos' : 'images';
 
         if (req.user && req.user.schoolId) {
-             folder = `GT_SchoolHub/${req.user.schoolId}/${subFolder}`;
+             const schoolId = req.user.schoolId._id ? req.user.schoolId._id.toString() : req.user.schoolId.toString();
+             folder = `GT_SchoolHub/${schoolId}/${subFolder}`;
         }
 
         return {
