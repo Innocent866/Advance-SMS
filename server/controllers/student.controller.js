@@ -78,7 +78,33 @@ const createStudent = async (req, res) => {
 // @access  Private (School Admin/Teacher)
 const getStudents = async (req, res) => {
     try {
-        const students = await Student.find({ schoolId: req.user.schoolId._id || req.user.schoolId })
+        let query = { schoolId: req.user.schoolId._id || req.user.schoolId };
+
+        // If user is a teacher, restrict to their assigned classes
+        if (req.user.role === 'teacher') {
+            const teacherProfile = await require('../models/Teacher').findOne({ userId: req.user._id });
+            if (teacherProfile) {
+                 let classIds = [];
+                if (teacherProfile.teachingAssignments) {
+                    classIds = teacherProfile.teachingAssignments.map(a => a.classId);
+                }
+                if (teacherProfile.classes) {
+                    classIds = [...classIds, ...teacherProfile.classes];
+                }
+                // Unique IDs
+                classIds = [...new Set(classIds)];
+                
+                if (classIds.length > 0) {
+                    query.classId = { $in: classIds };
+                } else {
+                    return res.json([]); // Teacher has no classes assigned
+                }
+            } else {
+                return res.json([]); // Teacher profile not found
+            }
+        }
+
+        const students = await Student.find(query)
             .populate('classId', 'name');
         res.json(students);
     } catch (error) {
@@ -186,11 +212,55 @@ const getStudentById = async (req, res) => {
         }
 
         if (studentSchoolId !== userSchoolId) {
-             console.log(`Auth Error: Mismatch. User School: ${userSchoolId}, Student School: ${studentSchoolId}`);
              return res.status(401).json({ 
-                 message: `Permission Denied: School ID Mismatch. Your School: ${userSchoolId}, Student School: ${studentSchoolId}` 
+                 message: `Permission Denied. Please contact support if you believe this is an error.` 
              });
         }
+
+        res.json(student);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// @desc    Update student details (Profile Picture etc)
+// @route   PUT /api/students/:id
+// @access  Private (School Admin)
+const updateStudent = async (req, res) => {
+    try {
+        let student = await Student.findById(req.params.id);
+
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        // Verify school ownership
+        const userSchoolIdRaw = req.user.schoolId;
+        const userSchoolId = userSchoolIdRaw?._id ? userSchoolIdRaw._id.toString() : userSchoolIdRaw.toString();
+        const studentSchoolId = student.schoolId.toString();
+
+        if (req.user.role !== 'super_admin' && studentSchoolId !== userSchoolId) {
+             return res.status(401).json({ message: 'Not authorized to update this student' });
+        }
+
+        // Update fields if provided
+        if (req.file) {
+            student.profilePicture = req.file.path; // Cloudinary URL
+            
+            // Update School Usage (Optimistic: +1 upload, +size)
+            await School.findByIdAndUpdate(userSchoolId, {
+                $inc: { 
+                    'mediaUsage.storageBytes': req.file.size,
+                    'mediaUsage.uploadCount': 1
+                }
+            });
+        }
+
+        // Add other fields updates here if needed in future
+        // if (req.body.firstName) student.firstName = req.body.firstName;
+
+        await student.save();
 
         res.json(student);
     } catch (error) {
@@ -204,5 +274,6 @@ module.exports = {
     getStudents,
     getTeacherStudents,
     getMyProfile,
-    getStudentById
+    getStudentById,
+    updateStudent
 };

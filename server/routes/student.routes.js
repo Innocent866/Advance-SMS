@@ -11,5 +11,6 @@ router.route('/')
 router.get('/my-students', protect, teacher, getTeacherStudents);
 router.get('/me', protect, getMyProfile);
 router.get('/:id', protect, getStudentById);
+router.put('/:id', protect, admin, upload.single('profilePicture'), require('../controllers/student.controller').updateStudent);
 
 module.exports = router;

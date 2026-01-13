@@ -150,7 +150,10 @@ const getMe = async (req, res) => {
     // If student, populate class name for UI display
     if (user.role === 'student' && user.classId) {
         // We need to re-fetch to populate because req.user from middleware is not populated
-        user = await User.findById(user._id).select('-passwordHash').populate('classId', 'name');
+        user = await User.findById(user._id)
+            .select('-passwordHash')
+            .populate('classId', 'name')
+            .populate('schoolId'); // Re-populate schoolId for logoUrl
     }
     res.status(200).json(user);
 };

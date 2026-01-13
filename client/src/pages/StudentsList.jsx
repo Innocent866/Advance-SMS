@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
@@ -61,13 +61,16 @@ const StudentsList = () => {
                 data.append('profilePicture', file);
             }
 
-            await api.post('/students', data);
+            await api.post('/students', data, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             setShowForm(false);
             setFormData({ 
                 firstName: '', lastName: '', email: '', password: '', 
                 gender: 'Male', studentId: '', level: 'SSS', classId: '' 
             });
             setFile(null);
+            if (fileInputRef.current) fileInputRef.current.value = ''; // Clear file input
             fetchStudents();
         } catch (error) {
             alert(error.response?.data?.message || 'Error creating student');
@@ -75,6 +78,7 @@ const StudentsList = () => {
     };
 
     const [file, setFile] = useState(null);
+    const fileInputRef = useRef(null);
 
     if (loading) return <div>Loading...</div>;
 
@@ -103,6 +107,7 @@ const StudentsList = () => {
                             <input 
                                 type="file" 
                                 accept="image/*"
+                                ref={fileInputRef}
                                 onChange={(e) => setFile(e.target.files[0])}
                                 className="w-full p-2 border rounded-lg"
                             />

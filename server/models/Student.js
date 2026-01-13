@@ -21,6 +21,7 @@ const studentSchema = new mongoose.Schema({
     lastName: { type: String, required: true },
     email: { type: String }, // Optional for students? Request says required field in list.
     gender: { type: String, enum: ['Male', 'Female', 'Other'] },
+    profilePicture: { type: String }, // Cloudinary URL
     
     // --- Academic Details ---
     studentId: { type: String, required: true }, // e.g. Admission Number

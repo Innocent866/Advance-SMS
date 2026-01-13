@@ -19,18 +19,15 @@ const protect = async (req, res, next) => {
             // For MVP, the user object contains schoolId.
             
             if (!req.user) {
-                 console.log('Protect Middleware: User not found');
                  return res.status(401).json({ message: 'Not authorized, user not found' });
             }
 
             // Check School Verification (Skip for Super Admin)
             if (req.user.role !== 'super_admin') {
                 if (!req.user.schoolId) {
-                    console.log('Protect Middleware: No school ID');
                     return res.status(401).json({ message: 'User verification failed: No school associated.' });
                 }
                 if (req.user.schoolId.isVerified === false) {
-                     console.log('Protect Middleware: School not verified');
                      return res.status(403).json({ 
                          message: 'School Pending Verification. Please contact support.',
                          code: 'SCHOOL_NOT_VERIFIED' 
@@ -40,11 +37,10 @@ const protect = async (req, res, next) => {
 
             next();
         } catch (error) {
-            console.error('Protect Middleware error:', error);
+            console.error(error);
             res.status(401).json({ message: 'Not authorized, token failed' });
         }
     } else {
-        console.log('Protect Middleware: No token');
         res.status(401).json({ message: 'Not authorized, no token' });
     }
 };

@@ -22,6 +22,10 @@ const Sidebar = () => {
     const { user, logout } = useAuth();
     const location = useLocation();
 
+    // Derive logo: Check user's school logo first, else default
+    const schoolLogo = user?.schoolId?.logoUrl; 
+    const defaultLogo = '/logo.png'; 
+
     const isActive = (path) => location.pathname === path;
 
     const navItems = [
@@ -48,7 +52,11 @@ const Sidebar = () => {
     return (
         <div className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
             <div className="p-6 flex items-center justify-center border-b border-gray-200">
-                <span className="text-2xl font-bold text-primary">EduSaaS</span>
+                <img 
+                    src={schoolLogo || defaultLogo} 
+                    alt="School Logo" 
+                    className="h-12 w-auto object-contain"
+                />
             </div>
             
             <nav className="flex-1 p-4 space-y-2 overflow-y-auto">

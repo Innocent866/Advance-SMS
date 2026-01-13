@@ -24,6 +24,17 @@ const updateSchool = async (req, res) => {
     try {
         const updateData = { ...req.body };
 
+        // Parse JSON fields if they come as strings (Multipart/form-data quirk)
+        if (typeof updateData.branding === 'string') {
+            try { updateData.branding = JSON.parse(updateData.branding); } catch (e) {}
+        }
+        if (typeof updateData.preferences === 'string') {
+            try { updateData.preferences = JSON.parse(updateData.preferences); } catch (e) {}
+        }
+        if (typeof updateData.notificationPreferences === 'string') {
+            try { updateData.notificationPreferences = JSON.parse(updateData.notificationPreferences); } catch (e) {}
+        }
+
         if (req.file) {
             updateData.logoUrl = req.file.path; // Cloudinary URL
             

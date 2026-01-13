@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../utils/api';
-import { User, Mail, GraduationCap, School, BookOpen, ArrowLeft, Hash } from 'lucide-react';
+import { User, Mail, GraduationCap, School, BookOpen, ArrowLeft, Hash, Camera } from 'lucide-react';
 
 const StudentDetails = () => {
     const { id } = useParams();
     const [student, setStudent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         const fetchStudent = async () => {
@@ -17,12 +19,36 @@ const StudentDetails = () => {
                 setLoading(false);
             } catch (error) {
                 console.error(error);
-                setError(error.response?.data?.message || 'Failed to load student');
+                const errorMsg = error.response?.data?.message || error.message || 'Failed to load student';
+                setError(errorMsg);
                 setLoading(false);
             }
         };
         fetchStudent();
     }, [id]);
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('profilePicture', file);
+
+        setUploading(true);
+        try {
+            const res = await api.put(`/students/${id}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            setStudent(res.data); // Update with new data (including new image URL)
+            setUploading(false);
+        } catch (error) {
+            console.error('Upload Error:', error);
+            alert(error.response?.data?.message || 'Failed to upload image');
+            setUploading(false);
+        }
+    };
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
@@ -42,18 +68,34 @@ const StudentDetails = () => {
                 <div className="h-32 bg-gradient-to-r from-primary/10 to-green-50"></div>
                 <div className="px-8 pb-8">
                     <div className="relative -mt-16 mb-6">
-                        <div className="w-32 h-32 bg-white rounded-full p-2 shadow-lg inline-block overflow-hidden relative">
+                        <div className="w-32 h-32 bg-white rounded-full p-2 shadow-lg inline-block overflow-hidden relative group">
                             {student.profilePicture ? (
                                 <img 
                                     src={student.profilePicture} 
                                     alt={`${student.firstName} ${student.lastName}`}
-                                    className="w-full h-full rounded-full object-cover"
+                                    className="w-full h-full rounded-full object-cover border-4 border-gray-50"
                                 />
                             ) : (
                                 <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
                                     <User size={48} />
                                 </div>
                             )}
+                            
+                            {/* Upload Overlay */}
+                            <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                {uploading ? (
+                                    <span className="text-white text-xs">Uploading...</span>
+                                ) : (
+                                    <Camera className="text-white" size={24} />
+                                )}
+                                <input 
+                                    type="file" 
+                                    className="hidden" 
+                                    ref={fileInputRef}
+                                    onChange={handleImageUpload}
+                                    accept="image/*"
+                                />
+                            </label>
                         </div>
                     </div>
 

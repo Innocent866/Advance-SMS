@@ -1,18 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../utils/api';
-import { Save, Building, Bell, Sliders } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { Save, Building, Bell, Sliders, Upload, Image as ImageIcon } from 'lucide-react';
 
 const SchoolSettings = () => {
+    const { refreshUser } = useAuth(); // Destructure
+    
     const [activeTab, setActiveTab] = useState('profile');
     const [school, setSchool] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-
+    
     // Form States
     const [profile, setProfile] = useState({ name: '', address: '', contactEmail: '', logoUrl: '' });
     const [branding, setBranding] = useState({ primaryColor: '#16a34a', secondaryColor: '#f59e0b' });
     const [preferences, setPreferences] = useState({ enableAfterSchoolLearning: true, autoApproveContent: false });
     const [notifications, setNotifications] = useState({ email: true, sms: false });
+    
+    // File Upload State
+    const [logoFile, setLogoFile] = useState(null);
+    const [logoPreview, setLogoPreview] = useState(null);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         const fetchSchool = async () => {
@@ -31,6 +39,8 @@ const SchoolSettings = () => {
                 if(data.branding) setBranding(data.branding);
                 if(data.preferences) setPreferences(data.preferences);
                 if(data.notificationPreferences) setNotifications(data.notificationPreferences);
+                
+                if (data.logoUrl) setLogoPreview(data.logoUrl);
 
             } catch (error) {
                 console.error(error);
@@ -69,17 +79,43 @@ const SchoolSettings = () => {
         verifyPayment();
     }, []);
 
+    const handleLogoChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setLogoFile(file);
+            setLogoPreview(URL.createObjectURL(file));
+        }
+    };
+
     const handleSave = async () => {
         setSaving(true);
         try {
-            const updates = {
-                ...profile,
-                branding,
-                preferences,
-                notificationPreferences: notifications
-            };
+            const formData = new FormData();
             
-            await api.put('/schools/my-school', updates);
+            // Append Profile Data
+            formData.append('name', profile.name);
+            formData.append('address', profile.address);
+            formData.append('contactEmail', profile.contactEmail);
+
+            // Append Objects as JSON Strings (Backend will parse)
+            formData.append('branding', JSON.stringify(branding));
+            formData.append('preferences', JSON.stringify(preferences));
+            formData.append('notificationPreferences', JSON.stringify(notifications));
+
+            // Append Logo if selected
+            if (logoFile) {
+                formData.append('logo', logoFile);
+            }
+            
+            const res = await api.put('/schools/my-school', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            
+            // Update local state with response (e.g. new logo url)
+            const updatedSchool = res.data;
+            setProfile(prev => ({ ...prev, logoUrl: updatedSchool.logoUrl }));
+            setLogoFile(null); // Reset file input
+
             alert('Settings saved successfully!');
         } catch (error) {
             console.error(error);
@@ -131,6 +167,38 @@ const SchoolSettings = () => {
                 {activeTab === 'profile' && (
                     <div className="space-y-6 max-w-lg">
                         <h3 className="font-bold text-gray-700 border-b pb-2">Basic Information</h3>
+                        
+                        {/* Logo Upload Section */}
+                        <div className="flex items-center gap-6">
+                             <div className="w-24 h-24 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden relative">
+                                {logoPreview ? (
+                                    <img src={logoPreview} alt="School Logo" className="w-full h-full object-cover" />
+                                ) : (
+                                    <ImageIcon className="text-gray-400" size={32} />
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-2 text-gray-700">School Logo</label>
+                                <div className="flex items-center gap-2">
+                                    <button 
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="flex items-center gap-2 px-4 py-2 border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-sm font-medium"
+                                    >
+                                        <Upload size={16} /> Choose Image
+                                    </button>
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef}
+                                        className="hidden" 
+                                        accept="image/*"
+                                        onChange={handleLogoChange}
+                                    />
+                                    {logoFile && <span className="text-xs text-gray-500">{logoFile.name}</span>}
+                                </div>
+                                <p className="text-xs text-gray-400 mt-1">Recommended: Square PNG or JPG, max 2MB.</p>
+                            </div>
+                        </div>
+
                         <div>
                             <label className="block text-sm font-medium mb-1">School Name</label>
                             <input className="w-full p-2 border rounded" value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} />

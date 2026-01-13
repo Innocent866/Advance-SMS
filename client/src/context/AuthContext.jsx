@@ -62,8 +62,25 @@ export const AuthProvider = ({ children }) => {
         window.location.href = '/login';
     };
 
+    const refreshUser = async () => {
+        try {
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
+                const parsedUser = JSON.parse(storedUser);
+                if (parsedUser.token) {
+                    const res = await api.get('/auth/me');
+                    const fresherUser = { ...res.data, token: parsedUser.token };
+                    setUser(fresherUser);
+                    localStorage.setItem('user', JSON.stringify(fresherUser));
+                }
+            }
+        } catch (error) {
+            console.error("Refresh user failed", error);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, registerSchool, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, registerSchool, logout, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );

@@ -16,6 +16,8 @@ const StatCard = ({ label, value, icon: Icon, color }) => (
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import TeacherDashboard from './TeacherDashboard'; 
+import StudentDashboard from './StudentDashboard'; // Import
 
 const DashboardHome = () => {
     const { user } = useAuth();
@@ -30,15 +32,25 @@ const DashboardHome = () => {
 
     useEffect(() => {
         const fetchStats = async () => {
-            try {
-                const res = await api.get('/admin/analytics');
-                setStats(res.data);
-            } catch (error) {
-                console.error("Failed to fetch dashboard stats", error);
+            if (user?.role === 'school_admin') { // Only fetch stats for admins
+                try {
+                    const res = await api.get('/admin/analytics');
+                    setStats(res.data);
+                } catch (error) {
+                    console.error("Failed to fetch dashboard stats", error);
+                }
             }
         };
         fetchStats();
-    }, []);
+    }, [user]);
+
+    // Role Based Dashboards
+    if (user?.role === 'teacher') {
+        return <TeacherDashboard />;
+    }
+    if (user?.role === 'student') {
+        return <StudentDashboard />;
+    }
 
     const p = stats?.platformUsage || {};
 
