@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:5001/api', // Hardcoded for MVP, usually env var
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001/api', // Uses env var or fallback
     // Do NOT set Content-Type here; let Axios set it automatically (json or multipart)
 });
 
