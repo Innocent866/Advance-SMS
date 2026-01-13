@@ -10,14 +10,17 @@ const storage = new CloudinaryStorage({
         // If not, we use a generic 'uploads' folder.
         
         let folder = 'GT_SchoolHub/general';
+        const isVideo = file.mimetype.startsWith('video');
+        const subFolder = isVideo ? 'videos' : 'images';
+
         if (req.user && req.user.schoolId) {
-             folder = `GT_SchoolHub/${req.user.schoolId}/videos`;
+             folder = `GT_SchoolHub/${req.user.schoolId}/${subFolder}`;
         }
 
         return {
             folder: folder,
             resource_type: 'auto', // auto detects image or video
-            allowed_formats: ['jpg', 'png', 'jpeg', 'mp4', 'mov', 'avi', 'mkv'],
+            allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'mp4', 'mov', 'avi', 'mkv'],
             // public_id: '...', // Use default random string
         };
     },
@@ -25,7 +28,7 @@ const storage = new CloudinaryStorage({
 
 // Check file type (Double check, though Cloudinary allowed_formats handles extension)
 function checkFileType(file, cb) {
-    const filetypes = /jpeg|jpg|png|mp4|mov|avi|wmv|mkv/;
+    const filetypes = /jpeg|jpg|png|gif|mp4|mov|avi|wmv|mkv/;
     const mimetype = filetypes.test(file.mimetype);
     const extname = filetypes.test(file.originalname.toLowerCase());
 

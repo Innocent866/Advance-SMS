@@ -1,5 +1,6 @@
 const Student = require('../models/Student');
 const User = require('../models/User');
+const School = require('../models/School'); // Import School model
 const bcrypt = require('bcryptjs');
 
 // @desc    Create a new student
@@ -41,12 +42,22 @@ const createStudent = async (req, res) => {
             lastName,
             email,
             gender,
-            profilePicture: req.file ? req.file.path.replace(/\\/g, "/") : null,
+            profilePicture: req.file ? req.file.path : null, // Cloudinary URL
             studentId,
             level,
             classId,
             status: 'active'
         });
+
+        // Update School Usage
+        if (req.file) {
+            await School.findByIdAndUpdate(req.user.schoolId, {
+                $inc: { 
+                    'mediaUsage.storageBytes': req.file.size,
+                    'mediaUsage.uploadCount': 1
+                }
+            });
+        }
 
         res.status(201).json({
             _id: student._id,
