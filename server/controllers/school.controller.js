@@ -22,7 +22,21 @@ const getMySchool = async (req, res) => {
 // @access  Private (Admin)
 const updateSchool = async (req, res) => {
     try {
-        const school = await School.findByIdAndUpdate(req.user.schoolId, req.body, { new: true });
+        const updateData = { ...req.body };
+
+        if (req.file) {
+            updateData.logoUrl = req.file.path; // Cloudinary URL
+            
+            // Update School Usage
+            await School.findByIdAndUpdate(req.user.schoolId, {
+                $inc: { 
+                    'mediaUsage.storageBytes': req.file.size,
+                    'mediaUsage.uploadCount': 1
+                }
+            });
+        }
+
+        const school = await School.findByIdAndUpdate(req.user.schoolId, updateData, { new: true });
         res.json(school);
     } catch (error) {
         console.error(error);
