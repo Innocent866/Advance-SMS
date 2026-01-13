@@ -34,11 +34,11 @@ const createVideo = async (req, res) => {
     }
 
     try {
-        const school = await School.findById(req.user.schoolId);
+        const school = await School.findById(req.user.schoolId._id || req.user.schoolId);
         const autoApprove = school?.preferences?.autoApproveContent !== false;
 
         const video = await VideoLesson.create({
-            schoolId: req.user.schoolId,
+            schoolId: req.user.schoolId._id || req.user.schoolId,
             teacherId: req.user._id,
             classLevelId,
             subjectId,
@@ -56,7 +56,7 @@ const createVideo = async (req, res) => {
 
         // Update School Usage (Approximate since we have file size in req.file.size)
         if (req.file) {
-            await School.findByIdAndUpdate(req.user.schoolId, {
+            await School.findByIdAndUpdate(req.user.schoolId._id || req.user.schoolId, {
                 $inc: { 
                     'mediaUsage.storageBytes': req.file.size,
                     'mediaUsage.uploadCount': 1

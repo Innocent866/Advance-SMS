@@ -20,7 +20,7 @@ const createTeacher = async (req, res) => {
 
         // 1. Create User (Auth)
         const user = await User.create({
-            schoolId: req.user.schoolId,
+            schoolId: req.user.schoolId._id || req.user.schoolId,
             name: `${firstName} ${lastName}`,
             email,
             passwordHash,
@@ -30,7 +30,7 @@ const createTeacher = async (req, res) => {
 
         // 2. Create Teacher Profile
         const teacher = await Teacher.create({
-            schoolId: req.user.schoolId,
+            schoolId: req.user.schoolId._id || req.user.schoolId,
             userId: user._id,
             firstName,
             lastName,
@@ -45,7 +45,7 @@ const createTeacher = async (req, res) => {
 
         // Update School Usage
         if (req.file) {
-            await School.findByIdAndUpdate(req.user.schoolId, {
+            await School.findByIdAndUpdate(req.user.schoolId._id || req.user.schoolId, {
                 $inc: { 
                     'mediaUsage.storageBytes': req.file.size,
                     'mediaUsage.uploadCount': 1

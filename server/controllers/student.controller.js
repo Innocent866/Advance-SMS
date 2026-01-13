@@ -16,7 +16,7 @@ const createStudent = async (req, res) => {
         }
 
         // Check if studentId already exists in this school
-        const studentExists = await Student.findOne({ schoolId: req.user.schoolId, studentId });
+        const studentExists = await Student.findOne({ schoolId: req.user.schoolId._id || req.user.schoolId, studentId });
         if (studentExists) {
             return res.status(400).json({ message: 'Student ID already exists' });
         }
@@ -26,7 +26,7 @@ const createStudent = async (req, res) => {
 
         // 1. Create User (Auth)
         const user = await User.create({
-            schoolId: req.user.schoolId,
+            schoolId: req.user.schoolId._id || req.user.schoolId,
             name: `${firstName} ${lastName}`,
             email,
             passwordHash,
@@ -36,7 +36,7 @@ const createStudent = async (req, res) => {
 
         // 2. Create Student Profile
         const student = await Student.create({
-            schoolId: req.user.schoolId,
+            schoolId: req.user.schoolId._id || req.user.schoolId,
             userId: user._id,
             firstName,
             lastName,
@@ -51,7 +51,7 @@ const createStudent = async (req, res) => {
 
         // Update School Usage
         if (req.file) {
-            await School.findByIdAndUpdate(req.user.schoolId, {
+            await School.findByIdAndUpdate(req.user.schoolId._id || req.user.schoolId, {
                 $inc: { 
                     'mediaUsage.storageBytes': req.file.size,
                     'mediaUsage.uploadCount': 1
