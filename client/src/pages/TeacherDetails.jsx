@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
 import { User, Mail, Phone, Briefcase, BookOpen, Users, Calendar, ArrowLeft } from 'lucide-react';
-import usePageTitle from '../hooks/usePageTitle';
+import usePageTitle from '../hooks/usePageTitle'
 
 const TeacherDetails = () => {
     usePageTitle('Teacher Details');
