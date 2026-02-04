@@ -36,6 +36,7 @@ const studentSchema = new mongoose.Schema({
         enum: ['JSS', 'SSS'],
         required: true
     },
+    arm: { type: String }, // e.g., 'A', 'B', 'Gold'
     subjects: [{ 
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Subject' 

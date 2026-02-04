@@ -2,6 +2,7 @@ const Subject = require('../models/Subject');
 const ClassLevel = require('../models/ClassLevel');
 const AcademicSession = require('../models/AcademicSession');
 const User = require('../models/User');
+const Student = require('../models/Student');
 
 // --- Subjects ---
 const createSubject = async (req, res) => {
@@ -63,18 +64,55 @@ const updateClassArms = async (req, res) => {
 };
 
 const assignSubjectToClass = async (req, res) => {
-    const { classId, subjectId } = req.body; // Toggle assignment
+    const { classId, subjectId, armId } = req.body; // Toggle assignment
     try {
         const classLevel = await ClassLevel.findOne({ _id: classId, schoolId: req.user.schoolId._id || req.user.schoolId });
         if (!classLevel) return res.status(404).json({ message: 'Class not found' });
 
-        const index = classLevel.subjects.indexOf(subjectId);
-        if (index === -1) {
-            classLevel.subjects.push(subjectId); // Assign
+        let isAdded = false;
+        let armName = null;
+
+        if (armId) {
+            // Toggle for specific arm
+            const arm = classLevel.arms.id(armId);
+            if (!arm) return res.status(404).json({ message: 'Arm not found' });
+            
+            armName = arm.name;
+
+            const index = arm.subjects.indexOf(subjectId);
+            if (index === -1) {
+                arm.subjects.push(subjectId);
+                isAdded = true;
+            } else {
+                arm.subjects.splice(index, 1);
+                isAdded = false;
+            }
         } else {
-            classLevel.subjects.splice(index, 1); // Unassign
+            // Toggle for entire class (General)
+            const index = classLevel.subjects.indexOf(subjectId);
+            if (index === -1) {
+                classLevel.subjects.push(subjectId); // Assign
+                isAdded = true;
+            } else {
+                classLevel.subjects.splice(index, 1); // Unassign
+                isAdded = false;
+            }
         }
         await classLevel.save();
+
+        // SYNC: Update All Students in this Class/Arm
+        if (isAdded) {
+            const query = { classId, schoolId: req.user.schoolId._id || req.user.schoolId };
+            if (armName) query.arm = armName;
+            
+            await Student.updateMany(query, { $addToSet: { subjects: subjectId } });
+        } else {
+            const query = { classId, schoolId: req.user.schoolId._id || req.user.schoolId };
+            if (armName) query.arm = armName;
+            
+            await Student.updateMany(query, { $pull: { subjects: subjectId } });
+        }
+
         res.json(classLevel);
     } catch (error) {
          console.error(error);
@@ -84,8 +122,33 @@ const assignSubjectToClass = async (req, res) => {
 
 const getClassLevels = async (req, res) => {
     try {
-        const classLevels = await ClassLevel.find({ schoolId: req.user.schoolId._id || req.user.schoolId })
-            .populate('subjects');
+        let query = { schoolId: req.user.schoolId._id || req.user.schoolId };
+
+        // If Teacher, return only assigned classes
+        if (req.user.role === 'teacher') {
+             const Teacher = require('../models/Teacher');
+             const teacher = await Teacher.findOne({ userId: req.user._id });
+             if (teacher) {
+                 // Get unique class IDs from assignments
+                 const assignedClassIds = teacher.teachingAssignments.map(a => a.classId);
+                 // Also include 'classes' field if used for form teachers
+                 if (teacher.classes && teacher.classes.length > 0) {
+                     assignedClassIds.push(...teacher.classes);
+                 }
+                 query._id = { $in: assignedClassIds };
+             }
+        }
+
+        const classLevels = await ClassLevel.find(query)
+            .sort({ name: 1 })
+            .populate('subjects')
+            .populate('arms.subjects');
+
+        // If teacher, maybe we should also filter the 'arms' in the response?
+        // The frontend expects the full class object. 
+        // For now, filtering the Class List is a good first step. 
+        // The frontend "Mark Attendance" uses this list.
+        
         res.json(classLevels);
     } catch (error) {
         console.error(error);

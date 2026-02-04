@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { 
     CheckCircle, XCircle, ShieldCheck, Building, 
-    CreditCard, Users, TrendingUp, DollarSign, Activity, Plus
+    CreditCard, Users, TrendingUp, DollarSign, Activity, Plus, Edit2
 } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 
@@ -26,6 +26,7 @@ const SuperAdminDashboard = () => {
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('overview');
     const [editingSchool, setEditingSchool] = useState(null);
+    const [editingDetailsSchool, setEditingDetailsSchool] = useState(null);
     const [isCreating, setIsCreating] = useState(false);
     const [newSchoolData, setNewSchoolData] = useState({
         schoolName: '', schoolEmail: '', adminName: '', adminEmail: '', password: ''
@@ -120,6 +121,21 @@ const SuperAdminDashboard = () => {
         }
     };
 
+    const handleUpdateDetails = async (e) => {
+        e.preventDefault();
+        try {
+            await api.put(`/superadmin/schools/${editingDetailsSchool._id}/details`, {
+                name: editingDetailsSchool.name,
+                contactEmail: editingDetailsSchool.contactEmail
+            });
+            alert('School details updated');
+            setEditingDetailsSchool(null);
+            fetchData();
+        } catch (error) {
+            alert('Update failed');
+        }
+    };
+
     // ... StatCard defined outside ...
 
     return (
@@ -161,7 +177,39 @@ const SuperAdminDashboard = () => {
                 </div>
             )}
 
-            {/* Edit Modal (Existing) */}
+            {/* Edit Details Modal */}
+            {editingDetailsSchool && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-xl w-96 shadow-xl">
+                        <h3 className="text-xl font-bold mb-4">Edit School Details</h3>
+                        <form onSubmit={handleUpdateDetails} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1">School Name</label>
+                                <input 
+                                    className="w-full border rounded p-2"
+                                    value={editingDetailsSchool.name}
+                                    onChange={e => setEditingDetailsSchool({...editingDetailsSchool, name: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Contact Email</label>
+                                <input 
+                                    type="email"
+                                    className="w-full border rounded p-2"
+                                    value={editingDetailsSchool.contactEmail}
+                                    onChange={e => setEditingDetailsSchool({...editingDetailsSchool, contactEmail: e.target.value})}
+                                />
+                            </div>
+                            <div className="flex justify-end gap-2 mt-6">
+                                <button type="button" onClick={() => setEditingDetailsSchool(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+                                <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Subscription Modal (Existing) */}
             {editingSchool && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-xl w-96 shadow-xl">
@@ -246,7 +294,7 @@ const SuperAdminDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <StatCard 
                         label="Total Revenue" 
-                        value={`₦${(stats.totalRevenue / 100).toLocaleString()}`} // Assuming amounts in Kobo if Paystack default, or Naira? Let's assume Kobo based on typical Stripe/Paystack pattern, OR simply Naira if stored that way. Checking stored... "amount: 2000000" in PLANS was 20k. So it's Kobo (x100).
+                        value={`₦${stats.totalRevenue.toLocaleString()}`} 
                         icon={DollarSign} 
                         color="bg-green-500" 
                     />
@@ -307,6 +355,13 @@ const SuperAdminDashboard = () => {
                                                 </button>
                                             )}
                                             <button 
+                                                onClick={() => setEditingDetailsSchool(school)}
+                                                className="p-1.5 text-gray-600 hover:bg-gray-100 rounded"
+                                                title="Edit Details"
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button 
                                                 onClick={() => setEditingSchool(school)}
                                                 className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
                                                 title="Edit Subscription"
@@ -349,7 +404,7 @@ const SuperAdminDashboard = () => {
                                         <td className="px-6 py-4 font-mono text-xs">{payment.reference}</td>
                                         <td className="px-6 py-4 font-medium">{payment.schoolId?.name || 'Unknown School'}</td>
                                         <td className="px-6 py-4 font-bold text-gray-800">
-                                            ₦{(payment.amount / 100).toLocaleString()}
+                                            ₦{payment.amount.toLocaleString()}
                                         </td>
                                         <td className="px-6 py-4 text-gray-500">
                                             {new Date(payment.createdAt).toLocaleDateString()}

@@ -21,7 +21,7 @@ const storage = new CloudinaryStorage({
         return {
             folder: folder,
             resource_type: 'auto', // auto detects image or video
-            allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'mp4', 'mov', 'avi', 'mkv'],
+            allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'webp', 'mp4', 'mov', 'avi', 'mkv', 'pdf', 'docx', 'doc'],
             // public_id: '...', // Use default random string
         };
     },
@@ -29,13 +29,15 @@ const storage = new CloudinaryStorage({
 
 // Check file type (Double check, though Cloudinary allowed_formats handles extension)
 function checkFileType(file, cb) {
-    const filetypes = /jpeg|jpg|png|gif|mp4|mov|avi|wmv|mkv/;
+    const filetypes = /jpeg|jpg|png|gif|webp|svg|mp4|mov|avi|wmv|mkv|pdf|doc|docx/;
     const mimetype = filetypes.test(file.mimetype);
+    // basic extension check
     const extname = filetypes.test(file.originalname.toLowerCase());
 
     if (mimetype && extname) {
         return cb(null, true);
     } else {
+        console.error(`File Upload Rejected: Mimetype=${file.mimetype}, OriginalName=${file.originalname}`);
         cb(new Error('Error: Invalid File Type!'));
     }
 }

@@ -13,7 +13,7 @@ const AIUsageLogSchema = new mongoose.Schema({
     },
     action: {
         type: String,
-        enum: ['generate_lesson'],
+        enum: ['generate_lesson', 'grade_exam'],
         default: 'generate_lesson'
     },
     promptType: {

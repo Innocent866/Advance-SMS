@@ -3,9 +3,9 @@ const Payment = require('../models/Payment');
 
 // Plan Definitions
 const PLANS = {
-    'Basic': { price: 200000, duration: 30, maxStudents: 200, maxTeachers: 10 }, // 2k
-    'Standard': { price: 500000, duration: 30, maxStudents: 500, maxTeachers: 25 }, // 5k
-    'Premium': { price: 1500000, duration: 30, maxStudents: 2000, maxTeachers: 100 } // 15k
+    'Basic': { price: 50000, duration: 90, maxStudents: 300, maxTeachers: 40 }, // 50k / Term (3 Months)
+    'Standard': { price: 100000, duration: 90, maxStudents: 700, maxTeachers: 70 }, // 100k / Term
+    'Premium': { price: 200000, duration: 90, maxStudents: 1500, maxTeachers: 200 } // 200k / Term
 };
 
 const activateSubscription = async (schoolId, planName, amount, reference) => {
@@ -36,16 +36,20 @@ const activateSubscription = async (schoolId, planName, amount, reference) => {
     }
 
     // 4. Update School
-    school.subscription = {
-        plan: planName,
-        status: 'active',
-        startDate: newStartDate,
-        expiryDate: newExpiryDate,
-        paymentRef: reference,
-        maxStudents: planDetails.maxStudents,
-        maxTeachers: planDetails.maxTeachers
-    };
-    await school.save();
+    // Use findByIdAndUpdate to ensure atomic update and avoid potential schema validation issues with replacing object
+    const updatedSchool = await School.findByIdAndUpdate(schoolId, {
+        $set: {
+            'subscription.plan': planName,
+            'subscription.status': 'active',
+            'subscription.startDate': newStartDate,
+            'subscription.expiryDate': newExpiryDate,
+            'subscription.paymentRef': reference,
+            'subscription.maxStudents': planDetails.maxStudents,
+            'subscription.maxTeachers': planDetails.maxTeachers
+        }
+    }, { new: true, runValidators: true });
+
+    if (!updatedSchool) throw new Error('School update failed');
 
     // 5. Update Payment
     await Payment.findOneAndUpdate(
@@ -58,7 +62,7 @@ const activateSubscription = async (schoolId, planName, amount, reference) => {
         }
     );
 
-    return school.subscription;
+    return updatedSchool.subscription;
 };
 
 module.exports = {

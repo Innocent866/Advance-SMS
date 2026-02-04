@@ -1,5 +1,7 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import api from '../utils/api';
+import { checkAccess as checkAccessUtil, checkLimit as checkLimitUtil } from '../utils/planConfig';
+import Loader from '../components/Loader';
 
 const AuthContext = createContext();
 
@@ -78,9 +80,17 @@ export const AuthProvider = ({ children }) => {
             console.error("Refresh user failed", error);
         }
     };
+    
+    // Helpers Wrapper
+    const checkAccess = (feature) => checkAccessUtil(user, feature);
+    const checkLimit = (resource, count) => checkLimitUtil(user, resource, count);
+
+    if (loading) {
+        return <Loader fullScreen={true} />;
+    }
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, registerSchool, logout, refreshUser }}>
+        <AuthContext.Provider value={{ user, loading, login, registerSchool, logout, refreshUser, checkAccess, checkLimit }}>
             {children}
         </AuthContext.Provider>
     );

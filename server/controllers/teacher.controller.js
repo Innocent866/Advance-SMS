@@ -2,6 +2,7 @@ const Teacher = require('../models/Teacher');
 const User = require('../models/User');
 const School = require('../models/School'); // Import School model
 const bcrypt = require('bcryptjs');
+const { createNotification } = require('./notification.controller');
 
 // @desc    Create a new teacher
 // @route   POST /api/teachers
@@ -15,8 +16,11 @@ const createTeacher = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
+        const school = await School.findById(req.user.schoolId._id || req.user.schoolId);
+        
+        const finalPassword = password || school.defaultTeacherPassword || 'teacher123';
         const salt = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash(password, salt);
+        const passwordHash = await bcrypt.hash(finalPassword, salt);
 
         // 1. Create User (Auth)
         const user = await User.create({
@@ -60,6 +64,14 @@ const createTeacher = async (req, res) => {
             email: teacher.email,
             role: 'teacher'
         });
+
+        // Notify Admin
+        await createNotification(
+            req.user._id,
+            `New Teacher Added: ${firstName} ${lastName}`,
+            'success'
+        );
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
@@ -131,9 +143,110 @@ const getMyProfile = async (req, res) => {
     }
 };
 
+// @desc    Update teacher details
+// @route   PUT /api/teachers/:id
+// @access  Private (School Admin)
+const updateTeacher = async (req, res) => {
+    try {
+        let teacher = await Teacher.findById(req.params.id);
+
+        if (!teacher) {
+            return res.status(404).json({ message: 'Teacher not found' });
+        }
+
+        // Verify school ownership
+        const userSchoolIdRaw = req.user.schoolId;
+        const userSchoolId = userSchoolIdRaw?._id ? userSchoolIdRaw._id.toString() : userSchoolIdRaw.toString();
+        const teacherSchoolId = teacher.schoolId.toString();
+
+        if (req.user.role !== 'super_admin' && teacherSchoolId !== userSchoolId) {
+             return res.status(401).json({ message: 'Not authorized to update this teacher' });
+        }
+
+        // Update fields if provided
+        if (req.file) {
+            teacher.profilePicture = req.file.path; // Cloudinary URL
+            
+            // Update School Usage (Optimistic: +1 upload, +size)
+            await School.findByIdAndUpdate(userSchoolId, {
+                $inc: { 
+                    'mediaUsage.storageBytes': req.file.size,
+                    'mediaUsage.uploadCount': 1
+                }
+            });
+        }
+
+        if (req.body.firstName) teacher.firstName = req.body.firstName;
+        if (req.body.lastName) teacher.lastName = req.body.lastName;
+        if (req.body.email) teacher.email = req.body.email;
+        if (req.body.phoneNumber) teacher.phoneNumber = req.body.phoneNumber;
+        if (req.body.qualification) teacher.qualification = req.body.qualification;
+        if (req.body.gender) teacher.gender = req.body.gender;
+        
+        // Also update the linked User account if name/email/password changed
+        if (req.body.firstName || req.body.lastName || req.body.email || req.body.password) {
+            const user = await User.findById(teacher.userId);
+            if (user) {
+                if (req.body.firstName || req.body.lastName) {
+                    user.name = `${req.body.firstName || teacher.firstName} ${req.body.lastName || teacher.lastName}`;
+                }
+                if (req.body.email) user.email = req.body.email;
+                if (req.body.password) {
+                    const salt = await bcrypt.genSalt(10);
+                    user.passwordHash = await bcrypt.hash(req.body.password, salt);
+                }
+                await user.save();
+            }
+        }
+
+        await teacher.save();
+
+        res.json(teacher);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// @desc    Delete teacher
+// @route   DELETE /api/teachers/:id
+// @access  Private (School Admin)
+const deleteTeacher = async (req, res) => {
+    try {
+        const teacher = await Teacher.findById(req.params.id);
+
+        if (!teacher) {
+            return res.status(404).json({ message: 'Teacher not found' });
+        }
+
+        // Verify school ownership
+        const userSchoolIdRaw = req.user.schoolId;
+        const userSchoolId = userSchoolIdRaw?._id ? userSchoolIdRaw._id.toString() : userSchoolIdRaw.toString();
+        const teacherSchoolId = teacher.schoolId.toString();
+
+        if (req.user.role !== 'super_admin' && teacherSchoolId !== userSchoolId) {
+             return res.status(401).json({ message: 'Not authorized to delete this teacher' });
+        }
+
+        // Delete linked User account
+        if (teacher.userId) {
+            await User.findByIdAndDelete(teacher.userId);
+        }
+
+        await Teacher.deleteOne({ _id: teacher._id });
+
+        res.json({ message: 'Teacher removed' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 module.exports = {
     createTeacher,
     getTeachers,
     getTeacherById,
-    getMyProfile
+    getMyProfile,
+    updateTeacher,
+    deleteTeacher
 };

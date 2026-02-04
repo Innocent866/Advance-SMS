@@ -211,11 +211,73 @@ const getVideoStats = async (req, res) => {
     }
 };
 
+// @desc    Get video analytics (who watched vs who didn't)
+// @route   GET /api/videos/:id/analytics
+// @access  Private (Teacher)
+const getVideoAnalytics = async (req, res) => {
+    try {
+        const video = await VideoLesson.findById(req.params.id);
+        if (!video) return res.status(404).json({ message: 'Video not found' });
+
+        // Verify ownership
+        if (video.teacherId.toString() !== req.user.id && req.user.role !== 'school_admin' && req.user.role !== 'admin') {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
+        // 1. Get all students in the class assigned to this video
+        const Student = require('../models/Student');
+        const allStudents = await Student.find({
+            classId: video.classLevelId,
+            schoolId: req.user.schoolId._id || req.user.schoolId // Ensure scope
+        }).select('firstName lastName email profilePicture videosWatched studentId');
+
+        const viewed = [];
+        const notViewed = [];
+
+        allStudents.forEach(student => {
+            const watchEntry = student.videosWatched?.find(v => 
+                (v.videoId?._id?.toString() || v.videoId?.toString()) === video._id.toString()
+            );
+
+            const studentInfo = {
+                _id: student._id,
+                name: `${student.firstName} ${student.lastName}`,
+                email: student.email,
+                studentId: student.studentId, // Admission Number
+                profilePicture: student.profilePicture
+            };
+
+            if (watchEntry) {
+                viewed.push({
+                    ...studentInfo,
+                    watchedAt: watchEntry.watchedAt,
+                    watchDuration: watchEntry.watchDuration
+                });
+            } else {
+                notViewed.push(studentInfo);
+            }
+        });
+
+        res.json({
+            videoTitle: video.title,
+            totalStudents: allStudents.length,
+            viewed,
+            notViewed,
+            completionRate: allStudents.length > 0 ? Math.round((viewed.length / allStudents.length) * 100) : 0
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 module.exports = {
     createVideo,
     getVideos,
     getVideoById,
     updateVideo,
     deleteVideo,
-    getVideoStats
+    getVideoStats,
+    getVideoAnalytics
 };

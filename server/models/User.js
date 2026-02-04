@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
     passwordHash: { type: String, required: true },
     role: { 
         type: String, 
-        enum: ['super_admin', 'school_admin', 'teacher', 'student'], 
+        enum: ['super_admin', 'school_admin', 'teacher', 'student', 'parent'], 
         required: true 
     },
     classId: { type: mongoose.Schema.Types.ObjectId, ref: 'ClassLevel' }, // For students

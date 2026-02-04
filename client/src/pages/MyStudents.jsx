@@ -95,7 +95,7 @@ const MyStudents = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs font-semibold border border-blue-100">
-                                                {student.classId?.name || 'Unassigned'}
+                                                {student.classId?.name || 'Unassigned'} {student.arm ? `(${student.arm})` : ''}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 flex items-center gap-2">

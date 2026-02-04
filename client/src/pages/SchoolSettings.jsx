@@ -16,7 +16,7 @@ const SchoolSettings = () => {
     // Form States
     const [profile, setProfile] = useState({ name: '', address: '', contactEmail: '', logoUrl: '' });
     const [branding, setBranding] = useState({ primaryColor: '#16a34a', secondaryColor: '#f59e0b' });
-    const [preferences, setPreferences] = useState({ enableAfterSchoolLearning: true, autoApproveContent: false });
+    const [preferences, setPreferences] = useState({ enableAfterSchoolLearning: true, autoApproveContent: false, defaultStudentPassword: '', defaultTeacherPassword: '' });
     const [notifications, setNotifications] = useState({ email: true, sms: false });
     
     // File Upload State
@@ -39,7 +39,11 @@ const SchoolSettings = () => {
                     logoUrl: data.logoUrl || ''
                 });
                 if(data.branding) setBranding(data.branding);
-                if(data.preferences) setPreferences(data.preferences);
+                if(data.preferences) setPreferences({
+                    ...data.preferences,
+                    defaultStudentPassword: data.defaultStudentPassword || 'student123',
+                    defaultTeacherPassword: data.defaultTeacherPassword || 'teacher123'
+                });
                 if(data.notificationPreferences) setNotifications(data.notificationPreferences);
                 
                 if (data.logoUrl) setLogoPreview(data.logoUrl);
@@ -101,6 +105,9 @@ const SchoolSettings = () => {
 
             // Append Objects as JSON Strings (Backend will parse)
             formData.append('branding', JSON.stringify(branding));
+            formData.append('defaultStudentPassword', preferences.defaultStudentPassword);
+            formData.append('defaultTeacherPassword', preferences.defaultTeacherPassword);
+             
             formData.append('preferences', JSON.stringify(preferences));
             formData.append('notificationPreferences', JSON.stringify(notifications));
 
@@ -263,6 +270,30 @@ const SchoolSettings = () => {
                                 onChange={e => setPreferences({...preferences, autoApproveContent: e.target.checked})} 
                             />
                         </div>
+
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                            <div className="font-bold mb-2">Default Student Password</div>
+                            <div className="text-xs text-gray-500 mb-2">This password will be automatically assigned to all new students.</div>
+                            <input 
+                                type="text" 
+                                className="w-full p-2 border rounded border-gray-300"
+                                value={preferences.defaultStudentPassword}
+                                onChange={e => setPreferences({...preferences, defaultStudentPassword: e.target.value})}
+                                placeholder="e.g. student123"
+                            />
+                        </div>
+
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                            <div className="font-bold mb-2">Default Teacher Password</div>
+                            <div className="text-xs text-gray-500 mb-2">This password will be automatically assigned to all new teachers.</div>
+                            <input 
+                                type="text" 
+                                className="w-full p-2 border rounded border-gray-300"
+                                value={preferences.defaultTeacherPassword}
+                                onChange={e => setPreferences({...preferences, defaultTeacherPassword: e.target.value})}
+                                placeholder="e.g. teacher123"
+                            />
+                        </div>
                     </div>
                 )}
 
@@ -321,52 +352,64 @@ const SchoolSettings = () => {
                         </div>
 
                         <h3 className="font-bold text-gray-700 border-b pb-2 pt-4">Renewal Plans</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                              {/* Basic Plan */}
-                            <div className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
+                            <div className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow flex flex-col">
                                 <h4 className="text-xl font-bold text-gray-800">Basic School</h4>
-                                <div className="text-3xl font-bold text-gray-800 my-4">₦2,000<span className="text-sm text-gray-400 font-normal">/month</span></div>
-                                <ul className="space-y-2 text-sm text-gray-600 mb-6">
-                                    <li className="flex gap-2">✅ Max 200 Students</li>
-                                    <li className="flex gap-2">✅ Max 10 Teachers</li>
-                                    <li className="flex gap-2">✅ AI Lesson Plans</li>
+                                <div className="text-2xl font-bold text-gray-800 my-4">₦50,000<span className="text-sm text-gray-400 font-normal">/term</span></div>
+                                <p className="text-xs text-gray-500 mb-4">For small schools starting digital management</p>
+                                <ul className="space-y-2 text-xs text-gray-600 mb-6 flex-1">
+                                    <li className="flex gap-2">✅ Max 300 Students</li>
+                                    <li className="flex gap-2">✅ Max 40 Staff</li>
+                                    <li className="flex gap-2">✅ Student & Staff Mgmt</li>
+                                    <li className="flex gap-2">✅ Attendance Tracking</li>
+                                    <li className="flex gap-2">✅ Learning Materials</li>
+                                    <li className="flex gap-2">✅ Basic Reports</li>
                                 </ul>
                                 <button 
                                     onClick={() => handleUpgrade('Basic')}
-                                    className="w-full py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                                    className="w-full py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm">
                                     Subscribe / Renew
                                 </button>
                             </div>
 
                              {/* Standard Plan */}
-                            <div className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow relative overflow-hidden">
+                            <div className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow relative overflow-hidden flex flex-col">
                                 <div className="absolute top-0 right-0 bg-primary text-white text-xs px-3 py-1 rounded-bl-lg font-bold">POPULAR</div>
                                 <h4 className="text-xl font-bold text-gray-800">Standard School</h4>
-                                <div className="text-3xl font-bold text-primary my-4">₦5,000<span className="text-sm text-gray-400 font-normal">/month</span></div>
-                                <ul className="space-y-2 text-sm text-gray-600 mb-6">
-                                    <li className="flex gap-2">✅ Max 500 Students</li>
-                                    <li className="flex gap-2">✅ Max 25 Teachers</li>
-                                    <li className="flex gap-2">✅ Video Learning Platform</li>
+                                <div className="text-2xl font-bold text-primary my-4">₦100,000<span className="text-sm text-gray-400 font-normal">/term</span></div>
+                                <p className="text-xs text-gray-500 mb-4">For growing schools needing automation</p>
+                                <ul className="space-y-2 text-xs text-gray-600 mb-6 flex-1">
+                                    <li className="flex gap-2">✅ Max 700 Students</li>
+                                    <li className="flex gap-2">✅ Max 70 Staff</li>
+                                    <li className="flex gap-2">✅ Everything in Basic</li>
+                                    <li className="flex gap-2">✅ CA & Exam Management</li>
+                                    <li className="flex gap-2">✅ Class/Arm Management</li>
+                                    <li className="flex gap-2">✅ Staff-Admin Chat</li>
                                 </ul>
                                 <button 
                                     onClick={() => handleUpgrade('Standard')}
-                                    className="w-full py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium">
+                                    className="w-full py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm">
                                     Subscribe / Renew
                                 </button>
                             </div>
 
                              {/* Premium Plan */}
-                             <div className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
+                             <div className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow flex flex-col">
                                 <h4 className="text-xl font-bold text-gray-800">Premium School</h4>
-                                <div className="text-3xl font-bold text-gray-800 my-4">₦15,000<span className="text-sm text-gray-400 font-normal">/month</span></div>
-                                <ul className="space-y-2 text-sm text-gray-600 mb-6">
-                                    <li className="flex gap-2">✅ Max 2000 Students</li>
-                                    <li className="flex gap-2">✅ Max 100 Teachers</li>
-                                    <li className="flex gap-2">✅ Priority Support</li>
+                                <div className="text-2xl font-bold text-gray-800 my-4">₦200,000<span className="text-sm text-gray-400 font-normal">/term</span></div>
+                                <p className="text-xs text-gray-500 mb-4">For advanced digital transformation</p>
+                                <ul className="space-y-2 text-xs text-gray-600 mb-6 flex-1">
+                                    <li className="flex gap-2">✅ Max 1500 Students</li>
+                                    <li className="flex gap-2">✅ Max 200 Staff</li>
+                                    <li className="flex gap-2">✅ Everything in Standard</li>
+                                    <li className="flex gap-2">✅ AI Marking (WAEC Style)</li>
+                                    <li className="flex gap-2">✅ After School & Quiz</li>
+                                    <li className="flex gap-2">✅ Advanced Analytics</li>
                                 </ul>
                                 <button 
                                     onClick={() => handleUpgrade('Premium')}
-                                    className="w-full py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                                    className="w-full py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm">
                                     Subscribe / Renew
                                 </button>
                             </div>

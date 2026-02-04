@@ -1,5 +1,5 @@
 const Quiz = require('../models/Quiz');
-const QuizSubmission = require('../models/QuizSubmission');
+const Submission = require('../models/Submission');
 const VideoLesson = require('../models/VideoLesson');
 
 // @desc    Create a new quiz
@@ -99,12 +99,13 @@ const submitQuiz = async (req, res) => {
         // Calculate percentage or raw score? Let's do raw for now, or percentage.
         // Let's store raw score
         
-        const submission = await QuizSubmission.create({
+        const submission = await Submission.create({
             schoolId: req.user.schoolId._id || req.user.schoolId,
             studentId: req.user._id,
             quizId: quiz._id,
             answers,
-            score
+            score,
+            passed: true // Placeholder since this route is mainly unused
         });
 
         res.status(201).json(submission);
@@ -126,7 +127,7 @@ const getSubmissions = async (req, res) => {
             return res.status(401).json({ message: 'Not authorized' });
         }
 
-        const submissions = await QuizSubmission.find({ quizId: quiz._id })
+        const submissions = await Submission.find({ quizId: quiz._id })
             .populate('studentId', 'name email');
             
         res.json(submissions);

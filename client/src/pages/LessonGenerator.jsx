@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { BookOpen, Sparkles, Save, Clock, Copy, AlignLeft, List, MonitorPlay } from 'lucide-react';
+import { 
+    BookOpen, Sparkles, Save, Clock, Copy, AlignLeft, List, MonitorPlay, 
+    Loader2 as Loader, FileText, Presentation, ChevronRight, ChevronLeft, CheckCircle, GraduationCap
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import usePageTitle from '../hooks/usePageTitle';
@@ -12,15 +15,26 @@ const LessonGenerator = () => {
 
     // Redirect if not teacher
     if (user && user.role !== 'teacher') {
-        return <div className="p-8 text-center text-red-600 font-bold">Access Restricted: Teachers Only</div>;
+        return (
+            <div className="flex h-screen items-center justify-center bg-gray-50">
+                <div className="text-center p-8 bg-white rounded-xl shadow-lg border border-red-100 max-w-md">
+                   <div className="bg-red-100 p-4 rounded-full inline-flex mb-4">
+                        <AlertCircle className="text-red-500" size={32} />
+                   </div>
+                   <h2 className="text-xl font-bold text-gray-800 mb-2">Access Restricted</h2>
+                   <p className="text-gray-500">Only authorized teachers can access the AI Lesson Generator.</p>
+                </div>
+            </div>
+        );
     }
     
     // Check if we are reusing (duplicating) or editing a lesson
     const passedLesson = location.state?.lesson;
     const mode = location.state?.mode || 'create'; // 'create', 'edit', 'duplicate'
-    
-    // ... helper state ...
     const isEditing = mode === 'edit';
+
+    const [currentStep, setCurrentStep] = useState(1);
+    const [resultTab, setResultTab] = useState('plan'); // 'plan', 'notes', 'slides'
 
     const [formData, setFormData] = useState({
         subject: '',
@@ -45,7 +59,7 @@ const LessonGenerator = () => {
     useEffect(() => {
         // If reusing/editing, populate form
         if (passedLesson) {
-            setFormData({
+             setFormData({
                 subject: passedLesson.subjectId?._id || passedLesson.subjectId,
                 classLevel: passedLesson.classLevelId?._id || passedLesson.classLevelId,
                 term: passedLesson.term,
@@ -57,11 +71,12 @@ const LessonGenerator = () => {
             setGeneratedPlan(passedLesson.content);
             setLessonNotes(passedLesson.lessonNotes || '');
             setSlideOutline(passedLesson.slideOutline || []);
+            // If viewing/editing existing, jump to results
+            if (passedLesson.content) setCurrentStep(3); 
         }
 
         const fetchMeta = async () => {
             try {
-                // If teacher, we should filter. For now fetch all and filter client side if user.subjects exists
                 const [s, c] = await Promise.all([
                     api.get('/academic/subjects'),
                     api.get('/academic/classes')
@@ -72,12 +87,9 @@ const LessonGenerator = () => {
 
                 // Filter for teachers
                 if (user?.role === 'teacher' && user.subjects && user.subjects.length > 0) {
-                     // user.subjects is [{ subjectId, classId, arm }]
-                     // Filter classes
                      const myClassIds = user.subjects.map(sub => sub.classId);
                      allClasses = allClasses.filter(cls => myClassIds.includes(cls._id));
 
-                     // Filter subjects (loose filter: all subjects I teach in ANY class)
                      const mySubjectIds = user.subjects.map(sub => sub.subjectId);
                      allSubjects = allSubjects.filter(sub => mySubjectIds.includes(sub._id));
                 }
@@ -91,16 +103,16 @@ const LessonGenerator = () => {
         fetchMeta();
     }, [user, passedLesson]);
 
-    const handleGenerate = async (e) => {
-        e.preventDefault();
+    const handleGenerate = async () => {
         setLoading(true);
         try {
             const res = await api.post('/lessons/generate', formData);
             setGeneratedPlan(res.data);
             setLessonNotes(res.data.lessonNotes || '');
             setSlideOutline(res.data.slideOutline || []);
+            setCurrentStep(3); // Move to results step
         } catch (error) {
-            alert('Error generating plan');
+            alert(error.response?.data?.message || 'Error generating plan');
         } finally {
             setLoading(false);
         }
@@ -129,192 +141,325 @@ const LessonGenerator = () => {
                 alert('Lesson Created Successfully!');
             }
         } catch (error) {
-            alert('Error saving plan');
+           alert('Error saving plan');
         } finally {
             setSaving(false);
         }
     };
 
+    const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 3));
+    const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+
     return (
-        <div className="max-w-5xl mx-auto">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <Sparkles className="text-secondary" />
-                {isEditing ? 'Edit Lesson Plan' : 'AI Lesson Plan Generator'}
-            </h1>
-
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
-                <form onSubmit={handleGenerate} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Class Level</label>
-                        <select 
-                            className="w-full px-4 py-2 border rounded-lg bg-white outline-none focus:ring-1 focus:ring-primary"
-                            value={formData.classLevel}
-                            onChange={(e) => setFormData({...formData, classLevel: e.target.value})}
-                            required
-                        >
-                            <option value="">Select Class</option>
-                            {classes.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-                        </select>
+        <div className="max-w-6xl mx-auto p-4">
+            
+            {/* Header */}
+            <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
+                        <div className="bg-green-100 p-2 rounded-lg">
+                            <Sparkles className="text-primary" size={24} />
+                        </div>
+                        {isEditing ? 'Edit Lesson Plan' : 'Lesson Generator'}
+                    </h1>
+                    <p className="text-gray-500 mt-2 ml-14">
+                        AI-powered lesson planning for WAEC/NECO curriculum.
+                    </p>
+                </div>
+                
+                {/* Step Indicator */}
+                {!generatedPlan && (
+                    <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm">
+                        <span className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${currentStep >= 1 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'}`}>1</span>
+                        <div className="w-8 h-0.5 bg-gray-200"></div>
+                        <span className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${currentStep >= 2 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'}`}>2</span>
                     </div>
-
-                    <div>
-                         <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                         <select 
-                            className="w-full px-4 py-2 border rounded-lg bg-white outline-none focus:ring-1 focus:ring-primary"
-                            value={formData.subject}
-                            onChange={(e) => setFormData({...formData, subject: e.target.value})}
-                            required
-                        >
-                            <option value="">Select Subject</option>
-                            {subjects.map(s => <option key={s._id} value={s._id}>{s.name} ({s.code})</option>)}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Term</label>
-                        <select 
-                            className="w-full px-4 py-2 border rounded-lg bg-white outline-none focus:ring-1 focus:ring-primary"
-                            value={formData.term}
-                            onChange={(e) => setFormData({...formData, term: e.target.value})}
-                        >
-                            <option>First</option>
-                            <option>Second</option>
-                            <option>Third</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Week</label>
-                         <input 
-                            type="number"
-                            className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-1 focus:ring-primary"
-                            value={formData.week}
-                            onChange={(e) => setFormData({...formData, week: e.target.value})}
-                            required
-                        />
-                    </div>
-
-                    <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Topic</label>
-                         <input 
-                            className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-1 focus:ring-primary"
-                            placeholder="e.g. Introduction to Algebra"
-                            value={formData.topic}
-                            onChange={(e) => setFormData({...formData, topic: e.target.value})}
-                            required
-                        />
-                    </div>
-
-                    <div className="md:col-span-2 flex gap-6">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" className="w-5 h-5 accent-primary" checked={formData.generateNotes} onChange={e => setFormData({...formData, generateNotes: e.target.checked})} />
-                            <span className="text-gray-700 font-medium">Generate Lesson Notes</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" className="w-5 h-5 accent-primary" checked={formData.generateSlides} onChange={e => setFormData({...formData, generateSlides: e.target.checked})} />
-                            <span className="text-gray-700 font-medium">Generate Slide Outline</span>
-                        </label>
-                    </div>
-
-                    <div className="md:col-span-2">
-                        <button 
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-secondary text-white py-3 rounded-lg font-bold hover:bg-yellow-600 transition-colors flex justify-center items-center gap-2"
-                        >
-                            {loading ? <Loader className="animate-spin" /> : <Sparkles size={20} />}
-                            {generatedPlan ? 'Regenerate Content' : 'Generate Lesson Plan'}
-                        </button>
-                    </div>
-                </form>
+                )}
             </div>
 
-            {generatedPlan && (
-                <div className="space-y-8 animate-fade-in">
-                    
-                    {/* Main Lesson Plan */}
-                    <div className="bg-white p-8 rounded-xl shadow border border-gray-100 relative">
-                         <div className="absolute top-6 right-6">
-                            <button 
-                                onClick={handleSave}
-                                disabled={saving}
-                                className="flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-lg hover:bg-green-700 shadow-md transition-all"
-                            >
-                                {saving ? <Loader size={18} className="animate-spin" /> : <Save size={18} />}
-                                {isEditing ? 'Update Lesson' : 'Save to Library'}
-                            </button>
-                        </div>
-
-                        <h2 className="text-2xl font-bold text-gray-800 mb-2">{formData.topic}</h2>
-                        <p className="text-gray-500 mb-8">
-                            {classes.find(c => c._id === formData.classLevel)?.name} • {subjects.find(s => s._id === formData.subject)?.name} • Week {formData.week}
-                        </p>
-
-                        <div className="space-y-6">
-                            <Section title="Objectives" items={generatedPlan.objectives} />
-                            <Section title="Teaching Material" text={generatedPlan.teachingMaterial} />
-                            <Section title="Teacher Activities" items={generatedPlan.teacherActivities} />
-                            <Section title="Student Activities" items={generatedPlan.studentActivities} />
-                            <Section title="Evaluation" items={generatedPlan.evaluation} />
-                        </div>
-                    </div>
-
-                    {/* Lesson Notes */}
-                    {formData.generateNotes && (
-                        <div className="bg-white p-8 rounded-xl shadow border border-gray-100">
-                             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                <FileText className="text-blue-500" /> Lesson Notes
-                            </h3>
-                            <textarea 
-                                className="w-full h-64 p-4 border rounded-lg bg-gray-50 focus:bg-white transition-colors"
-                                value={lessonNotes}
-                                onChange={e => setLessonNotes(e.target.value)}
-                            />
-                        </div>
-                    )}
-
-                    {/* Slides */}
-                    {formData.generateSlides && (
-                        <div className="bg-white p-8 rounded-xl shadow border border-gray-100">
-                             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                <Presentation className="text-orange-500" /> Slide Outline
-                            </h3>
-                            <div className="space-y-2">
-                                {slideOutline.map((slide, i) => (
-                                    <div key={i} className="flex gap-2">
-                                        <span className="font-bold text-gray-400">{i+1}.</span>
-                                        <input 
-                                            className="w-full p-2 border-b border-gray-200 focus:border-primary outline-none"
-                                            value={slide}
-                                            onChange={e => {
-                                                const newSlides = [...slideOutline];
-                                                newSlides[i] = e.target.value;
-                                                setSlideOutline(newSlides);
-                                            }}
-                                        />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                {/* Left Panel: Wizard Form */}
+                {!generatedPlan && (
+                    <div className="lg:col-span-8 lg:col-start-3">
+                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            {/* Step 1: Basics */}
+                            {currentStep === 1 && (
+                                <div className="p-8 animate-fade-in">
+                                    <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                                        <GraduationCap className="text-gray-400" />
+                                        Class & Subject Details
+                                    </h2>
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">Class Level</label>
+                                                <select 
+                                                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-gray-50 focus:bg-white transition-all"
+                                                    value={formData.classLevel}
+                                                    onChange={(e) => setFormData({...formData, classLevel: e.target.value})}
+                                                >
+                                                    <option value="">Select Class</option>
+                                                    {classes.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                                                <select 
+                                                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-gray-50 focus:bg-white transition-all"
+                                                    value={formData.subject}
+                                                    onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                                                >
+                                                    <option value="">Select Subject</option>
+                                                    {subjects.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="flex justify-end pt-4">
+                                            <button 
+                                                onClick={nextStep}
+                                                disabled={!formData.classLevel || !formData.subject}
+                                                className="bg-primary hover:bg-green-700 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                            >
+                                                Next Step <ChevronRight size={18} />
+                                            </button>
+                                        </div>
                                     </div>
-                                ))}
+                                </div>
+                            )}
+
+                            {/* Step 2: Content Details */}
+                            {currentStep === 2 && (
+                                <div className="p-8 animate-fade-in">
+                                    <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                                        <BookOpen className="text-gray-400" />
+                                        Lesson Details
+                                    </h2>
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                             <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">Term</label>
+                                                <select 
+                                                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-gray-50 focus:bg-white transition-all"
+                                                    value={formData.term}
+                                                    onChange={(e) => setFormData({...formData, term: e.target.value})}
+                                                >
+                                                    <option>First</option>
+                                                    <option>Second</option>
+                                                    <option>Third</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">Week</label>
+                                                 <input 
+                                                    type="number"
+                                                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-gray-50 focus:bg-white transition-all"
+                                                    value={formData.week}
+                                                    onChange={(e) => setFormData({...formData, week: e.target.value})}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Topic</label>
+                                            <input 
+                                                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-gray-50 focus:bg-white transition-all"
+                                                placeholder="e.g. Introduction to Quadratic Equations"
+                                                value={formData.topic}
+                                                onChange={(e) => setFormData({...formData, topic: e.target.value})}
+                                            />
+                                        </div>
+
+                                        <div className="bg-green-50 p-4 rounded-xl border border-green-100 flex flex-col md:flex-row gap-6">
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <div className={`w-5 h-5 rounded border flex items-center justify-center ${formData.generateNotes ? 'bg-primary border-primary' : 'bg-white border-gray-300'}`}>
+                                                    {formData.generateNotes && <CheckCircle size={14} className="text-white" />}
+                                                </div>
+                                                <input type="checkbox" className="hidden" checked={formData.generateNotes} onChange={e => setFormData({...formData, generateNotes: e.target.checked})} />
+                                                <span className="text-gray-700 font-medium">Generate Lesson Notes</span>
+                                            </label>
+                                            <label className="flex items-center gap-3 cursor-pointer">
+                                                <div className={`w-5 h-5 rounded border flex items-center justify-center ${formData.generateSlides ? 'bg-primary border-primary' : 'bg-white border-gray-300'}`}>
+                                                    {formData.generateSlides && <CheckCircle size={14} className="text-white" />}
+                                                </div>
+                                                <input type="checkbox" className="hidden" checked={formData.generateSlides} onChange={e => setFormData({...formData, generateSlides: e.target.checked})} />
+                                                <span className="text-gray-700 font-medium">Generate Slide Outline</span>
+                                            </label>
+                                        </div>
+
+                                        <div className="flex justify-between pt-4">
+                                            <button 
+                                                onClick={prevStep}
+                                                className="text-gray-500 hover:text-gray-700 font-bold px-4 py-3 flex items-center gap-2"
+                                            >
+                                                <ChevronLeft size={18} /> Back
+                                            </button>
+                                            <button 
+                                                onClick={handleGenerate}
+                                                disabled={!formData.topic || loading}
+                                                className="bg-primary hover:bg-green-700 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-green-200"
+                                            >
+                                                {loading ? <Loader className="animate-spin" /> : <Sparkles size={18} />}
+                                                Generate Lesson Plan
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                         </div>
+                    </div>
+                )}
+                
+                {/* Result View */}
+                {generatedPlan && (
+                    <div className="lg:col-span-12 space-y-6 animate-fade-in-up">
+                        
+                         {/* Toolbar */}
+                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap gap-4 items-center justify-between sticky top-4 z-10">
+                            <div className="flex items-center gap-4">
+                                <button 
+                                    onClick={() => setGeneratedPlan(null)} // Or go back to edit inputs
+                                    className="text-gray-500 hover:text-gray-700 font-medium flex items-center gap-1 text-sm"
+                                >
+                                    <ChevronLeft size={16} /> New Search
+                                </button>
+                                <div className="h-6 w-px bg-gray-200"></div>
+                                <h3 className="font-bold text-gray-800 hidden md:block">{formData.topic}</h3>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={handleSave}
+                                    disabled={saving}
+                                    className="bg-secondary hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 shadow-sm transition-all text-sm"
+                                >
+                                    {saving ? <Loader size={16} className="animate-spin" /> : <Save size={16} />}
+                                    {isEditing ? 'Update' : 'Save Lesson'}
+                                </button>
                             </div>
                         </div>
-                    )}
 
-                </div>
-            )}
+                        {/* Tabs */}
+                        <div className="flex gap-2 border-b border-gray-200">
+                            <button 
+                                onClick={() => setResultTab('plan')}
+                                className={`px-6 py-3 font-medium text-sm rounded-t-lg transition-colors flex items-center gap-2 ${resultTab === 'plan' ? 'bg-white border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+                            >
+                                <List size={16} />
+                                Lesson Plan
+                            </button>
+                            {formData.generateNotes && (
+                                <button 
+                                    onClick={() => setResultTab('notes')}
+                                    className={`px-6 py-3 font-medium text-sm rounded-t-lg transition-colors flex items-center gap-2 ${resultTab === 'notes' ? 'bg-white border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+                                >
+                                    <FileText size={16} />
+                                    Lesson Notes
+                                </button>
+                            )}
+                            {formData.generateSlides && (
+                                <button 
+                                    onClick={() => setResultTab('slides')}
+                                    className={`px-6 py-3 font-medium text-sm rounded-t-lg transition-colors flex items-center gap-2 ${resultTab === 'slides' ? 'bg-white border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+                                >
+                                    <Presentation size={16} />
+                                    Slides
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Content Area */}
+                        <div className="bg-white rounded-b-2xl rounded-tr-2xl shadow-sm border border-gray-100 min-h-[500px] p-8">
+                            
+                            {resultTab === 'plan' && (
+                                <div className="space-y-8 max-w-4xl mx-auto animate-fade-in">
+                                    <div className="border-b pb-6">
+                                        <h2 className="text-2xl font-bold text-gray-800">{formData.topic}</h2>
+                                        <p className="text-primary font-medium mt-1">
+                                            {classes.find(c => c._id === formData.classLevel)?.name} • Week {formData.week} • {formData.term} Term
+                                        </p>
+                                    </div>
+                                    
+                                    <Section title="Learning Objectives" items={generatedPlan.objectives} icon={<GraduationCap className="text-blue-500"/>} />
+                                    <Section title="Teaching Resources" text={generatedPlan.teachingMaterial} icon={<BookOpen className="text-orange-500"/>} />
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <Section title="Teacher Activities" items={generatedPlan.teacherActivities} icon={<Sparkles className="text-primary"/>} />
+                                        <Section title="Student Activities" items={generatedPlan.studentActivities} icon={<Clock className="text-green-500"/>} />
+                                    </div>
+                                    
+                                    <Section title="Evaluation & Assessment" items={generatedPlan.evaluation} icon={<CheckCircle className="text-red-500"/>} />
+                                </div>
+                            )}
+
+                            {resultTab === 'notes' && (
+                                <div className="max-w-4xl mx-auto animate-fade-in">
+                                    <div className="flex justify-between items-center mb-4">
+                                         <h3 className="text-lg font-bold text-gray-700">Detailed Lesson Notes</h3>
+                                         <button className="text-primary text-sm font-bold flex items-center gap-1 hover:underline">
+                                             <Copy size={14} /> Copy to Clipboard
+                                         </button>
+                                    </div>
+                                    <textarea 
+                                        className="w-full h-[600px] p-6 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-primary outline-none leading-relaxed text-gray-700 resize-none font-mono text-sm"
+                                        value={lessonNotes}
+                                        onChange={e => setLessonNotes(e.target.value)}
+                                    />
+                                </div>
+                            )}
+
+                            {resultTab === 'slides' && (
+                                <div className="max-w-3xl mx-auto animate-fade-in">
+                                    <h3 className="text-lg font-bold text-gray-700 mb-6">Presentation Outline</h3>
+                                    <div className="space-y-4">
+                                         {slideOutline.map((slide, i) => (
+                                            <div key={i} className="flex gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 group hover:border-green-200 transition-all">
+                                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 text-primary flex items-center justify-center font-bold text-sm">
+                                                    {i + 1}
+                                                </div>
+                                                <div className="flex-grow">
+                                                     <input 
+                                                        className="w-full bg-transparent border-none outline-none font-medium text-gray-800 placeholder-gray-400 group-hover:text-primary"
+                                                        value={slide}
+                                                        onChange={e => {
+                                                            const newSlides = [...slideOutline];
+                                                            newSlides[i] = e.target.value;
+                                                            setSlideOutline(newSlides);
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                         ))}
+                                    </div>
+                                </div>
+                            )}
+
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
 
-const Section = ({ title, items, text }) => (
-    <div className="border-b border-gray-100 pb-4 last:border-0">
-        <h3 className="text-lg font-bold text-gray-800 mb-2">{title}</h3>
-        {text && <p className="text-gray-700 leading-relaxed">{text}</p>}
+const Section = ({ title, items, text, icon }) => (
+    <div className="mb-8 last:mb-0">
+        <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+            {icon} {title}
+        </h3>
+        {text && <p className="text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-lg border border-gray-100">{text}</p>}
         {items && (
-            <ul className="list-disc pl-5 space-y-1 text-gray-700">
-                {items.map((item, i) => <li key={i}>{item}</li>)}
+            <ul className="space-y-3">
+                {items.map((item, i) => (
+                    <li key={i} className="flex items-start gap-3 text-gray-700">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-2 flex-shrink-0"></div>
+                        <span className="leading-relaxed">{item}</span>
+                    </li>
+                ))}
             </ul>
         )}
     </div>
 );
 
 export default LessonGenerator;
-

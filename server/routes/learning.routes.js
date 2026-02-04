@@ -9,13 +9,16 @@ const {
     getMySubmissions,
     getStudentSubjects,
     markVideoComplete,
-    getLearningHistory
+    getLearningHistory,
+    incrementView
 } = require('../controllers/learning.controller');
 const { protect } = require('../middleware/auth.middleware');
 
 router.route('/videos')
     .post(protect, createVideo)
     .get(protect, getVideos);
+
+router.post('/videos/:id/view', protect, incrementView);
 
 router.post('/quizzes', protect, createQuiz);
 router.get('/quizzes/:videoId', protect, getQuizByVideoId);

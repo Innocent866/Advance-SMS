@@ -1,51 +1,99 @@
 const School = require('../models/School');
+const Student = require('../models/Student');
+const Teacher = require('../models/Teacher');
+const subscriptionPlans = require('../config/subscriptionPlans');
+
+// Check if school has access to a specific feature
+const checkFeatureAccess = (featureName) => {
+    return async (req, res, next) => {
+        try {
+            const userSchoolId = req.user.schoolId._id || req.user.schoolId;
+            const school = await School.findById(userSchoolId);
+
+            if (!school) {
+                return res.status(404).json({ message: 'School not found' });
+            }
+
+            const currentPlan = school.subscription.plan || 'Free';
+            const planConfig = subscriptionPlans[currentPlan];
+
+            if (!planConfig || !planConfig.features.includes(featureName)) {
+                return res.status(403).json({ 
+                    message: `Upgrade Required: The '${featureName}' feature is not available on your current (${currentPlan}) plan.` 
+                });
+            }
+
+            next();
+        } catch (error) {
+            console.error('Subscription Check Error:', error);
+            res.status(500).json({ message: 'Server error checking subscription' });
+        }
+    };
+};
+
+// Check if school has reached its resource limit (Students/Teachers)
+const checkResourceLimit = (resourceType) => {
+    return async (req, res, next) => {
+        try {
+            const userSchoolId = req.user.schoolId._id || req.user.schoolId;
+            const school = await School.findById(userSchoolId);
+
+            if (!school) {
+                return res.status(404).json({ message: 'School not found' });
+            }
+
+            const currentPlan = school.subscription.plan || 'Free';
+            // Use stored limit in DB (preferred) or fallback to config
+            const maxLimit = school.subscription[`max${resourceType === 'Teacher' ? 'Teachers' : 'Students'}`] 
+                             || subscriptionPlans[currentPlan][`max${resourceType === 'Teacher' ? 'Staff' : 'Students'}`];
+
+            let currentCount = 0;
+            if (resourceType === 'Student') {
+                currentCount = await Student.countDocuments({ schoolId: userSchoolId });
+            } else if (resourceType === 'Teacher') {
+                currentCount = await Teacher.countDocuments({ schoolId: userSchoolId });
+            }
+
+            if (currentCount >= maxLimit) {
+                 return res.status(403).json({ 
+                    message: `Limit Reached: You have reached the maximum number of ${resourceType}s (${maxLimit}) for your ${currentPlan} plan. Please upgrade to add more.` 
+                });
+            }
+
+            next();
+        } catch (error) {
+             console.error('Limit Check Error:', error);
+            res.status(500).json({ message: 'Server error checking limits' });
+        }
+    };
+};
 
 const checkSubscription = async (req, res, next) => {
     try {
-        // Assume req.user is set by auth middleware
-        if (!req.user || !req.user.schoolId) {
-            return res.status(401).json({ message: 'Authentication required' });
-        }
-
-        // Allow Admins to bypass? No, strict check for features.
-        // But Admins need to access Settings/Billing even if expired.
-        // This middleware should be applied to specific routes (AI, Videos, etc.), not Global.
-
-        const school = await School.findById(req.user.schoolId);
+        const userSchoolId = req.user.schoolId._id || req.user.schoolId;
+        const school = await School.findById(userSchoolId);
 
         if (!school) {
             return res.status(404).json({ message: 'School not found' });
         }
 
-        // Check Status
-        const sub = school.subscription || { status: 'active', plan: 'Free' }; // Fallback for legacy/free
-        
-        if (sub.status !== 'active') {
-             return res.status(403).json({ 
-                 message: 'Subscription Inactive. Please contact your school administrator to renew.',
-                 reason: 'inactive_subscription'
-             });
+        // Check if subscription is active or within grace period
+        // For now, we assume if a plan exists, it's valid, unless status is strictly 'cancelled' or 'expired'
+        // You might want to add more strict checks here based on your 'status' field in subscription
+        if (school.subscription.status === 'expired' || school.subscription.status === 'cancelled') {
+             return res.status(403).json({ message: 'Subscription is not active. Please renew your plan.' });
         }
 
-        // Check Expiry (if not 'Free' perhaps, but Free logic is handled by status='active' usually)
-        // If Plan is NOT Free and date is passed
-        if (sub.plan !== 'Free' && sub.expiryDate) {
-            const now = new Date();
-            if (now > sub.expiryDate) {
-                 return res.status(403).json({ 
-                     message: 'Subscription Expired. Please renew to access this feature.',
-                     reason: 'expired_subscription' 
-                 });
-            }
-        }
-
-        req.school = school; // Pass school down
+        req.school = school;
         next();
-
     } catch (error) {
         console.error('Subscription Check Error:', error);
-        res.status(500).json({ message: 'Server Error during Subscription Check' });
+        res.status(500).json({ message: 'Server error checking subscription' });
     }
 };
 
-module.exports = { checkSubscription };
+module.exports = {
+    checkFeatureAccess,
+    checkResourceLimit,
+    checkSubscription
+};

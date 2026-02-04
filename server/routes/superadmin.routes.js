@@ -15,7 +15,7 @@ const superAdminStrict = (req, res, next) => {
 
 const { 
     getSchools, verifySchool, getPlatformStats, getAllPayments,
-    deleteSchool, updateSchoolSubscription, createSchool
+    deleteSchool, updateSchoolSubscription, createSchool, updateSchoolDetails
 } = require('../controllers/superadmin.controller');
 
 router.get('/schools', protect, superAdminStrict, getSchools);
@@ -23,6 +23,7 @@ router.post('/schools', protect, superAdminStrict, createSchool);
 router.put('/verify-school/:id', protect, superAdminStrict, verifySchool);
 router.delete('/schools/:id', protect, superAdminStrict, deleteSchool);
 router.put('/schools/:id/subscription', protect, superAdminStrict, updateSchoolSubscription);
+router.put('/schools/:id/details', protect, superAdminStrict, updateSchoolDetails);
 
 router.get('/stats', protect, superAdminStrict, getPlatformStats);
 router.get('/payments', protect, superAdminStrict, getAllPayments);

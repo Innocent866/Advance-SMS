@@ -22,6 +22,12 @@ const StudentVideos = () => {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        if (selectedVideo?._id) {
+            api.post(`/learning/videos/${selectedVideo._id}/view`).catch(err => console.error('Failed to count view', err));
+        }
+    }, [selectedVideo?._id]);
+
     const fetchData = async () => {
         try {
             const [videosRes, subjectsRes, historyRes] = await Promise.all([
@@ -85,6 +91,7 @@ const StudentVideos = () => {
         const isLocalVideo = selectedVideo.videoUrl?.startsWith('/uploads');
         const videoSrc = getEmbedUrl(selectedVideo.videoUrl);
         const isCompleted = completedVideoIds.has(selectedVideo._id);
+
 
         return (
             <div className="max-w-6xl mx-auto px-4 py-8">

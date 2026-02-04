@@ -6,7 +6,7 @@ const submissionSchema = new mongoose.Schema({
     quizId: { type: mongoose.Schema.Types.ObjectId, ref: 'Quiz', required: true },
     answers: [{
         questionIndex: { type: Number, required: true },
-        selectedOptionIndex: { type: Number, required: true },
+        answer: { type: String, required: true },
         isCorrect: { type: Boolean, required: true }
     }],
     score: { type: Number, required: true },

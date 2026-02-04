@@ -58,6 +58,13 @@ const TeacherDashboard = () => {
                     color="bg-orange-500" 
                     to="/teacher-profile" 
                 />
+                <StatCard 
+                    label="Exam Marking" 
+                    value="AI Assistant" 
+                    icon={CheckCircle} 
+                    color="bg-indigo-500" 
+                    to="/teacher/ai-marking" 
+                />
             </div>
 
             {/* Recent Activity / Quick Actions Container */}
@@ -79,6 +86,13 @@ const TeacherDashboard = () => {
                                 Upload New Video Lesson
                             </span>
                             <span className="text-xs font-bold text-purple-600">Upload</span>
+                        </Link>
+                        <Link to="/teacher/ai-marking" className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                            <span className="flex items-center gap-3 text-gray-700">
+                                <CheckCircle size={18} className="text-indigo-500" />
+                                Grade Exams with AI
+                            </span>
+                            <span className="text-xs font-bold text-indigo-600">Grade</span>
                         </Link>
                     </div>
                 </div>

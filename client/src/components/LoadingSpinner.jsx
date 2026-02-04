@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext';
-import logo from '../assets/efba533e-777e-442e-8343-9c94e7443783-removebg-preview.png'
+import logo from '../assets/logo.png';
 
 const LoadingSpinner = () => {
     const { user } = useAuth();

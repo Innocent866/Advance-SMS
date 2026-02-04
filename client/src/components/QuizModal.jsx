@@ -79,7 +79,7 @@ const QuizModal = ({ videoId, onClose }) => {
                             {quiz.questions.map((q, qIndex) => (
                                 <div key={qIndex} className="bg-gray-50 p-4 rounded-lg">
                                     <p className="font-medium text-gray-800 mb-3">
-                                        {qIndex + 1}. {q.questionText}
+                                        {qIndex + 1}. {q.text}
                                         {q.type === 'text' && <span className="text-xs text-gray-400 ml-2">(Short Answer)</span>}
                                     </p>
                                     

@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'https://gt-schoolhub.onrender.com/api', // Uses env var or fallback
+    baseURL: import.meta.env.VITE_API_URL || 'https://gt-schoolhub.onrender.com/api',
+    // Uses env var or fallback
     // Do NOT set Content-Type here; let Axios set it automatically (json or multipart)
 });
 
@@ -17,7 +18,17 @@ api.interceptors.request.use(
         }
         return config;
     },
-    (error) => Promise.reject(error)
+    (error) => {
+        const message = error.response?.data?.message || 'Something went wrong';
+        
+        // Dispatch global event for NotificationContext to pick up
+        const event = new CustomEvent('notification', { 
+            detail: { message, type: 'error' } 
+        });
+        window.dispatchEvent(event);
+
+        return Promise.reject(error);
+    }
 );
 
 export default api;

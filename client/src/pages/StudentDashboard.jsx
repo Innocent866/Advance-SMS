@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext';
-import { BookOpen, Video, CheckCircle, Clock, User, Trophy, PlayCircle } from 'lucide-react';
+import { BookOpen, Video, CheckCircle, Clock, User, Trophy, PlayCircle, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import usePageTitle from '../hooks/usePageTitle';
 
@@ -17,10 +17,30 @@ const StatCard = ({ label, value, icon: Icon, color, to }) => (
     </Link>
 );
 
+import { useState, useEffect } from 'react';
+import api from '../utils/api';
+import AddParentModal from '../components/AddParentModal';
+
+// ... StatCard ...
+
 const StudentDashboard = () => {
     usePageTitle('Student Dashboard');
     const { user } = useAuth();
-    // In a real app, we would fetch student specific stats here (e.g. % completed, pending tasks)
+    const [studentData, setStudentData] = useState(null);
+    const [isParentModalOpen, setIsParentModalOpen] = useState(false);
+
+    const fetchStudentProfile = async () => {
+        try {
+            const res = await api.get('/students/me');
+            setStudentData(res.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    useEffect(() => {
+        fetchStudentProfile();
+    }, []);
 
     return (
         <div>
@@ -60,6 +80,46 @@ const StudentDashboard = () => {
                     to="/student-profile" 
                 />
             </div>
+
+            {/* Parent Access Section */}
+            <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-6 text-white mb-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                    <div className="bg-white/10 p-4 rounded-full">
+                        <UserPlus size={32} className="text-white" />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-bold">Parent Access</h3>
+                        <p className="text-gray-300 max-w-lg">
+                            {studentData?.parentName 
+                                ? `Connected to ${studentData.parentName}` 
+                                : "Link a parent account to allow them to view your results and pay fees."}
+                        </p>
+                    </div>
+                </div>
+                <div>
+                   {studentData?.parentName ? (
+                        <div className="flex items-center gap-2 bg-green-500/20 text-green-300 px-4 py-2 rounded-lg font-medium border border-green-500/30">
+                            <CheckCircle size={20} />
+                            <span>Connected</span>
+                        </div>
+                   ) : (
+                        <button 
+                            onClick={() => setIsParentModalOpen(true)}
+                            className="bg-white text-gray-900 px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition-colors flex items-center gap-2"
+                        >
+                            <UserPlus size={20} />
+                            <span>Add Parent</span>
+                        </button>
+                   )}
+                </div>
+            </div>
+
+            <AddParentModal 
+                isOpen={isParentModalOpen} 
+                onClose={() => setIsParentModalOpen(false)} 
+                onSuccess={fetchStudentProfile}
+                studentId={studentData?._id}
+            />
 
             {/* Learning Path / Activity Area */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

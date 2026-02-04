@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import { User, BookOpen, GraduationCap, Mail, School } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
+import Loader from '../components/Loader';
 
 const StudentProfile = () => {
     usePageTitle('My Profile');
@@ -26,52 +27,74 @@ const StudentProfile = () => {
         }
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <Loader type="spinner" />;
 
     return (
         <div className="max-w-4xl mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-3">
-                <User className="text-primary" size={32} />
-                My Profile
-            </h1>
+            {/* Header Removed to use Cover Overlap Style */}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Cover Background */}
+            <div className="relative mb-20 rounded-b-3xl -mx-4 -mt-8 md:-mt-8 md:-mx-4">
+                <div className="h-48 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-b-3xl shadow-sm"></div>
+                
+                {/* Profile Header Overlap */}
+                <div className="absolute -bottom-16 left-0 right-0 px-4 md:px-8 flex flex-col md:flex-row items-end md:items-end gap-6">
+                    {/* Avatar */}
+                    <div className="relative">
+                        <div className="w-32 h-32 rounded-full border-4 border-white shadow-md overflow-hidden bg-white">
+                             {profile?.profilePicture ? (
+                                <img 
+                                    src={profile.profilePicture} 
+                                    alt="Profile" 
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
+                                    <User size={64} />
+                                </div>
+                            )}
+                        </div>
+                        <span className="absolute bottom-2 right-2 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></span>
+                    </div>
+
+                    {/* Name & Basic Info */}
+                    <div className="mb-2 md:mb-4 flex-1">
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 drop-shadow-sm md:text-white md:drop-shadow-md">
+                            {profile?.firstName || user.name} {profile?.lastName}
+                        </h1>
+                        <p className="text-gray-600 font-medium md:text-white/90 md:font-normal">
+                             {profile?.studentId || 'STUDENT'} • {profile?.classId?.name || 'Class N/A'}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
                 {/* Personal Information Card */}
                 <div className="md:col-span-1">
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        {profile?.profilePicture ? (
-                            <img 
-                                src={profile.profilePicture} 
-                                alt="Profile" 
-                                className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-gray-100"
-                            />
-                        ) : (
-                            <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center text-gray-400">
-                                <User size={48} />
-                            </div>
-                        )}
-                        <h2 className="text-xl font-bold text-center text-gray-900">{profile?.firstName || user.name} {profile?.lastName}</h2>
-                        <div className="text-center mb-6">
-                            <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
-                                {profile?.studentId || 'STUDENT'}
-                            </span>
-                        </div>
-
+                        <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Personal Details</h2>
                         <div className="space-y-4">
                              <div className="flex items-center gap-3 text-gray-600">
                                 <Mail size={18} className="text-primary" />
-                                <span className="text-sm">{profile?.email || user.email}</span>
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-gray-400 uppercase">Email</span>
+                                    <span className="text-sm font-medium">{profile?.email || user.email}</span>
+                                </div>
                              </div>
                              <div className="flex items-center gap-3 text-gray-600">
                                 <GraduationCap size={18} className="text-primary" />
                                 <div>
-                                    <p className="text-sm font-bold text-gray-800">{profile?.classId?.name || user.classId?.name || 'Not Assigned'}</p>
-                                    <p className="text-xs text-gray-400">Class Level: {profile?.level || 'N/A'}</p>
+                                    <span className="text-xs text-gray-400 uppercase block">Class & Level</span>
+                                    <span className="text-sm font-medium">{profile?.classId?.name || 'Unassigned'} {profile?.arm ? `(${profile.arm})` : ''} - {profile?.level || 'N/A'}</span>
                                 </div>
                              </div>
                              <div className="flex items-center gap-3 text-gray-600">
                                 <School size={18} className="text-primary" />
-                                <span className="text-sm capitalize">{profile?.gender || 'Student'}</span>
+                                <div>
+                                    <span className="text-xs text-gray-400 uppercase block">Gender</span>
+                                    <span className="text-sm font-medium capitalize">{profile?.gender || 'Student'}</span>
+                                </div>
                              </div>
                         </div>
                     </div>

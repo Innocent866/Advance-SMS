@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import usePageTitle from '../hooks/usePageTitle';
-import { Video, Play, Eye, CheckCircle, Trash2, Loader, Upload } from 'lucide-react';
+import { Video, Play, Eye, CheckCircle, Trash2, Loader, Upload, Users, XCircle } from 'lucide-react';
 import QuizManager from '../components/QuizManager';
 
 const VideoManager = () => {
@@ -32,6 +32,11 @@ const VideoManager = () => {
     const [videoFile, setVideoFile] = useState(null);
     const [selectedVideo, setSelectedVideo] = useState(null);
     const [managingQuizVideo, setManagingQuizVideo] = useState(null);
+
+    // Analytics State
+    const [viewingAnalytics, setViewingAnalytics] = useState(null); // Video ID being viewed
+    const [analyticsData, setAnalyticsData] = useState(null);
+    const [loadingAnalytics, setLoadingAnalytics] = useState(false);
 
     useEffect(() => {
         if(user) {
@@ -73,6 +78,21 @@ const VideoManager = () => {
         } catch (error) {
             console.error(error);
             setLoading(false);
+        }
+    };
+
+    const fetchAnalytics = async (videoId) => {
+        setViewingAnalytics(videoId);
+        setLoadingAnalytics(true);
+        try {
+            const res = await api.get(`/videos/${videoId}/analytics`);
+            setAnalyticsData(res.data);
+        } catch (error) {
+            console.error(error);
+            alert('Failed to load analytics');
+            setViewingAnalytics(null);
+        } finally {
+            setLoadingAnalytics(false);
         }
     };
 
@@ -135,8 +155,6 @@ const VideoManager = () => {
     };
 
     if (loading) return <div>Loading...</div>;
-
-
 
     return (
         <div className="max-w-6xl mx-auto relative px-4 py-6">
@@ -213,6 +231,103 @@ const VideoManager = () => {
                                 </div>
                             )}
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Analytics Modal */}
+            {viewingAnalytics && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => { setViewingAnalytics(null); setAnalyticsData(null); }}>
+                    <div className="bg-white rounded-2xl overflow-hidden w-full max-w-2xl shadow-2xl h-[600px] flex flex-col" onClick={e => e.stopPropagation()}>
+                        <div className="p-6 border-b flex justify-between items-center bg-gray-50">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                    <Users className="text-primary" size={24} />
+                                    Video Analytics
+                                </h2>
+                                <p className="text-sm text-gray-500 mt-1">
+                                    {loadingAnalytics ? 'Loading...' : `"${analyticsData?.videoTitle}"`}
+                                </p>
+                            </div>
+                            <button onClick={() => { setViewingAnalytics(null); setAnalyticsData(null); }} className="text-gray-400 hover:text-gray-600">
+                                <XCircle size={24} />
+                            </button>
+                        </div>
+
+                        {loadingAnalytics ? (
+                            <div className="flex-1 flex items-center justify-center">
+                                <Loader className="animate-spin text-primary" size={32} />
+                            </div>
+                        ) : analyticsData ? (
+                            <div className="flex-1 overflow-hidden flex flex-col p-6">
+                                {/* Stats Cards */}
+                                <div className="grid grid-cols-2 gap-4 mb-6">
+                                    <div className="bg-green-50 p-4 rounded-xl border border-green-100">
+                                        <p className="text-xs font-bold text-green-600 uppercase">Completion Rate</p>
+                                        <p className="text-3xl font-bold text-green-700">{analyticsData.completionRate}%</p>
+                                        <p className="text-xs text-green-800 mt-1">{analyticsData.viewed.length} viewed / {analyticsData.totalStudents} assigned</p>
+                                    </div>
+                                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                        <p className="text-xs font-bold text-blue-600 uppercase">Total Students</p>
+                                        <p className="text-3xl font-bold text-blue-700">{analyticsData.totalStudents}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                                    {/* Viewed List */}
+                                    <div className="mb-6">
+                                        <h3 className="text-sm font-bold text-gray-700 uppercase mb-3 flex items-center gap-2 sticky top-0 bg-white py-2">
+                                            <CheckCircle size={16} className="text-green-500" />
+                                            Watched ({analyticsData.viewed.length})
+                                        </h3>
+                                        <div className="space-y-2">
+                                            {analyticsData.viewed.map(student => (
+                                                <div key={student._id} className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50">
+                                                    {student.profilePicture ? (
+                                                        <img src={student.profilePicture} className="w-8 h-8 rounded-full object-cover" alt="" />
+                                                    ) : (
+                                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                                                            {student.name.charAt(0)}
+                                                        </div>
+                                                    )}
+                                                    <div className="flex-1">
+                                                        <p className="text-sm font-bold text-gray-800">{student.name}</p>
+                                                        <p className="text-xs text-gray-500">{student.studentId} • {new Date(student.watchedAt).toLocaleDateString()}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {analyticsData.viewed.length === 0 && <p className="text-sm text-gray-400 italic">No views yet.</p>}
+                                        </div>
+                                    </div>
+
+                                    {/* Not Viewed List */}
+                                    <div>
+                                        <h3 className="text-sm font-bold text-gray-700 uppercase mb-3 flex items-center gap-2 sticky top-0 bg-white py-2">
+                                            <Eye size={16} className="text-gray-400" />
+                                            Not Watched ({analyticsData.notViewed.length})
+                                        </h3>
+                                        <div className="space-y-2">
+                                            {analyticsData.notViewed.map(student => (
+                                                <div key={student._id} className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 opacity-60">
+                                                    {student.profilePicture ? (
+                                                        <img src={student.profilePicture} className="w-8 h-8 rounded-full object-cover grayscale" alt="" />
+                                                    ) : (
+                                                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 font-bold text-xs">
+                                                            {student.name.charAt(0)}
+                                                        </div>
+                                                    )}
+                                                    <div className="flex-1">
+                                                        <p className="text-sm font-bold text-gray-800">{student.name}</p>
+                                                        <p className="text-xs text-gray-500">{student.studentId}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {analyticsData.notViewed.length === 0 && <p className="text-sm text-green-500 italic">Everyone has watched! 🎉</p>}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : null}
                     </div>
                 </div>
             )}
@@ -366,9 +481,13 @@ const VideoManager = () => {
                                 
                                 <div className="flex justify-between items-center border-t border-gray-100 pt-4" onClick={e => e.stopPropagation()}>
                                     <div className="flex gap-4 text-sm text-gray-500">
-                                        <div className="flex items-center gap-1" title="Views">
+                                        <button 
+                                            className="flex items-center gap-1 hover:text-primary transition-colors" 
+                                            title="View Analytics"
+                                            onClick={(e) => { e.stopPropagation(); fetchAnalytics(video._id); }}
+                                        >
                                             <Eye size={16} /> {video.views}
-                                        </div>
+                                        </button>
                                     </div>
                                     
                                     <div className="flex gap-2">

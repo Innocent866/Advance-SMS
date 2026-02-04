@@ -1,6 +1,7 @@
 const VideoLesson = require('../models/VideoLesson');
 const Quiz = require('../models/Quiz');
 const Submission = require('../models/Submission');
+const Student = require('../models/Student');
 
 // --- Video Lessons ---
 
@@ -91,6 +92,8 @@ const getStudentSubjects = async (req, res) => {
 const createQuiz = async (req, res) => {
     try {
         const quiz = await Quiz.create({
+            schoolId: req.user.schoolId._id || req.user.schoolId,
+            teacherId: req.user._id,
             ...req.body
         });
         res.status(201).json(quiz);
@@ -105,7 +108,7 @@ const createQuiz = async (req, res) => {
 // @access  Private
 const getQuizByVideoId = async (req, res) => {
     try {
-        const quiz = await Quiz.findOne({ videoLessonId: req.params.videoId });
+        const quiz = await Quiz.findOne({ videoId: req.params.videoId });
         if (!quiz) {
             return res.status(404).json({ message: 'Quiz not found' });
         }
@@ -146,7 +149,8 @@ const submitQuiz = async (req, res) => {
             } else {
                 // Objective
                 submittedAnswer = question.options[ans.selectedOptionIndex]; // Store the text value
-                isCorrect = question.correctOptionIndex === ans.selectedOptionIndex;
+                // Fix: Compare the text value with the stored correctAnswer string
+                isCorrect = submittedAnswer === question.correctAnswer;
             }
 
             if (isCorrect) score += (100 / quiz.questions.length);
@@ -168,6 +172,19 @@ const submitQuiz = async (req, res) => {
             score,
             passed
         });
+
+        // SYNC: Update Student Profile
+        const student = await Student.findOne({ userId: req.user._id });
+        if (student) {
+            const existingTaskIndex = student.tasksCompleted.findIndex(t => t.taskId.toString() === quizId);
+            if (existingTaskIndex > -1) {
+                student.tasksCompleted[existingTaskIndex].score = score;
+                student.tasksCompleted[existingTaskIndex].submittedAt = Date.now();
+            } else {
+                student.tasksCompleted.push({ taskId: quizId, score, submittedAt: Date.now() });
+            }
+            await student.save();
+        }
 
         res.status(201).json(submission);
 
@@ -208,6 +225,19 @@ const markVideoComplete = async (req, res) => {
             { completed: true, watchedAt: Date.now() },
             { upsert: true, new: true }
         );
+
+        // SYNC: Update Student Profile
+        await Student.updateOne(
+            { userId: req.user._id, 'videosWatched.videoId': { $ne: req.params.videoId } },
+            { 
+                $push: {  
+                    videosWatched: { 
+                        videoId: req.params.videoId, 
+                        watchedAt: Date.now() 
+                    } 
+                } 
+            }
+        );
         res.json(progress);
     } catch (error) {
         console.error(error);
@@ -246,6 +276,26 @@ const getLearningHistory = async (req, res) => {
     }
 };
 
+// @desc    Increment Video View
+// @route   POST /api/learning/videos/:id/view
+// @access  Private (Student)
+const incrementView = async (req, res) => {
+    try {
+        const video = await VideoLesson.findByIdAndUpdate(
+            req.params.id,
+            { $inc: { views: 1 } },
+            { new: true }
+        );
+        
+        if (!video) return res.status(404).json({ message: 'Video not found' });
+        
+        res.json({ views: video.views });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 module.exports = {
     createVideo,
     getVideos,
@@ -255,5 +305,6 @@ module.exports = {
     getMySubmissions,
     getStudentSubjects,
     markVideoComplete,
-    getLearningHistory
+    getLearningHistory,
+    incrementView
 };

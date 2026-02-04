@@ -136,7 +136,20 @@ const updateSchoolSubscription = async (req, res) => {
         
         if (!school) return res.status(404).json({ message: 'School not found' });
 
-        if (plan) school.subscription.plan = plan;
+        // Update Plan & Sync Limits
+        if (plan) {
+            school.subscription.plan = plan;
+            
+            // Sync Limits from Config
+            const plans = require('../config/subscriptionPlans'); // Or import at top
+            const planConfig = plans[plan];
+            
+            if (planConfig) {
+                school.subscription.maxStudents = planConfig.maxStudents;
+                school.subscription.maxTeachers = planConfig.maxStaff; // Note: config uses 'maxStaff', schema uses 'maxTeachers'
+            }
+        }
+
         if (status) school.subscription.status = status;
         if (expiryDate) school.subscription.expiryDate = expiryDate;
 
@@ -201,6 +214,29 @@ const createSchool = async (req, res) => {
     }
 };
 
+// @desc    Update School Details (Name, Contact)
+// @route   PUT /api/superadmin/schools/:id/details
+// @access  Private (Super Admin)
+const updateSchoolDetails = async (req, res) => {
+    try {
+        const { name, contactEmail } = req.body;
+        const schoolId = req.params.id;
+
+        const school = await School.findById(schoolId);
+        if (!school) return res.status(404).json({ message: 'School not found' });
+
+        if (name) school.name = name;
+        if (contactEmail) school.contactEmail = contactEmail;
+
+        await school.save();
+
+        res.json({ message: 'School details updated successfully', school });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 module.exports = {
     getSchools,
     verifySchool,
@@ -208,5 +244,6 @@ module.exports = {
     getAllPayments,
     deleteSchool,
     updateSchoolSubscription,
-    createSchool
+    createSchool,
+    updateSchoolDetails
 };

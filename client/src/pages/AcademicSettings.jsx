@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { Plus, Trash2, CheckCircle, Layers, Calendar, Book, User } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
@@ -47,6 +48,7 @@ const ClassesManager = () => {
     const [form, setForm] = useState({ name: '', category: 'JSS' });
     const [armForm, setArmForm] = useState({ classId: '', name: '' });
     const [expandedClass, setExpandedClass] = useState(null);
+    const [selectedArm, setSelectedArm] = useState(null); // null = General, otherwise armId
 
     useEffect(() => { fetch(); fetchSubjects(); }, []);
     const fetch = async () => { const res = await api.get('/academic/classes'); setClasses(res.data); };
@@ -67,7 +69,7 @@ const ClassesManager = () => {
     };
 
     const toggleSubject = async (classId, subjectId) => {
-        await api.post('/academic/classes/subjects', { classId, subjectId });
+        await api.post('/academic/classes/subjects', { classId, subjectId, armId: selectedArm });
         fetch(); // Refresh to see update
     };
 
@@ -134,20 +136,42 @@ const ClassesManager = () => {
                         
                         {expandedClass === c._id && (
                             <div className="p-4 bg-white border-t border-gray-100">
-                                <h4 className="text-sm font-bold mb-2">Assign Subjects</h4>
+                                <div className="flex justify-between items-center mb-4">
+                                     <h4 className="text-sm font-bold">Assign Subjects</h4>
+                                     <select 
+                                        className="text-sm border rounded p-1"
+                                        value={selectedArm || ''}
+                                        onChange={e => setSelectedArm(e.target.value || null)}
+                                     >
+                                        <option value="">General (All Arms)</option>
+                                        {c.arms.map(a => <option key={a._id} value={a._id}>Arm {a.name} Only</option>)}
+                                     </select>
+                                </div>
+                                
                                 <div className="grid grid-cols-2 gap-2">
                                     {subjects.map(s => {
-                                        const isAssigned = c.subjects?.some(sub => sub._id === s._id || sub === s._id);
+                                        // Check if assigned generally
+                                        const isGeneral = c.subjects?.some(sub => sub._id === s._id || sub === s._id);
+                                        // Check if assigned to specific arm (if selected)
+                                        const isArmSpecific = selectedArm 
+                                            ? c.arms.find(a => a._id === selectedArm)?.subjects?.some(sub => sub._id === s._id || sub === s._id)
+                                            : false;
+
+                                        const isAssigned = selectedArm ? isArmSpecific : isGeneral;
+
                                         return (
                                             <button 
                                                 key={s._id}
                                                 onClick={() => toggleSubject(c._id, s._id)}
                                                 className={`flex items-center gap-2 p-2 rounded text-sm transition-colors ${
-                                                    isAssigned ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                                                    isAssigned 
+                                                        ? 'bg-green-50 text-green-700 border border-green-200' 
+                                                        : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
                                                 }`}
                                             >
                                                 {isAssigned ? <CheckCircle size={14} /> : <div className="w-3.5 h-3.5 border rounded-full border-gray-400" />}
                                                 {s.name}
+                                                {/* Visual indicator if it conflicts or extends? Maybe strictly filtered query is better? */}
                                             </button>
                                         );
                                     })}
@@ -278,6 +302,7 @@ const SessionsManager = () => {
 };
 
 const AssignmentsManager = () => {
+    const navigate = useNavigate();
     const [teachers, setTeachers] = useState([]);
     const [classes, setClasses] = useState([]);
     const [subjects, setSubjects] = useState([]);
@@ -322,7 +347,7 @@ const AssignmentsManager = () => {
                         required
                     >
                         <option value="">Select Teacher</option>
-                        {teachers.map(t => <option key={t._id} value={t._id}>{t.name} ({t.email})</option>)}
+                        {teachers.map(t => <option key={t._id} value={t._id}>{t.firstName} {t.lastName} ({t.email})</option>)}
                     </select>
                 </div>
 
@@ -369,6 +394,52 @@ const AssignmentsManager = () => {
                     Assign Teacher
                 </button>
             </form>
+
+            <div className="mt-8 bg-white p-6 border rounded-xl">
+                <h3 className="font-bold text-gray-700 mb-4">Current Assignments</h3>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50 text-gray-600 text-xs uppercase">
+                            <tr>
+                                <th className="p-3">Class</th>
+                                <th className="p-3">Subject</th>
+                                <th className="p-3">Arm</th>
+                                <th className="p-3">Teacher</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {teachers.flatMap(t => 
+                                (t.teachingAssignments || []).map((assign, idx) => {
+                                    const className = classes.find(c => c._id === assign.classId)?.name || 'Unknown Class';
+                                    const subjectName = subjects.find(s => s._id === assign.subjectId)?.name || 'Unknown Subject';
+                                    return (
+                                        <tr key={`${t._id}-${idx}`} className="hover:bg-gray-50">
+                                            <td className="p-3 font-medium">{className}</td>
+                                            <td className="p-3">{subjectName}</td>
+                                            <td className="p-3">
+                                                {assign.arm ? (
+                                                    <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">{assign.arm}</span>
+                                                ) : <span className="text-gray-400 text-sm">-</span>}
+                                            </td>
+                                            <td 
+                                                className="p-3 text-primary font-medium cursor-pointer hover:underline"
+                                                onClick={() => navigate(`/teachers/${t._id}`)}
+                                            >
+                                                {t.firstName} {t.lastName}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                            {teachers.every(t => !t.teachingAssignments || t.teachingAssignments.length === 0) && (
+                                <tr>
+                                    <td colSpan="4" className="p-4 text-center text-gray-500 italic">No assignments found.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 };

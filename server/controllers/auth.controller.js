@@ -86,12 +86,15 @@ const loginUser = async (req, res) => {
                 }
             }
 
+            // Populate school details for frontend subscription checks
+            await user.populate('schoolId');
+
             res.json({
                 _id: user.id,
                 name: user.name,
                 email: user.email,
                 role: user.role,
-                schoolId: user.schoolId,
+                schoolId: user.schoolId, // Now a full object with subscription
                 token: generateToken(user._id),
             });
         } else {

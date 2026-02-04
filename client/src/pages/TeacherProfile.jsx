@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import { User, Mail, Phone, Briefcase, BookOpen, Users, Calendar, Lock, Layers } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle';
 
 const TeacherProfile = () => {
     usePageTitle('My Profile');
     const { user } = useAuth();
+    const { showNotification } = useNotification();
     const [teacher, setTeacher] = useState(null);
     const [profile, setProfile] = useState({ name: '', email: '' });
     const [assignments, setAssignments] = useState([]);
@@ -46,15 +48,12 @@ const TeacherProfile = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await api.put('/auth/profile', { name: profile.name });
-            // Update auth context
-            // Assuming login() accepts userData and token, or we might need a dedicated update function
-            // Re-using local storage update logic in context if available, or just alert success
-            alert('Profile updated successfully!');
+            await api.put('/auth/profile', { name: profile.name });
+            showNotification('Profile updated successfully!', 'success');
             // Force reload or Context update ideally
-            window.location.reload(); 
+            setTimeout(() => window.location.reload(), 1000); 
         } catch (error) {
-            alert('Failed to update profile');
+           // Error handled globally via api.js
         } finally {
             setLoading(false);
         }
@@ -63,7 +62,7 @@ const TeacherProfile = () => {
     const handleChangePassword = async (e) => {
         e.preventDefault();
         if (passwords.new !== passwords.confirm) {
-            alert("New passwords don't match");
+            showNotification("New passwords don't match", 'error');
             return;
         }
         setLoading(true);
@@ -72,10 +71,11 @@ const TeacherProfile = () => {
                 currentPassword: passwords.current,
                 newPassword: passwords.new
             });
-            alert('Password changed successfully');
+            showNotification('Password changed successfully', 'success');
             setPasswords({ current: '', new: '', confirm: '' });
         } catch (error) {
-            alert(error.response?.data?.message || 'Failed to change password');
+            // api.js handles generic errors, but if we want specific local handling:
+            // showNotification(error.response?.data?.message || 'Failed to change password', 'error');
         } finally {
             setLoading(false);
         }
@@ -83,30 +83,51 @@ const TeacherProfile = () => {
 
     return (
         <div className="max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <User /> My Profile
-            </h1>
+            {/* Header Removed for Cover Design */}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Cover Background */}
+            <div className="relative mb-20 rounded-b-3xl -mx-4 -mt-8 md:-mt-8 md:-mx-4">
+                <div className="h-48 bg-gradient-to-r from-emerald-500 to-teal-700 rounded-b-3xl shadow-sm"></div>
+                
+                {/* Profile Header Overlap */}
+                <div className="absolute -bottom-16 left-0 right-0 px-4 md:px-8 flex flex-col md:flex-row items-end gap-6">
+                    <div className="relative">
+                        <div className="w-32 h-32 rounded-full border-4 border-white shadow-md overflow-hidden bg-white">
+                             {profile.profilePicture ? (
+                                <img 
+                                    src={profile.profilePicture} 
+                                    alt="Profile" 
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
+                                    <User size={64} />
+                                </div>
+                            )}
+                        </div>
+                        {/* Status Dot */}
+                        <span className="absolute bottom-2 right-2 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></span>
+                    </div>
+                     {/* Name */}
+                     <div className="mb-2 md:mb-4 flex-1">
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 drop-shadow-sm md:text-white md:drop-shadow-md">
+                            {profile.name}
+                        </h1>
+                        <p className="text-gray-600 font-medium md:text-white/90 md:font-normal">
+                             Teacher • {assignments.length} Active Classes
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                 
                 {/* Profile Details */}
                 <div className="space-y-6">
                     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                         <h3 className="font-bold text-gray-700 mb-4 border-b pb-2">Personal Information</h3>
                         
-                        <div className="flex justify-center mb-6">
-                            {profile.profilePicture ? (
-                                <img 
-                                    src={profile.profilePicture} 
-                                    alt="Profile" 
-                                    className="w-24 h-24 rounded-full object-cover border-4 border-gray-100"
-                                />
-                            ) : (
-                                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
-                                    <User size={48} />
-                                </div>
-                            )}
-                        </div>
+                        {/* Avatar removed from here as it's now in header */}
 
                         <form onSubmit={handleUpdateProfile} className="space-y-4">
                             <div>
