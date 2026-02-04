@@ -5,10 +5,10 @@ import BrandingProvider from './context/BrandingProvider';
 import { NotificationProvider } from './context/NotificationContext';
 import Loader from './components/Loader';
 
-// Eager load critical components
-import ProtectedRoute from './components/ProtectedRoute';
-import Login from './pages/Login';
-import DashboardLayout from './components/DashboardLayout';
+// Eager load critical components - CHANGED TO LAZY
+const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'));
+const Login = lazy(() => import('./pages/Login'));
+const DashboardLayout = lazy(() => import('./components/DashboardLayout'));
 
 // Lazy load everything else
 const RegisterSchool = lazy(() => import('./pages/RegisterSchool'));
