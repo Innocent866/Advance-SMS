@@ -58,6 +58,7 @@ const PublicLayout = lazy(() => import('./components/PublicLayout'));
 const PublicRoute = lazy(() => import('./components/PublicRoute'));
 
 const Home = lazy(() => import('./pages/public/Home'));
+const CookieConsent = lazy(() => import('./components/CookieConsent'));
 const About = lazy(() => import('./pages/public/About'));
 const Features = lazy(() => import('./pages/public/Features'));
 const Pricing = lazy(() => import('./pages/public/Pricing'));
@@ -77,6 +78,7 @@ function App() {
         <NotificationProvider>
         <Router>
           <Suspense fallback={<Loader fullScreen={true} />}>
+            <CookieConsent />
             <Routes>
               {/* Guest Only Routes (Redirects to dashboard if logged in) */}
               <Route element={<PublicRoute />}>
