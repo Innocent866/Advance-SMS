@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import emailjs from '@emailjs/browser';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
@@ -18,14 +19,49 @@ import {
 } from 'lucide-react';
 
 const Contact = () => {
+    const form = useRef();
     const [formStatus, setFormStatus] = useState('idle');
     const [activeAccordion, setActiveAccordion] = useState(null);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         setFormStatus('sending');
-        // Simulate API call
-        setTimeout(() => setFormStatus('success'), 1500);
+
+        // Extract values using FormData to handle the mapping manually
+        const formData = new FormData(form.current);
+        const values = Object.fromEntries(formData.entries());
+
+        const templateParams = {
+            full_name: values.from_name, // Map input 'from_name' to 'full_name'
+            from: values.from_email,      // Map 'from_name' to 'name' as well
+            school_name: values.school_name,
+            // from_email: values.from_email,
+            phone_number: values.phone_number,
+            title: values.subject,     // Map 'subject' to 'Subject' (Capitalized)
+            message: values.message,
+            time: new Date().toLocaleString(), // Add timestamp
+        };
+        console.log(templateParams);
+        console.log(values.subject);
+        console.log(values.from_email);
+        
+        emailjs.send(
+            import.meta.env.VITE_EMAILJS_SERVICE_ID,
+            import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+            templateParams,
+            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+        )
+        .then((result) => {
+            console.log(result.text);
+            setFormStatus('success');
+            form.current.reset(); // Reset form ref
+            setTimeout(() => setFormStatus('idle'), 5000);
+        }, (error) => {
+            console.log(error.text);
+            setFormStatus('error'); 
+            alert("Failed to send message: " + error.text);
+            setFormStatus('idle');
+        });
     };
 
     const toggleAccordion = (index) => {
@@ -119,50 +155,54 @@ const Contact = () => {
                             className="bg-white rounded-3xl p-8 sm:p-10 shadow-lg border border-gray-100"
                         >
                             <h2 className="text-3xl font-bold text-gray-900 mb-6">Send us a Message</h2>
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                            <form ref={form} onSubmit={handleSubmit} className="space-y-6">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
                                         <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
-                                        <input type="text" id="fullName" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" placeholder="Enter your name" required />
+                                        <input type="text" id="fullName" name="from_name" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" placeholder="Enter your name" required />
                                     </div>
                                     <div>
                                         <label htmlFor="schoolName" className="block text-sm font-semibold text-gray-700 mb-2">School Name</label>
-                                        <input type="text" id="schoolName" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" placeholder="Enter school name" required />
+                                        <input type="text" id="schoolName" name="school_name" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" placeholder="Enter school name" required />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
                                         <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-                                        <input type="email" id="email" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" placeholder="john@school.com" required />
+                                        <input type="email" id="email" name="from_email" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" placeholder="john@school.com" required />
                                     </div>
                                     <div>
                                         <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
-                                        <input type="tel" id="phone" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" placeholder="+234..." required />
+                                        <input type="tel" id="phone" name="phone_number" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" placeholder="+234..." required />
                                     </div>
                                 </div>
                                 <div>
                                     <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 mb-2">Subject</label>
                                     <div className="relative">
-                                         <select id="subject" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all appearance-none bg-white" required>
+                                         <select id="subject" name="subject" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all appearance-none bg-white" required>
                                             <option value="" disabled selected>Select a subject</option>
-                                            <option value="demo">Request a Demo</option>
-                                            <option value="support">Technical Support</option>
-                                            <option value="billing">Billing Inquiry</option>
-                                            <option value="partnership">Partnership</option>
+                                            <option value="Request a Demo">Request a Demo</option>
+                                            <option value="Technical Support">Technical Support</option>
+                                            <option value="Billing Inquiry">Billing Inquiry</option>
+                                            <option value="Partnership">Partnership</option>
                                          </select>
                                          <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
                                     </div>
                                 </div>
                                 <div>
                                      <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">Message</label>
-                                     <textarea id="message" rows={4} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all resize-none" placeholder="Tell us about your needs..." required></textarea>
+                                     <textarea id="message" name="message" rows={4} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all resize-none" placeholder="Tell us about your needs..." required></textarea>
                                 </div>
 
                                 <button 
                                     type="submit" 
-                                    disabled={formStatus !== 'idle'}
+                                    disabled={formStatus === 'sending'}
                                     className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2 ${
-                                        formStatus === 'success' ? 'bg-green-600 hover:bg-green-700' : 'bg-primary-600 hover:bg-primary-700'
+                                        formStatus === 'success' 
+                                        ? 'bg-green-600 hover:bg-green-700' 
+                                        : formStatus === 'error' 
+                                            ? 'bg-red-600 hover:bg-red-700'
+                                            : 'bg-primary-600 hover:bg-primary-700'
                                     }`}
                                 >
                                     {formStatus === 'idle' && (
@@ -176,6 +216,9 @@ const Contact = () => {
                                     )}
                                     {formStatus === 'success' && (
                                         <>Message Sent! <CheckCircle size={20} /></>
+                                    )}
+                                    {formStatus === 'error' && (
+                                        <>Failed to Send <HelpCircle size={20} /></>
                                     )}
                                 </button>
                             </form>
