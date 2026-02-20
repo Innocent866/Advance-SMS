@@ -21,9 +21,11 @@ const schoolSchema = new mongoose.Schema({
     },
     // Media Usage Tracking
     mediaUsage: {
-        storageBytes: { type: Number, default: 0 },
-        uploadCount: { type: Number, default: 0 },
-        lastResetDate: { type: Date, default: Date.now }
+        students: { type: Number, default: 50 },
+        teachers: { type: Number, default: 5 },
+        nurses: { type: Number, default: 1 },
+        doctors: { type: Number, default: 1 },
+        storageBytes: { type: Number, default: 1073741824 } // 1GB default
     },
     // Subscription Details (Manual Model)
     subscription: {

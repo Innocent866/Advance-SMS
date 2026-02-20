@@ -43,20 +43,40 @@ const checkResourceLimit = (resourceType) => {
             }
 
             const currentPlan = school.subscription.plan || 'Free';
-            // Use stored limit in DB (preferred) or fallback to config
-            const maxLimit = school.subscription[`max${resourceType === 'Teacher' ? 'Teachers' : 'Students'}`] 
-                             || subscriptionPlans[currentPlan][`max${resourceType === 'Teacher' ? 'Staff' : 'Students'}`];
-
+            
+            let maxLimit = 0;
             let currentCount = 0;
+            
+            // Normalize resourceType to lowercase plural for key lookup (Student -> students, Teacher -> teachers)
+            const typeKey = resourceType.toLowerCase() + 's';
+            
+            // Check School defined limit (mediaUsage/resourceLimits) first, then Plan default
+            if (school.mediaUsage && school.mediaUsage[typeKey]) {
+                maxLimit = school.mediaUsage[typeKey];
+            } else if (school.subscription && school.subscription['max' + resourceType + 's']) {
+                // Fallback to old subscription fields if present
+                maxLimit = school.subscription['max' + resourceType + 's'];
+            } else {
+                 // Fallback to Plan Config
+                 const map = { 'Student': 'maxStudents', 'Teacher': 'maxStaff', 'Nurse': 'maxStaff', 'Doctor': 'maxStaff' };
+                 maxLimit = subscriptionPlans[currentPlan][map[resourceType]] || 5; 
+            }
+
             if (resourceType === 'Student') {
                 currentCount = await Student.countDocuments({ schoolId: userSchoolId });
             } else if (resourceType === 'Teacher') {
                 currentCount = await Teacher.countDocuments({ schoolId: userSchoolId });
+            } else if (resourceType === 'Nurse') {
+                const Nurse = require('../models/Nurse');
+                currentCount = await Nurse.countDocuments({ schoolId: userSchoolId });
+            } else if (resourceType === 'Doctor') {
+                const Doctor = require('../models/Doctor');
+                currentCount = await Doctor.countDocuments({ schoolId: userSchoolId });
             }
 
             if (currentCount >= maxLimit) {
                  return res.status(403).json({ 
-                    message: `Limit Reached: You have reached the maximum number of ${resourceType}s (${maxLimit}) for your ${currentPlan} plan. Please upgrade to add more.` 
+                    message: `Limit Reached: You have reached the maximum number of ${resourceType}s (${maxLimit}) for your usage tier. Please upgrade.` 
                 });
             }
 

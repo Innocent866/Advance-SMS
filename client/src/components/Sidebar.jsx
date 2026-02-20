@@ -39,7 +39,7 @@ const Sidebar = () => {
 
     const navItems = [
         { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['super_admin', 'school_admin', 'teacher', 'student'] },
-        { path: '/teachers', label: 'Teachers', icon: Users, roles: ['school_admin'] },
+        { path: '/teachers', label: 'Staff Management', icon: Users, roles: ['school_admin'] },
         { path: '/students', label: 'Students', icon: GraduationCap, roles: ['school_admin'] },
         { path: '/my-students', label: 'My Students', icon: GraduationCap, roles: ['teacher'] },
         { path: '/lessons', label: 'Lesson Plan', icon: BookOpen, roles: ['teacher'] },
@@ -62,6 +62,11 @@ const Sidebar = () => {
         { path: '/finance', label: 'Financial Management', icon: CreditCard, roles: ['school_admin', 'super_admin'] },
         { path: '/super-admin', label: 'Platform Verification', icon: ShieldCheck, roles: ['super_admin'] },
         { path: '/staff/reports', label: 'Staff Reports', icon: FileText, roles: ['teacher'], feature: 'staffAdminComm' },
+        
+        // Health Module
+        { path: '/nurse-dashboard', label: 'Nurse Dashboard', icon: ClipboardList, roles: ['nurse'] },
+        { path: '/doctor-dashboard', label: 'Doctor Dashboard', icon: User, roles: ['doctor'] },
+
         { path: '/admin/reports', label: 'Report Management', icon: FileText, roles: ['school_admin'], feature: 'basicReports' },
         { path: '/teacher/learning-materials', label: 'Learning Materials', icon: BookOpen, roles: ['teacher'], feature: 'learningMaterials' },
         { path: '/student/learning-materials', label: 'Study Library', icon: BookOpen, roles: ['student'], feature: 'learningMaterials' },

@@ -57,6 +57,11 @@ const AdminFinanceDashboard = lazy(() => import('./pages/AdminFinanceDashboard')
 const PublicLayout = lazy(() => import('./components/PublicLayout'));
 const PublicRoute = lazy(() => import('./components/PublicRoute'));
 
+// Health Module
+const NurseDashboard = lazy(() => import('./pages/NurseDashboard'));
+const DoctorDashboard = lazy(() => import('./pages/DoctorDashboard'));
+const StudentHealthRecord = lazy(() => import('./pages/StudentHealthRecord'));
+
 const Home = lazy(() => import('./pages/public/Home'));
 const CookieConsent = lazy(() => import('./components/CookieConsent'));
 const About = lazy(() => import('./pages/public/About'));
@@ -139,6 +144,11 @@ function App() {
                     <Route path="/teacher/ai-marking" element={<ProtectedRoute role="teacher" feature="aiMarking"><AIExamMarking /></ProtectedRoute>} />
                     <Route path="/staff/reports" element={<ProtectedRoute feature="basicReports"><StaffReportDashboard /></ProtectedRoute>} />
                     <Route path="/teacher/learning-materials" element={<ProtectedRoute role="teacher" feature="learningMaterials"><TeacherMaterialDashboard /></ProtectedRoute>} />
+
+                    {/* Health Module Routes */}
+                    <Route path="/nurse-dashboard" element={<ProtectedRoute role="nurse"><NurseDashboard /></ProtectedRoute>} />
+                    <Route path="/doctor-dashboard" element={<ProtectedRoute role="doctor"><DoctorDashboard /></ProtectedRoute>} />
+                    <Route path="/medical/student/:id" element={<ProtectedRoute role={['nurse', 'doctor', 'school_admin']}><StudentHealthRecord /></ProtectedRoute>} />
 
                     {/* Student Routes */}
                     <Route path="/videos" element={<StudentVideos />} />

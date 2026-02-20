@@ -45,6 +45,9 @@ app.use('/api/attendance', require('./routes/attendance.routes'));
 app.use('/api/staff-reports', require('./routes/staffReport.routes'));
 app.use('/api/learning-materials', require('./routes/learningMaterial.routes'));
 app.use('/api/upload', require('./routes/upload.routes'));
+app.use('/api/nurses', require('./routes/nurse.routes'));
+app.use('/api/doctors', require('./routes/doctor.routes'));
+app.use('/api/medical', require('./routes/medical.routes'));
 
 // Error Middleware
 const { errorHandler } = require('./middleware/error.middleware');
