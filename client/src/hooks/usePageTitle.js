@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 const usePageTitle = (title) => {
     useEffect(() => {
-        document.title = `${title} | EduSaaS`;
+        document.title = `${title} | GT-SchoolHub`;
     }, [title]);
 };
 

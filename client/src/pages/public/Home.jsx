@@ -12,7 +12,7 @@ const Home = () => {
   return (
     <div className="overflow-hidden bg-milk">
       <SEO 
-        title="Intelligent School Management System"
+        title="GT-SchoolHub | Smart School Management System"
         description="Empower your school with GT-SchoolHub's intelligent digital tools. Streamline operations, boost performance, and connect your community with our secure school management platform."
         keywords="school management software, educational management, student portal, result processing system, e-learning platform Nigeria"
       />

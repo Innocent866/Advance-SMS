@@ -10,7 +10,7 @@ const SEO = ({
   canonical 
 }) => {
   const location = useLocation();
-  const siteName = 'Advance SMS';
+  const siteName = 'GT-SchoolHub';
   const fullTitle = title ? `${title} | ${siteName}` : siteName;
   const baseUrl = 'https://gt-schoolhub.com.ng';
   const url = `${baseUrl}${location.pathname}`;

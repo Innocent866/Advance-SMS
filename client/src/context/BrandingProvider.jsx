@@ -8,7 +8,7 @@ export const useBranding = () => useContext(BrandingContext);
 const BrandingProvider = ({ children }) => {
     const { user, checkAccess } = useAuth();
     const [branding, setBranding] = useState({
-        schoolName: 'Advance SMS',
+        schoolName: 'GT-SchoolHub',
         logo: null,
         primaryColor: '#16a34a',
         secondaryColor: '#f59e0b'
@@ -21,7 +21,7 @@ const BrandingProvider = ({ children }) => {
             // Apply Custom Branding
             const primary = user.schoolId.branding?.primaryColor || '#16a34a';
             const secondary = user.schoolId.branding?.secondaryColor || '#f59e0b';
-            const name = user.schoolId.name || 'Advance SMS';
+            const name = user.schoolId.name || 'GT-SchoolHub';
             const logoUrl = user.schoolId.logo || null;
 
             root.style.setProperty('--color-primary', primary);
@@ -39,7 +39,7 @@ const BrandingProvider = ({ children }) => {
             root.style.setProperty('--color-secondary', '#f59e0b');
             
              setBranding({
-                schoolName: 'Advance SMS',
+                schoolName: 'GT-SchoolHub',
                 logo: null,
                 primaryColor: '#16a34a',
                 secondaryColor: '#f59e0b'
