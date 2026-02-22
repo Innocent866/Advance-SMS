@@ -32,9 +32,7 @@ const AttendanceMarking = () => {
 
     const fetchClasses = async () => {
         try {
-            console.log('Fetching classes...');
             const res = await api.get('/academic/classes');
-            console.log('Classes fetched:', res.data);
             setClasses(res.data);
             if (!res.data || res.data.length === 0) {
                  showNotification('No classes found for this school.', 'info');

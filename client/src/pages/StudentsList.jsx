@@ -43,9 +43,7 @@ const StudentsList = () => {
 
     const fetchStudents = async () => {
         try {
-            console.log('Fetching students...');
             const res = await api.get('/students');
-            console.log('Students fetched:', res.data);
             setStudents(res.data);
             setLoading(false);
         } catch (error) {

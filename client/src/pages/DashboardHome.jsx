@@ -29,6 +29,8 @@ const DashboardHome = () => {
     useEffect(() => {
         if (user?.role === 'super_admin') {
             navigate('/super-admin');
+        } else if (user?.role === 'parent') {
+            navigate('/parent-dashboard');
         }
     }, [user, navigate]);
 

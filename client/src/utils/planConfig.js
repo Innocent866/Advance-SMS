@@ -34,7 +34,9 @@ export const planConfig = {
             'continuousAssessment',
             'examManagement',
             'classArmManagement',
-            'staffAdminComm'
+            'staffAdminComm',
+            'aiLessonPlanner',
+            'videoLessons'
         ]
     },
     Premium: {
@@ -51,6 +53,8 @@ export const planConfig = {
             'examManagement',
             'classArmManagement',
             'staffAdminComm',
+            'aiLessonPlanner',
+            'videoLessons',
             'aiMarking',
             'afterSchool',
             'advancedAnalytics',

@@ -6,7 +6,7 @@ const Result = require('../models/Result');
 const FeePayment = require('../models/FeePayment'); // Previously used perhaps?
 // Check if VideoProgress and QuizSubmission models exist or need to be inferred
 const VideoProgress = require('../models/VideoProgress'); 
-const QuizSubmission = require('../models/QuizSubmission');
+const Submission = require('../models/Submission');
 const LearningMaterial = require('../models/LearningMaterial'); // Assuming this model exists
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -123,7 +123,7 @@ const getParentDashboard = async (req, res) => {
         });
 
         // 3. Quiz/Task Progress (Using User ID)
-        const tasksCompletedCount = await QuizSubmission.countDocuments({
+        const tasksCompletedCount = await Submission.countDocuments({
             studentId: student.userId
         });
 
@@ -234,7 +234,7 @@ const getChildHistory = async (req, res) => {
             populate: { path: 'subjectId', select: 'name' }
         }).sort({ watchedAt: -1 });
 
-        const submissions = await QuizSubmission.find({
+        const submissions = await Submission.find({
             studentId: student.userId // Use userId
         }).populate('quizId', 'title').sort({ submittedAt: -1 });
 
@@ -294,6 +294,46 @@ const getChildMaterials = async (req, res) => {
     }
 };
 
+// @desc    Get Child's Daily Attendance Records
+// @route   GET /api/parents/child-attendance
+// @access  Private (Parent)
+const getChildAttendance = async (req, res) => {
+    try {
+        const parent = await Parent.findOne({ user: req.user._id });
+        if (!parent) return res.status(404).json({ message: 'Parent profile not found' });
+
+        const student = await Student.findById(parent.student);
+        if (!student) return res.status(404).json({ message: 'Student not found' });
+
+        // Fetch all attendance records where this student is listed
+        const Attendance = require('../models/Attendance');
+        const attendanceRecords = await Attendance.find({
+            'records.studentId': student._id
+        })
+        .populate('markedBy', 'name')
+        .sort({ date: -1 });
+
+        // Transform records to only show this specific student's status for the parent
+        const transformedRecords = attendanceRecords.map(record => {
+            const studentRecord = record.records.find(r => r.studentId.toString() === student._id.toString());
+            return {
+                _id: record._id,
+                date: record.date,
+                status: studentRecord ? studentRecord.status : 'N/A',
+                remark: studentRecord ? studentRecord.remark : '',
+                term: record.term,
+                session: record.session,
+                markedBy: record.markedBy?.name || 'Teacher'
+            };
+        });
+
+        res.json(transformedRecords);
+    } catch (error) {
+        console.error("getChildAttendance Error:", error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
 module.exports = {
     registerParent,
     getParentDashboard,
@@ -301,5 +341,6 @@ module.exports = {
     getChildVideos,
     getChildResults,
     getChildHistory,
-    getChildMaterials
+    getChildMaterials,
+    getChildAttendance
 };

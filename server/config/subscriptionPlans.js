@@ -3,6 +3,7 @@ const subscriptionPlans = {
         price: 0,
         maxStudents: 50,
         maxStaff: 10,
+        aiTokenLimit: 0,
         features: [
             'studentManagement',
             'staffManagement',
@@ -16,6 +17,7 @@ const subscriptionPlans = {
         term: 'Quarterly',
         maxStudents: 300,
         maxStaff: 40,
+        aiTokenLimit: 50000,
         features: [
             'studentManagement',
             'staffManagement',
@@ -31,6 +33,7 @@ const subscriptionPlans = {
         term: 'Quarterly',
         maxStudents: 700,
         maxStaff: 70,
+        aiTokenLimit: 200000,
         features: [
             'studentManagement',
             'staffManagement',
@@ -52,6 +55,7 @@ const subscriptionPlans = {
         term: 'Quarterly',
         maxStudents: 1500,
         maxStaff: 200,
+        aiTokenLimit: 1000000,
         features: [
             'studentManagement',
             'staffManagement',

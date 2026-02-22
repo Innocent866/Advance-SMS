@@ -8,7 +8,20 @@ const { createNotification } = require('./notification.controller');
 // @route   POST /api/teachers
 // @access  Private (School Admin)
 const createTeacher = async (req, res) => {
-    const { firstName, lastName, email, password, gender, qualification, phoneNumber, subjects, classification } = req.body;
+    let { firstName, lastName, email, password, gender, qualification, phoneNumber, subjects, classification } = req.body;
+
+    // Handle subjects from FormData (empty string or JSON string)
+    if (typeof subjects === 'string') {
+        if (subjects === '' || subjects === '[]') {
+            subjects = [];
+        } else {
+            try {
+                subjects = JSON.parse(subjects);
+            } catch (e) {
+                subjects = [];
+            }
+        }
+    }
 
     try {
         const userExists = await User.findOne({ email });
@@ -73,8 +86,11 @@ const createTeacher = async (req, res) => {
         );
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Create Teacher Error:', error);
+        if (error.code === 11000) {
+            return res.status(400).json({ message: 'A user with this email already exists.' });
+        }
+        res.status(500).json({ message: error.message || 'Server error creating teacher' });
     }
 };
 
@@ -84,7 +100,8 @@ const createTeacher = async (req, res) => {
 const getTeachers = async (req, res) => {
     try {
         // Fetch from Teacher collection to get full details
-        const teachers = await Teacher.find({ schoolId: req.user.schoolId }).populate('subjects', 'name');
+        const schoolId = req.user.schoolId?._id || req.user.schoolId;
+        const teachers = await Teacher.find({ schoolId }).populate('subjects', 'name');
         res.json(teachers);
     } catch (error) {
         console.error(error);
@@ -182,6 +199,23 @@ const updateTeacher = async (req, res) => {
         if (req.body.phoneNumber) teacher.phoneNumber = req.body.phoneNumber;
         if (req.body.qualification) teacher.qualification = req.body.qualification;
         if (req.body.gender) teacher.gender = req.body.gender;
+
+        // Handle subjects update with sanitization
+        if (req.body.subjects !== undefined) {
+            let subjects = req.body.subjects;
+            if (typeof subjects === 'string') {
+                if (subjects === '' || subjects === '[]') {
+                    subjects = [];
+                } else {
+                    try {
+                        subjects = JSON.parse(subjects);
+                    } catch (e) {
+                        subjects = [];
+                    }
+                }
+            }
+            teacher.subjects = subjects;
+        }
         
         // Also update the linked User account if name/email/password changed
         if (req.body.firstName || req.body.lastName || req.body.email || req.body.password) {

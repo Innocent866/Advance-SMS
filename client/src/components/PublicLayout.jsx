@@ -3,7 +3,6 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import logoFromAssets from '../assets/logo.png';
 import { useBranding } from '../context/BrandingProvider';
 import { useAuth } from '../context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ChevronRight, Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
 
 const PublicLayout = () => {
@@ -47,11 +46,14 @@ const PublicLayout = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 group">
+            <Link to="/" className="flex items-center gap-2 group" aria-label="Advance SMS Home">
                 <img 
                    className="h-20 w-auto transition-transform duration-300 group-hover:scale-105 object-contain" 
                    src={logo || logoFromAssets} 
-                   alt={schoolName} 
+                   alt={`${schoolName || 'Advance SMS'} Logo`} 
+                   width="160"
+                   height="80"
+                   fetchpriority="high"
                 />
             </Link>
 
@@ -61,6 +63,7 @@ const PublicLayout = () => {
                 <Link 
                   key={link.name} 
                   to={link.path}
+                  aria-current={location.pathname === link.path ? 'page' : undefined}
                   className={`text-sm font-medium transition-colors hover:text-primary-600 relative group ${
                     location.pathname === link.path ? 'text-primary-600' : 'text-gray-600'
                   }`}
@@ -68,7 +71,7 @@ const PublicLayout = () => {
                   {link.name}
                   <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary-600 transition-all duration-300 ${
                     location.pathname === link.path ? 'w-full' : 'w-0 group-hover:w-full'
-                  }`} />
+                  }`} aria-hidden="true" />
                 </Link>
               ))}
             </div>
@@ -77,13 +80,11 @@ const PublicLayout = () => {
             <div className="hidden md:flex items-center gap-4">
                {user ? (
                  <Link to="/dashboard">
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="px-5 py-2.5 rounded-full bg-gradient-to-r from-primary-600 to-primary-500 text-white font-medium shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                    <button
+                        className="px-5 py-2.5 rounded-full bg-gradient-to-r from-primary-600 to-primary-500 text-white font-medium shadow-lg hover:shadow-xl transition-all flex items-center gap-2 hover:scale-105 active:scale-95"
                     >
                         Dashboard <ChevronRight size={16} />
-                    </motion.button>
+                    </button>
                  </Link>
                ) : (
                  <>
@@ -91,78 +92,73 @@ const PublicLayout = () => {
                         Log In
                     </Link>
                     <Link to="/register-school">
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-5 py-2.5 rounded-full bg-gradient-to-r from-primary-600 to-primary-500 text-white font-medium shadow-lg hover:shadow-xl transition-all"
+                        <button
+                            className="px-5 py-2.5 rounded-full bg-gradient-to-r from-primary-600 to-primary-500 text-white font-medium shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
                         >
                             Get Started
-                        </motion.button>
+                        </button>
                     </Link>
                  </>
                )}
             </div>
 
-            {/* Mobile Menu Button */}
-            <div className="md:hidden">
-              <button 
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-gray-600 hover:text-primary-600 focus:outline-none p-2"
-              >
-                {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-              </button>
-            </div>
+             <div className="md:hidden">
+               <button 
+                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                 className="text-gray-600 hover:text-primary-600 focus:outline-none p-2"
+                 aria-label={isMobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+                 aria-expanded={isMobileMenuOpen}
+               >
+                 {isMobileMenuOpen ? <X size={28} aria-hidden="true" /> : <Menu size={28} aria-hidden="true" />}
+               </button>
+             </div>
           </div>
         </div>
 
-        {/* Mobile Menu Dropdown */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-white border-t border-gray-100 overflow-hidden shadow-xl"
-            >
-              <div className="px-4 pt-4 pb-8 space-y-4">
-                {navLinks.map((link) => (
-                  <Link 
-                    key={link.name} 
-                    to={link.path}
-                    className={`block py-3 text-base font-medium border-b border-gray-50 ${
-                       location.pathname === link.path ? 'text-primary-600' : 'text-gray-600'
-                    }`}
-                  >
-                    {link.name}
-                  </Link>
-                ))}
-                
-                <div className="pt-4 flex flex-col gap-3">
-                   {user ? (
-                        <Link to="/dashboard" className="w-full">
-                            <button className="w-full py-3 rounded-xl bg-primary-600 text-white font-medium shadow-md">
-                                Go to Dashboard
-                            </button>
-                        </Link>
-                   ) : (
-                       <>
-                        <Link to="/login" className="w-full">
-                            <button className="w-full py-3 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50">
-                                Log In
-                            </button>
-                        </Link>
-                        <Link to="/register-school" className="w-full">
-                            <button className="w-full py-3 rounded-xl bg-primary-600 text-white font-medium shadow-md">
-                                Get Started Free
-                            </button>
-                        </Link>
-                       </>
-                   )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Mobile Menu Dropdown - Pure CSS Transition */}
+        <div 
+          className={`md:hidden bg-white border-t border-gray-100 overflow-hidden shadow-xl transition-all duration-300 ease-in-out ${
+            isMobileMenuOpen ? 'max-height-500 opacity-100' : 'max-height-0 opacity-0'
+          }`}
+          style={{ maxHeight: isMobileMenuOpen ? '500px' : '0' }}
+        >
+          <div className="px-4 pt-4 pb-8 space-y-4">
+            {navLinks.map((link) => (
+              <Link 
+                key={link.name} 
+                to={link.path}
+                className={`block py-3 text-base font-medium border-b border-gray-50 ${
+                   location.pathname === link.path ? 'text-primary-600' : 'text-gray-600'
+                }`}
+              >
+                {link.name}
+              </Link>
+            ))}
+            
+            <div className="pt-4 flex flex-col gap-3">
+               {user ? (
+                    <Link to="/dashboard" className="w-full">
+                        <button className="w-full py-3 rounded-xl bg-primary-600 text-white font-medium shadow-md">
+                            Go to Dashboard
+                        </button>
+                    </Link>
+               ) : (
+                   <>
+                    <Link to="/login" className="w-full">
+                        <button className="w-full py-3 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50">
+                            Log In
+                        </button>
+                    </Link>
+                    <Link to="/register-school" className="w-full">
+                        <button className="w-full py-3 rounded-xl bg-primary-600 text-white font-medium shadow-md">
+                            Get Started Free
+                        </button>
+                    </Link>
+                   </>
+               )}
+            </div>
+          </div>
+        </div>
       </nav>
 
       {/* Main Content */}
@@ -171,7 +167,7 @@ const PublicLayout = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 pt-16 pb-8">
+      <footer className="bg-gray-900 text-gray-300 pt-16 pb-8 border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                 {/* Brand Column */}
@@ -180,26 +176,30 @@ const PublicLayout = () => {
                         <img 
                            className="h-24 w-auto object-contain" 
                            src={logo || logoFromAssets} 
-                           alt={schoolName} 
+                           alt={schoolName || 'Advance SMS'}
+                           loading="lazy"
+                           decoding="async"
+                           width="120"
+                           height="96"
                         />
                     </div>
                     <p className="text-gray-400 text-sm leading-relaxed mb-6">
                         Empowering schools with cutting-edge technology to streamline administration and enhance learning experiences.
                     </p>
-                    <div className="flex gap-4">
-                        <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-600 transition-colors">
-                            <Facebook size={18} />
-                        </a>
-                        <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-600 transition-colors">
-                            <Twitter size={18} />
-                        </a>
-                        <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-600 transition-colors">
-                            <Instagram size={18} />
-                        </a>
-                        <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-600 transition-colors">
-                            <Linkedin size={18} />
-                        </a>
-                    </div>
+                     <div className="flex gap-4">
+                         <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-600 transition-colors" aria-label="Facebook">
+                             <Facebook size={18} aria-hidden="true" />
+                         </a>
+                         <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-600 transition-colors" aria-label="Twitter">
+                             <Twitter size={18} aria-hidden="true" />
+                         </a>
+                         <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-600 transition-colors" aria-label="Instagram">
+                             <Instagram size={18} aria-hidden="true" />
+                         </a>
+                         <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-600 transition-colors" aria-label="Linkedin">
+                             <Linkedin size={18} aria-hidden="true" />
+                         </a>
+                     </div>
                 </div>
 
                 {/* Quick Links */}

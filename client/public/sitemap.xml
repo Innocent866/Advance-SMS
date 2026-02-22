@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+<url>
+  <loc>https://gt-schoolhub.com.ng/</loc>
+  <priority>1.0</priority>
+</url>
+
+<url>
+  <loc>https://gt-schoolhub.com.ng/login</loc>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://gt-schoolhub.com.ng/register-school</loc>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://gt-schoolhub.com.ng/about</loc>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://gt-schoolhub.com.ng/features</loc>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://gt-schoolhub.com.ng/pricing</loc>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://gt-schoolhub.com.ng/contact</loc>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://gt-schoolhub.com.ng/faq</loc>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://gt-schoolhub.com.ng/help</loc>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://gt-schoolhub.com.ng/help/:category</loc>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://gt-schoolhub.com.ng/blog</loc>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://gt-schoolhub.com.ng/community</loc>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://gt-schoolhub.com.ng/privacy</loc>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://gt-schoolhub.com.ng/terms</loc>
+  <priority>0.8</priority>
+</url>
+
+
+</urlset>

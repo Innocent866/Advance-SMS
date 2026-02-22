@@ -52,15 +52,13 @@ const ParentVideos = lazy(() => import('./pages/ParentVideos'));
 const ParentResults = lazy(() => import('./pages/ParentResults'));
 const ParentHistory = lazy(() => import('./pages/ParentHistory'));
 const ParentMaterials = lazy(() => import('./pages/ParentMaterials'));
+const ParentAttendance = lazy(() => import('./pages/ParentAttendance'));
 const AdminFinanceDashboard = lazy(() => import('./pages/AdminFinanceDashboard'));
 
 const PublicLayout = lazy(() => import('./components/PublicLayout'));
 const PublicRoute = lazy(() => import('./components/PublicRoute'));
 
-// Health Module
-const NurseDashboard = lazy(() => import('./pages/NurseDashboard'));
-const DoctorDashboard = lazy(() => import('./pages/DoctorDashboard'));
-const StudentHealthRecord = lazy(() => import('./pages/StudentHealthRecord'));
+
 
 const Home = lazy(() => import('./pages/public/Home'));
 const CookieConsent = lazy(() => import('./components/CookieConsent'));
@@ -116,18 +114,18 @@ function App() {
                     <Route path="/super-admin" element={<ProtectedRoute role="super_admin"><SuperAdminDashboard /></ProtectedRoute>} />
                     
                     {/* Admin Routes */}
-                    <Route path="/teachers" element={<TeachersList />} />
-                    <Route path="/teachers/:id" element={<TeacherDetails />} />
-                    <Route path="/students" element={<StudentsList />} />
-                    <Route path="/students/:id" element={<StudentDetails />} />
-                    <Route path="/academic" element={<AcademicSettings />} />
-                    <Route path="/content-oversight" element={<ContentOversight />} />
-                    <Route path="/learning-settings" element={<LearningSettings />} />
+                    <Route path="/teachers" element={<ProtectedRoute role="school_admin"><TeachersList /></ProtectedRoute>} />
+                    <Route path="/teachers/:id" element={<ProtectedRoute role="school_admin"><TeacherDetails /></ProtectedRoute>} />
+                    <Route path="/students" element={<ProtectedRoute role="school_admin"><StudentsList /></ProtectedRoute>} />
+                    <Route path="/students/:id" element={<ProtectedRoute role="school_admin"><StudentDetails /></ProtectedRoute>} />
+                    <Route path="/academic" element={<ProtectedRoute role="school_admin"><AcademicSettings /></ProtectedRoute>} />
+                    <Route path="/content-oversight" element={<ProtectedRoute role="school_admin"><ContentOversight /></ProtectedRoute>} />
+                    <Route path="/learning-settings" element={<ProtectedRoute role="school_admin"><LearningSettings /></ProtectedRoute>} />
                     <Route path="/attendance/history" element={<AttendanceHistory />} />
                     <Route path="/analytics" element={<ProtectedRoute feature="advancedAnalytics"><AnalyticsDashboard /></ProtectedRoute>} />
-                    <Route path="/settings" element={<SchoolSettings />} />
+                    <Route path="/settings" element={<ProtectedRoute role="school_admin"><SchoolSettings /></ProtectedRoute>} />
                     <Route path="/settings/receipts" element={<ProtectedRoute role="school_admin"><ReceiptSettings /></ProtectedRoute>} />
-                    <Route path="/assessment-config" element={<AssessmentSettings />} />
+                    <Route path="/assessment-config" element={<ProtectedRoute role="school_admin"><AssessmentSettings /></ProtectedRoute>} />
 
                     <Route path="/admin/reports" element={<ProtectedRoute feature="basicReports"><AdminReportDashboard /></ProtectedRoute>} />
                     <Route path="/finance" element={<ProtectedRoute role="school_admin"><AdminFinanceDashboard /></ProtectedRoute>} />
@@ -145,10 +143,7 @@ function App() {
                     <Route path="/staff/reports" element={<ProtectedRoute feature="basicReports"><StaffReportDashboard /></ProtectedRoute>} />
                     <Route path="/teacher/learning-materials" element={<ProtectedRoute role="teacher" feature="learningMaterials"><TeacherMaterialDashboard /></ProtectedRoute>} />
 
-                    {/* Health Module Routes */}
-                    <Route path="/nurse-dashboard" element={<ProtectedRoute role="nurse"><NurseDashboard /></ProtectedRoute>} />
-                    <Route path="/doctor-dashboard" element={<ProtectedRoute role="doctor"><DoctorDashboard /></ProtectedRoute>} />
-                    <Route path="/medical/student/:id" element={<ProtectedRoute role={['nurse', 'doctor', 'school_admin']}><StudentHealthRecord /></ProtectedRoute>} />
+                    
 
                     {/* Student Routes */}
                     <Route path="/videos" element={<StudentVideos />} />
@@ -165,6 +160,7 @@ function App() {
                     <Route path="/parent/results" element={<ProtectedRoute role="parent"><ParentResults /></ProtectedRoute>} />
                     <Route path="/parent/history" element={<ProtectedRoute role="parent"><ParentHistory /></ProtectedRoute>} />
                     <Route path="/parent/materials" element={<ProtectedRoute role="parent"><ParentMaterials /></ProtectedRoute>} />
+                    <Route path="/parent/attendance" element={<ProtectedRoute role="parent"><ParentAttendance /></ProtectedRoute>} />
                     <Route path="/parent/payments" element={<ProtectedRoute role="parent"><ParentPayment /></ProtectedRoute>} />
     
                  </Route>

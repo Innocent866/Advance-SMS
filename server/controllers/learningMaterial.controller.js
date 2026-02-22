@@ -33,8 +33,9 @@ exports.createMaterial = async (req, res) => {
             status // Optional, default is Draft. Teachers can set to 'Pending Approval' immediately.
         } = req.body;
 
+        const schoolId = req.user.schoolId?._id || req.user.schoolId;
         const material = new LearningMaterial({
-            schoolId: req.user.schoolId,
+            schoolId,
             teacherId: req.user.userId || req.user._id,
             title,
             type,
@@ -54,7 +55,7 @@ exports.createMaterial = async (req, res) => {
         if (material.status === 'Pending Approval') {
             // Notify Admins
             const admins = await User.find({
-                schoolId: req.user.schoolId,
+                schoolId,
                 role: { $in: ['school_admin', 'super_admin'] }
             });
             const notificationMessage = `New Learning Material Submitted: ${title} by ${req.user.name}`;
@@ -75,7 +76,8 @@ exports.createMaterial = async (req, res) => {
 exports.getMaterials = async (req, res) => {
     try {
         const { status, classLevel, subject, type, term, session } = req.query;
-        let query = { schoolId: req.user.schoolId };
+        const schoolId = req.user.schoolId?._id || req.user.schoolId;
+        let query = { schoolId };
 
         // Role-based restrictions
         if (req.user.role === 'Student') {
@@ -108,8 +110,9 @@ exports.getMaterials = async (req, res) => {
 // --- Get My Materials (Teacher) ---
 exports.getMyMaterials = async (req, res) => {
     try {
+        const schoolId = req.user.schoolId?._id || req.user.schoolId;
         const materials = await LearningMaterial.find({
-            schoolId: req.user.schoolId,
+            schoolId,
             teacherId: req.user.userId || req.user._id
         }).sort({ createdAt: -1 });
 
@@ -126,7 +129,8 @@ exports.updateStatus = async (req, res) => {
         const { id } = req.params;
         const { status, adminFeedback } = req.body;
 
-        const material = await LearningMaterial.findOne({ _id: id, schoolId: req.user.schoolId });
+        const schoolId = req.user.schoolId?._id || req.user.schoolId;
+        const material = await LearningMaterial.findOne({ _id: id, schoolId });
         if (!material) {
             return res.status(404).json({ message: 'Material not found' });
         }
@@ -164,7 +168,8 @@ exports.updateMaterial = async (req, res) => {
         const { id } = req.params;
         const updates = req.body;
         
-        const material = await LearningMaterial.findOne({ _id: id, schoolId: req.user.schoolId });
+        const schoolId = req.user.schoolId?._id || req.user.schoolId;
+        const material = await LearningMaterial.findOne({ _id: id, schoolId });
         if (!material) return res.status(404).json({ message: 'Material not found' });
         
         if (material.teacherId.toString() !== (req.user.userId || req.user._id).toString()) {

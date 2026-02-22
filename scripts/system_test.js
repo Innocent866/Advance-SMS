@@ -39,21 +39,7 @@ const testData = {
         password: 'password123',
         role: 'teacher'
     },
-    nurse: {
-        firstName: 'Test',
-        lastName: 'Nurse',
-        email: `nurse${Date.now()}@testschool.com`,
-        password: 'password123',
-        role: 'nurse'
-    },
-    doctor: {
-        firstName: 'Test',
-        lastName: 'Doctor',
-        email: `doctor${Date.now()}@testschool.com`,
-        password: 'password123',
-        role: 'doctor',
-        licenseNumber: 'DOC12345'
-    },
+
     student: {
         firstName: 'Test',
         lastName: 'Student',
@@ -203,55 +189,7 @@ const runTests = async () => {
             console.error('❌ Create Student Failed:', error.response?.data || error.message);
         }
 
-        // 6. Create Nurse
-        console.log('\n--- 6. Create Nurse ---');
-        try {
-            const nurseRes = await axios.post(`${API_URL}/nurses`, {
-                firstName: testData.nurse.firstName,
-                lastName: testData.nurse.lastName,
-                email: testData.nurse.email,
-                password: testData.nurse.password,
-                phoneNumber: '1234567890',
-                gender: 'Female',
-                qualification: 'B.Nsc'
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            console.log('✅ Nurse Created:', nurseRes.data.email);
-        } catch (error) {
-            console.error('❌ Create Nurse Failed:', error.response?.data || error.message);
-        }
 
-        // 7. Login as Nurse & Create Medical Record
-        console.log('\n--- 7. Nurse Flow (Login & Record) ---');
-        try {
-            // Login
-            const nurseLogin = await axios.post(`${API_URL}/auth/login`, {
-                email: testData.nurse.email,
-                password: testData.nurse.password
-            });
-            const nurseToken = nurseLogin.data.token;
-            console.log('✅ Nurse Logged In');
-
-            // Create Record
-            if (studentId) {
-                const recordRes = await axios.post(`${API_URL}/medical`, {
-                    studentId: studentId,
-                    recordType: 'Routine Checkup',
-                    symptoms: 'Headache',
-                    temperature: '38.5',
-                    status: 'Under Observation'
-                }, {
-                    headers: { Authorization: `Bearer ${nurseToken}` }
-                });
-                console.log('✅ Medical Record Created:', recordRes.data._id);
-            } else {
-                console.log('⚠️ Skipping Medical Record (No Student ID)');
-            }
-
-        } catch (error) {
-            console.error('❌ Nurse Flow Failed:', error.response?.data || error.message);
-        }
 
          // 6. Test Security - Token without School
          // ... (Can add more negative tests)

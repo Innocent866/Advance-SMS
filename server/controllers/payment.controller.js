@@ -4,51 +4,85 @@ const School = require('../models/School'); // For accessing paystack keys if st
 
 // @desc    Initialize Payment (Return Paystack Config/Key)
 // @route   POST /api/payments/initialize
-// @access  Private (Parent)
+// --- Teacher Assignment ---
 const initializePayment = async (req, res) => {
-    const { amount, type, term, session } = req.body;
+    const { amount, type, term, session, plan } = req.body;
 
     try {
-        const parent = await Parent.findOne({ user: req.user._id });
-        if (!parent) return res.status(404).json({ message: 'Parent not found' });
+        if (req.user.role === 'parent') {
+            const parent = await Parent.findOne({ user: req.user._id });
+            if (!parent) return res.status(404).json({ message: 'Parent not found' });
 
-        // Generate a unique reference
-        const reference = `PAY-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+            // Generate a unique reference
+            const reference = `PAY-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-        // Provide Paystack public key (from Env)
-        // In a real flow, you might initialize transaction via server-side Paystack API to get auth_url.
-        // For simpler integration, we'll return config for the frontend Inline Popup.
-        
-        if (!process.env.PAYSTACK_PUBLIC_KEY) {
-            return res.status(500).json({ message: 'Server Configuration Error: Paystack Public Key not set.' });
-        }
-
-        // Check for School Subaccount
-        const school = await School.findById(parent.school);
-        let subaccount = null;
-        if (school && school.paystackSubaccountCode) {
-            subaccount = school.paystackSubaccountCode;
-        }
-
-        res.json({
-            key: process.env.PAYSTACK_PUBLIC_KEY,
-            email: req.user.email,
-            amount: amount * 100, // Paystack expects kobo
-            reference,
-            subaccount, // Pass subaccount code to frontend config
-            metadata: {
-                studentId: parent.student,
-                parentId: parent._id,
-                schoolId: parent.school,
-                type,
-                term,
-                session,
-                amount: amount * 100
+            if (!process.env.PAYSTACK_PUBLIC_KEY) {
+                return res.status(500).json({ message: 'Server Configuration Error: Paystack Public Key not set.' });
             }
-        });
+
+            // Check for School Subaccount
+            const school = await School.findById(parent.school);
+            let subaccount = null;
+            if (school && school.paystackSubaccountCode) {
+                subaccount = school.paystackSubaccountCode;
+            }
+
+            return res.json({
+                key: process.env.PAYSTACK_PUBLIC_KEY,
+                email: req.user.email,
+                amount: amount * 100, // Paystack expects kobo
+                reference,
+                subaccount,
+                metadata: {
+                    studentId: parent.student,
+                    parentId: parent._id,
+                    schoolId: parent.school,
+                    type: type || 'tuition',
+                    term,
+                    session,
+                    amount: amount * 100
+                }
+            });
+        } else if (req.user.role === 'school_admin' || req.user.role === 'super_admin') {
+            // School Subscription Flow
+            const schoolId = req.user.schoolId?._id || req.user.schoolId;
+            const school = await School.findById(schoolId);
+            if (!school) return res.status(404).json({ message: 'School not found' });
+
+            // Determine amount based on plan if not provided (though frontend should provide it)
+            let subAmount = amount;
+            if (!subAmount && plan) {
+                const subscriptionPlans = require('../config/subscriptionPlans');
+                subAmount = subscriptionPlans[plan]?.price;
+            }
+
+            if (!subAmount) return res.status(400).json({ message: 'Amount or valid Plan required for subscription' });
+
+            // For redirect flow (standard checkout), we call Paystack API
+            const axios = require('axios');
+            const reference = `SUB-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+            const response = await axios.post('https://api.paystack.co/transaction/initialize', {
+                email: req.user.email,
+                amount: subAmount * 100,
+                reference,
+                callback_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard/settings?tab=billing`,
+                metadata: {
+                    schoolId: school._id,
+                    type: 'subscription',
+                    plan: plan || 'Basic'
+                }
+            }, {
+                headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }
+            });
+
+            return res.json(response.data.data);
+        } else {
+            return res.status(403).json({ message: 'Unauthorized to initialize payment' });
+        }
 
     } catch (error) {
-        console.error(error);
+        console.error('Initialize Payment Error:', error.response?.data || error.message);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -57,76 +91,110 @@ const initializePayment = async (req, res) => {
 // @route   POST /api/payments/verify
 // @access  Private (Parent)
 const verifyPayment = async (req, res) => {
-    const { reference, status, metadata } = req.body;
-    
-    // Start session for transaction if replica set available, else simple update
-    // For this environment, we'll assume simple atomic updates or use findByIdAndUpdate where possible.
-    
+    const reference = req.body.reference || req.params.reference || req.query.reference;
+
+    if (!reference) {
+        return res.status(400).json({ message: 'Missing transaction reference' });
+    }
+
     try {
-        if (status === 'success') {
-            const parent = await Parent.findOne({ user: req.user._id });
-            if (!parent) return res.status(404).json({ message: 'Parent not found' });
-            
-            // Check if payment already exists
-            let existingPayment = await FeePayment.findOne({ reference });
-            if (existingPayment) {
-                 if (existingPayment.status === 'success') {
-                     return res.status(200).json(existingPayment);
-                 }
-                // If it was pending, we update it
+        // 1. Verify with Paystack Server-side
+        const axios = require('axios');
+        const paystackRes = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
+            headers: {
+                Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`
             }
+        });
 
-            // Get School to increment counter
-            const school = await School.findByIdAndUpdate(
-                parent.school, 
-                { $inc: { receiptCounter: 1 } }, 
-                { new: true }
-            );
-            
-            if (!school) return res.status(404).json({ message: 'School not found' });
-            
-            // Generate Receipt Number
-            const year = new Date().getFullYear();
-            // Format: REF-{YEAR}-{0000}
-            const receiptSeq = school.receiptCounter.toString().padStart(5, '0');
-            const receiptNumber = `RCP-${year}-${receiptSeq}`;
-
-            const paidAmount = req.body.amount || (metadata && metadata.amount) || 0;
-
-            const paymentData = {
-                school: parent.school,
-                student: parent.student,
-                parent: parent._id,
-                amount: paidAmount / 100, // Kobo to Naira
-                reference,
-                receiptNumber,
-                status: 'success',
-                type: metadata?.type || 'tuition',
-                term: metadata?.term,
-                session: metadata?.session,
-                paidAt: new Date()
-            };
-
-            // If existing payment (pending), update it, else create new
-            if (existingPayment) {
-                existingPayment.status = 'success';
-                existingPayment.paidAt = new Date();
-                existingPayment.receiptNumber = receiptNumber;
-                await existingPayment.save();
-                return res.status(200).json(existingPayment);
-            }
-
-            const payment = await FeePayment.create(paymentData);
-            return res.status(201).json(payment);
-
-        } else {
-             // Handle failed/cancelled
-             return res.status(400).json({ message: 'Payment not successful' });
+        if (paystackRes.data.status !== true || paystackRes.data.data.status !== 'success') {
+            return res.status(400).json({ message: 'Payment verification failed with Paystack' });
         }
 
+        const data = paystackRes.data.data;
+        const metadata = data.metadata;
+
+        // --- Handle Subscription Payment ---
+        if (metadata?.type === 'subscription') {
+            const schoolId = metadata.schoolId;
+            const planName = metadata.plan;
+            
+            const subscriptionPlans = require('../config/subscriptionPlans');
+            const plan = subscriptionPlans[planName];
+
+            if (!plan) return res.status(400).json({ message: 'Invalid subscription plan' });
+
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + (plan.duration || 90)); // Default 90 days/term
+
+            const updatedSchool = await School.findByIdAndUpdate(schoolId, {
+                'subscription.plan': planName,
+                'subscription.status': 'active',
+                'subscription.startDate': new Date(),
+                'subscription.expiryDate': expiryDate,
+                'subscription.lastPaymentReference': reference
+            }, { new: true });
+
+            return res.status(200).json({ message: 'Subscription activated', school: updatedSchool });
+        }
+
+        // --- Handle Fee Payment (Parent) ---
+        // 2. Check if payment already recorded in our DB
+        let existingPayment = await FeePayment.findOne({ reference });
+        if (existingPayment) {
+            if (existingPayment.status === 'success') {
+                return res.status(200).json(existingPayment);
+            }
+        }
+
+        // 3. Update School & Generate Receipt
+        // Fallback: Retrieve parent context from DB if metadata is missing/incomplete
+        const parent = await Parent.findOne({ user: req.user._id });
+        
+        const schoolId = metadata?.schoolId || parent?.school;
+        const studentId = metadata?.studentId || parent?.student;
+        const parentId = metadata?.parentId || parent?._id;
+
+        if (!schoolId) return res.status(400).json({ message: 'School context not found for payment' });
+        if (!studentId || !parentId) return res.status(400).json({ message: 'Incomplete student/parent profile for payment' });
+
+        const school = await School.findByIdAndUpdate(
+            schoolId,
+            { $inc: { receiptCounter: 1 } },
+            { new: true }
+        );
+
+        if (!school) return res.status(404).json({ message: 'School not found' });
+
+        const year = new Date().getFullYear();
+        const receiptSeq = school.receiptCounter.toString().padStart(5, '0');
+        const receiptNumber = `RCP-${year}-${receiptSeq}`;
+
+        const paymentData = {
+            school: schoolId,
+            student: studentId,
+            parent: parentId,
+            amount: data.amount / 100, // Kobo to Naira
+            reference,
+            receiptNumber,
+            status: 'success',
+            type: metadata?.type || 'tuition',
+            term: metadata?.term,
+            session: metadata?.session,
+            paidAt: new Date(data.paid_at)
+        };
+
+        if (existingPayment) {
+            Object.assign(existingPayment, paymentData);
+            await existingPayment.save();
+            return res.status(200).json(existingPayment);
+        }
+
+        const payment = await FeePayment.create(paymentData);
+        res.status(201).json(payment);
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Payment Verification Error:', error.response?.data || error.message);
+        res.status(500).json({ message: 'Server error during payment verification' });
     }
 };
 
@@ -311,8 +379,6 @@ module.exports = {
     initializePayment,
     verifyPayment,
     getMyPaymentHistory,
-    paystackWebhook,
-    getAllPayments,
     paystackWebhook,
     getAllPayments,
     getFinancialStats,

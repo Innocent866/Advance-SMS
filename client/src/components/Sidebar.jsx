@@ -64,8 +64,7 @@ const Sidebar = () => {
         { path: '/staff/reports', label: 'Staff Reports', icon: FileText, roles: ['teacher'], feature: 'staffAdminComm' },
         
         // Health Module
-        { path: '/nurse-dashboard', label: 'Nurse Dashboard', icon: ClipboardList, roles: ['nurse'] },
-        { path: '/doctor-dashboard', label: 'Doctor Dashboard', icon: User, roles: ['doctor'] },
+        
 
         { path: '/admin/reports', label: 'Report Management', icon: FileText, roles: ['school_admin'], feature: 'basicReports' },
         { path: '/teacher/learning-materials', label: 'Learning Materials', icon: BookOpen, roles: ['teacher'], feature: 'learningMaterials' },
@@ -77,6 +76,7 @@ const Sidebar = () => {
         { path: '/parent/videos', label: 'Video Lessons', icon: Video, roles: ['parent'] },
         { path: '/parent/results', label: 'Results', icon: BarChart2, roles: ['parent'] },
         { path: '/parent/history', label: 'Learning History', icon: Clock, roles: ['parent'] },
+        { path: '/parent/attendance', label: 'Attendance', icon: CheckCircle, roles: ['parent'] },
         { path: '/parent/materials', label: 'Materials', icon: BookOpen, roles: ['parent'] },
         { path: '/parent/payments', label: 'Fees & Payments', icon: CreditCard, roles: ['parent'] },
 
@@ -95,23 +95,24 @@ const Sidebar = () => {
             <div className="p-1 flex items-center justify-center border-b border-gray-200">
                 <img 
                     src={schoolLogo || defaultLogo} 
-                    alt="School Logo" 
+                    alt={`${user?.schoolId?.name || 'School'} Logo`} 
                     className="h-24 w-auto object-contain"
                 />
             </div>
             
-            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+            <nav className="flex-1 p-4 space-y-2 overflow-y-auto" aria-label="Main Navigation">
                 {filteredNav.map((item) => (
                     <Link
                         key={item.path}
                         to={item.path}
+                        aria-current={isActive(item.path) ? 'page' : undefined}
                         className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                             isActive(item.path) 
                                 ? 'bg-primary/10 text-primary font-medium' 
                                 : 'text-gray-600 hover:bg-gray-50'
                         }`}
                     >
-                        <item.icon size={20} />
+                        <item.icon size={20} aria-hidden="true" />
                         <span>{item.label}</span>
                     </Link>
                 ))}
@@ -122,13 +123,14 @@ const Sidebar = () => {
                     <p className="text-sm font-medium text-gray-900">{user?.name}</p>
                     <p className="text-xs text-gray-500 capitalize">{user?.role?.replace('_', ' ')}</p>
                 </div>
-                <button
-                    onClick={logout}
-                    className="flex items-center space-x-3 px-4 py-2 w-full text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                    <LogOut size={20} />
-                    <span>Logout</span>
-                </button>
+                 <button
+                     onClick={logout}
+                     aria-label="Logout from account"
+                     className="flex items-center space-x-3 px-4 py-2 w-full text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                 >
+                     <LogOut size={20} aria-hidden="true" />
+                     <span>Logout</span>
+                 </button>
             </div>
         </div>
     );

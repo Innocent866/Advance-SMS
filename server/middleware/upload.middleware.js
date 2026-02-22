@@ -28,17 +28,23 @@ const storage = new CloudinaryStorage({
 });
 
 // Check file type (Double check, though Cloudinary allowed_formats handles extension)
+// Check file type (Double check, though Cloudinary allowed_formats handles extension)
 function checkFileType(file, cb) {
-    const filetypes = /jpeg|jpg|png|gif|webp|svg|mp4|mov|avi|wmv|mkv|pdf|doc|docx/;
-    const mimetype = filetypes.test(file.mimetype);
-    // basic extension check
+    const filetypes = /jpeg|jpg|jfif|jpe|png|gif|webp|svg|mp4|mov|avi|wmv|mkv|pdf|doc|docx|csv|xls|xlsx/;
     const extname = filetypes.test(file.originalname.toLowerCase());
+    // Accept any standard image, video, or PDF MIME type
+    const mimetype = file.mimetype.startsWith('image/') ||
+                     file.mimetype.startsWith('video/') ||
+                     file.mimetype === 'application/pdf' ||
+                     file.mimetype === 'application/msword' ||
+                     file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
     if (mimetype && extname) {
         return cb(null, true);
     } else {
-        console.error(`File Upload Rejected: Mimetype=${file.mimetype}, OriginalName=${file.originalname}`);
-        cb(new Error('Error: Invalid File Type!'));
+        const errorMsg = `Invalid File Type: ${file.originalname} (${file.mimetype}). Allowed: images, videos, documents.`;
+        console.error(errorMsg);
+        cb(new Error(errorMsg));
     }
 }
 

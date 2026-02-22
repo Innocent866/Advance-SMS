@@ -3,8 +3,9 @@ const router = express.Router();
 const { initializePayment, verifyPayment, getMyPaymentHistory, getAllPayments, getFinancialStats, getBanks } = require('../controllers/payment.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
 
-router.post('/initialize', protect, authorize('parent'), initializePayment);
-router.post('/verify', protect, authorize('parent'), verifyPayment);
+router.post('/initialize', protect, initializePayment);
+router.post('/verify', protect, verifyPayment);
+router.get('/verify/:reference', protect, verifyPayment);
 router.get('/history', protect, authorize('parent'), getMyPaymentHistory);
 
 router.get('/admin/all', protect, authorize('school_admin', 'super_admin'), getAllPayments);

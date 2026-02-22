@@ -204,7 +204,6 @@ const activateSession = async (req, res) => {
 };
 
 // --- Teacher Assignment ---
-// --- Teacher Assignment ---
 const assignTeacherToSubject = async (req, res) => {
     const { teacherId, subjectId, classId, arm } = req.body;
     try {

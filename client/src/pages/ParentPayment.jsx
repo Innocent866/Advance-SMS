@@ -24,10 +24,7 @@ const ParentPayment = () => {
     const [school, setSchool] = useState(null);
 
     // Debugging logs
-    useEffect(() => {
-        console.log("ParentPayment Debug: User:", user);
-        console.log("ParentPayment Debug: School:", school);
-    }, [user, school]);
+    // Debugging logs removed for production
 
     const fetchHistory = async () => {
         try {
@@ -69,7 +66,7 @@ const ParentPayment = () => {
                 session
             });
             const { key, email, reference, subaccount } = res.data;
-            console.log("Paystack Init:", { key, email, amount: res.data.amount, ref: reference, subaccount });
+            // Paystack Init
 
             if (!key) {
                 showNotification('Payment System Error: Public Key missing', 'error');
@@ -82,7 +79,8 @@ const ParentPayment = () => {
                 key,
                 email,
                 amount: res.data.amount, // in kobo
-                ref: reference,
+                reference: reference,
+                metadata: res.data.metadata,
                 subaccount, // Add subaccount for automatic split
                 currency: 'NGN',
                 callback: function(response) {
@@ -117,51 +115,7 @@ const ParentPayment = () => {
         }
     };
 
-    const downloadReceipt = (tx) => {
-        const doc = new jsPDF();
-        
-        // Add School Header (Placeholder - you might want to fetch actual school info)
-        doc.setFontSize(22);
-        doc.setTextColor(40, 40, 40);
-        doc.text("Advance SMS", 105, 20, { align: "center" });
-        
-        doc.setFontSize(12);
-        doc.text("Payment Receipt", 105, 30, { align: "center" });
-        
-        // Draw divider
-        doc.setLineWidth(0.5);
-        doc.line(20, 35, 190, 35);
-        
-        // Receipt Details
-        doc.setFontSize(12);
-        doc.setTextColor(60, 60, 60);
-        
-        let y = 50;
-        const addLine = (label, value) => {
-            doc.setFont("helvetica", "bold");
-            doc.text(label, 20, y);
-            doc.setFont("helvetica", "normal");
-            doc.text(value.toString(), 100, y);
-            y += 10;
-        };
-
-        addLine("Receipt Ref:", tx.reference);
-        addLine("Date:", new Date(tx.createdAt).toLocaleDateString() + ' ' + new Date(tx.createdAt).toLocaleTimeString());
-        addLine("Amount:", `NGN ${tx.amount.toLocaleString()}`);
-        addLine("Payment Type:", tx.type.replace('_', ' ').toUpperCase());
-        addLine("Status:", tx.status.toUpperCase());
-        if (tx.metadata) {
-            if (tx.metadata.session) addLine("Session:", tx.metadata.session);
-            if (tx.metadata.term) addLine("Term:", tx.metadata.term);
-        }
-
-        // Footer
-        doc.setFontSize(10);
-        doc.setTextColor(150, 150, 150);
-        doc.text("Thank you for your payment.", 105, 130, { align: "center" });
-        
-        doc.save(`Receipt_${tx.reference}.pdf`);
-    };
+    // Unified receipt generation used below
 
     return (
         <div className="max-w-6xl mx-auto">

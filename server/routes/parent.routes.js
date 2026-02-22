@@ -7,7 +7,8 @@ const {
     getChildVideos,
     getChildResults,
     getChildHistory,
-    getChildMaterials
+    getChildMaterials,
+    getChildAttendance
 } = require('../controllers/parent.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
 
@@ -21,5 +22,6 @@ router.get('/child-videos', protect, authorize('parent'), getChildVideos);
 router.get('/child-results', protect, authorize('parent'), getChildResults);
 router.get('/child-history', protect, authorize('parent'), getChildHistory);
 router.get('/child-materials', protect, authorize('parent'), getChildMaterials);
+router.get('/child-attendance', protect, authorize('parent'), getChildAttendance);
 
 module.exports = router;

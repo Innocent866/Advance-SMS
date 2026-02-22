@@ -7,7 +7,7 @@ const VideoLesson = require('../models/VideoLesson');
 
 const getLearningStats = async (req, res) => {
     try {
-        const schoolId = req.user.schoolId;
+        const schoolId = req.user.schoolId._id || req.user.schoolId;
 
         // 1. User Counts
         const totalStudents = await User.countDocuments({ schoolId, role: 'student' });

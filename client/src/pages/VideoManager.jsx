@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import usePageTitle from '../hooks/usePageTitle';
-import { Video, Play, Eye, CheckCircle, Trash2, Loader, Upload, Users, XCircle } from 'lucide-react';
+import { Video, Play, Eye, CheckCircle, Trash2, Loader, Upload, Users, ShieldCheck, CreditCard } from 'lucide-react';
 import QuizManager from '../components/QuizManager';
 
 const VideoManager = () => {
     usePageTitle('Video Manager');
-    const { user } = useAuth();
+    const { user, checkAccess } = useAuth();
+    const hasVideoAccess = checkAccess('videoLessons');
     const [activeTab, setActiveTab] = useState('list'); // 'list' or 'upload'
     
     // Data
@@ -129,7 +130,8 @@ const VideoManager = () => {
             fetchVideos();
         } catch (error) {
             console.error(error);
-            alert('Error uploading video');
+            const message = error.response?.data?.message || 'Error uploading video';
+            alert(message);
         } finally {
             setSubmitting(false);
         }
@@ -335,120 +337,140 @@ const VideoManager = () => {
             {activeTab === 'upload' && (
                 <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 animate-fade-in">
                     <h2 className="text-xl font-bold mb-6">Upload Video Lesson</h2>
-                    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        
-                        <div>
-                            <label className="label">Class Level</label>
-                            <select 
-                                className="input-field"
-                                value={formData.classLevel}
-                                onChange={e => setFormData({...formData, classLevel: e.target.value})}
-                                required
-                            >
-                                <option value="">Select Class</option>
-                                {classes.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="label">Subject</label>
-                            <select 
-                                className="input-field"
-                                value={formData.subject}
-                                onChange={e => setFormData({...formData, subject: e.target.value})}
-                                required
-                            >
-                                <option value="">Select Subject</option>
-                                {subjects.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                            </select>
-                        </div>
-
-                        <div className="md:col-span-2">
-                            <label className="label">Topic</label>
-                            <input 
-                                className="input-field"
-                                value={formData.topic}
-                                onChange={e => setFormData({...formData, topic: e.target.value})}
-                                placeholder="e.g. Newton's Laws of Motion"
-                                required
-                            />
-                        </div>
-
-                        <div className="md:col-span-2">
-                            <label className="label">Video Title</label>
-                            <input 
-                                className="input-field"
-                                value={formData.title}
-                                onChange={e => setFormData({...formData, title: e.target.value})}
-                                placeholder="Lesson Title"
-                                required
-                            />
-                        </div>
-
-                        <div className="md:col-span-2">
-                            <label className="label">Video File (MP4, MOV)</label>
-                            <input 
-                                type="file"
-                                accept="video/*"
-                                className="input-field p-2"
-                                onChange={e => setVideoFile(e.target.files[0])}
-                            />
-                            <p className="text-xs text-gray-500 mt-1">Or provide an external URL below</p>
-                        </div>
-
-                        <div className="md:col-span-2">
-                            <label className="label">Video URL (Optional if uploading file)</label>
-                            <input 
-                                className="input-field"
-                                value={formData.videoUrl}
-                                onChange={e => setFormData({...formData, videoUrl: e.target.value})}
-                                placeholder="https://..."
-                            />
-                        </div>
-
-                        <div className="md:col-span-2">
-                            <label className="label">Description</label>
-                            <textarea 
-                                className="input-field h-24"
-                                value={formData.description}
-                                onChange={e => setFormData({...formData, description: e.target.value})}
-                                placeholder="Brief description of the lesson..."
-                            />
-                        </div>
-
-                        <div className="md:col-span-2">
-                            <label className="label">Lesson Notes</label>
-                            <textarea 
-                                className="input-field h-32"
-                                value={formData.lessonNotes}
-                                onChange={e => setFormData({...formData, lessonNotes: e.target.value})}
-                                placeholder="Detailed notes for students..."
-                            />
-                        </div>
-
-                        <div className="md:col-span-2 flex items-center gap-4">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input 
-                                    type="checkbox" 
-                                    className="w-5 h-5 accent-primary"
-                                    checked={formData.isPublished}
-                                    onChange={e => setFormData({...formData, isPublished: e.target.checked})}
-                                />
-                                <span className="text-gray-700 font-medium">Publish Immediately</span>
-                            </label>
-                        </div>
-
-                        <div className="md:col-span-2">
+                    
+                    {!hasVideoAccess ? (
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 max-w-2xl mx-auto text-center border border-gray-100 dark:border-gray-700 animate-in fade-in duration-500">
+                            <div className="bg-red-50 dark:bg-red-900/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <ShieldCheck className="w-10 h-10 text-red-500" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Feature Not Available</h2>
+                            <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed text-lg">
+                                This feature is not included in your school's current subscription plan. 
+                                Please upgrade to the Standard or Premium plan to access video lessons.
+                            </p>
                             <button 
-                                type="submit" 
-                                disabled={submitting}
-                                className="w-full btn-primary py-3 flex justify-center items-center gap-2"
+                                onClick={() => window.history.back()}
+                                className="inline-flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-8 py-3 rounded-xl font-bold hover:bg-gray-800 dark:hover:bg-gray-100 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
                             >
-                                {submitting ? <Loader className="animate-spin" /> : <Upload size={20} />}
-                                Upload Video
+                                Go Back
                             </button>
                         </div>
-                    </form>
+                    ) : (
+                        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            
+                            <div>
+                                <label className="label">Class Level</label>
+                                <select 
+                                    className="input-field"
+                                    value={formData.classLevel}
+                                    onChange={e => setFormData({...formData, classLevel: e.target.value})}
+                                    required
+                                >
+                                    <option value="">Select Class</option>
+                                    {classes.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="label">Subject</label>
+                                <select 
+                                    className="input-field"
+                                    value={formData.subject}
+                                    onChange={e => setFormData({...formData, subject: e.target.value})}
+                                    required
+                                >
+                                    <option value="">Select Subject</option>
+                                    {subjects.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                                </select>
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="label">Topic</label>
+                                <input 
+                                    className="input-field"
+                                    value={formData.topic}
+                                    onChange={e => setFormData({...formData, topic: e.target.value})}
+                                    placeholder="e.g. Newton's Laws of Motion"
+                                    required
+                                />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="label">Video Title</label>
+                                <input 
+                                    className="input-field"
+                                    value={formData.title}
+                                    onChange={e => setFormData({...formData, title: e.target.value})}
+                                    placeholder="Lesson Title"
+                                    required
+                                />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="label">Video File (MP4, MOV)</label>
+                                <input 
+                                    type="file"
+                                    accept="video/*"
+                                    className="input-field p-2"
+                                    onChange={e => setVideoFile(e.target.files[0])}
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Or provide an external URL below</p>
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="label">Video URL (Optional if uploading file)</label>
+                                <input 
+                                    className="input-field"
+                                    value={formData.videoUrl}
+                                    onChange={e => setFormData({...formData, videoUrl: e.target.value})}
+                                    placeholder="https://..."
+                                />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="label">Description</label>
+                                <textarea 
+                                    className="input-field h-24"
+                                    value={formData.description}
+                                    onChange={e => setFormData({...formData, description: e.target.value})}
+                                    placeholder="Brief description of the lesson..."
+                                />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="label">Lesson Notes</label>
+                                <textarea 
+                                    className="input-field h-32"
+                                    value={formData.lessonNotes}
+                                    onChange={e => setFormData({...formData, lessonNotes: e.target.value})}
+                                    placeholder="Detailed notes for students..."
+                                />
+                            </div>
+
+                            <div className="md:col-span-2 flex items-center gap-4">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        className="w-5 h-5 accent-primary"
+                                        checked={formData.isPublished}
+                                        onChange={e => setFormData({...formData, isPublished: e.target.checked})}
+                                    />
+                                    <span className="text-gray-700 font-medium">Publish Immediately</span>
+                                </label>
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <button 
+                                    type="submit" 
+                                    disabled={submitting}
+                                    className="w-full btn-primary py-3 flex justify-center items-center gap-2"
+                                >
+                                    {submitting ? <Loader className="animate-spin" /> : <Upload size={20} />}
+                                    Upload Video
+                                </button>
+                            </div>
+                        </form>
+                    )}
                 </div>
             )}
 

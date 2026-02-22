@@ -41,9 +41,7 @@ const Contact = () => {
             message: values.message,
             time: new Date().toLocaleString(), // Add timestamp
         };
-        console.log(templateParams);
-        console.log(values.subject);
-        console.log(values.from_email);
+        // Removed logs for production
         
         emailjs.send(
             import.meta.env.VITE_EMAILJS_SERVICE_ID,
@@ -52,12 +50,12 @@ const Contact = () => {
             import.meta.env.VITE_EMAILJS_PUBLIC_KEY
         )
         .then((result) => {
-            console.log(result.text);
+            // Removed logs for production
             setFormStatus('success');
             form.current.reset(); // Reset form ref
             setTimeout(() => setFormStatus('idle'), 5000);
         }, (error) => {
-            console.log(error.text);
+            // Removed logs for production
             setFormStatus('error'); 
             alert("Failed to send message: " + error.text);
             setFormStatus('idle');

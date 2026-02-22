@@ -2,12 +2,7 @@ const { generateExamGradingAI } = require('../utils/aiService');
 const School = require('../models/School');
 const AIUsageLog = require('../models/AIUsageLog');
 
-// Plan Limits (Tokens per month) - Shared with Lesson Plan Limits for now
-const PLAN_LIMITS = {
-    'Basic': 50000,      // ~20 lessons
-    'Standard': 200000,  // ~80 lessons
-    'Premium': 1000000   // ~400 lessons
-};
+const subscriptionPlans = require('../config/subscriptionPlans');
 
 // @desc    Grade an exam answer using AI
 // @route   POST /api/marking/grade
@@ -44,7 +39,7 @@ const gradeExam = async (req, res) => {
         ]);
 
         const usedTokens = usageStats[0]?.totalTokens || 0;
-        const limit = PLAN_LIMITS[currentPlan] || 50000;
+        const limit = subscriptionPlans[currentPlan]?.aiTokenLimit || 0;
 
         if (usedTokens >= limit) {
              return res.status(403).json({ 

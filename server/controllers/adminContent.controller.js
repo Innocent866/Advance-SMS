@@ -4,7 +4,7 @@ const VideoLesson = require('../models/VideoLesson');
 // Get all content with filters
 const getAllContent = async (req, res) => {
     const { type, classId, subjectId, term, week, status } = req.query;
-    const schoolId = req.user.schoolId;
+    const schoolId = req.user.schoolId?._id || req.user.schoolId;
 
     try {
         let items = [];
@@ -57,13 +57,13 @@ const updateContentStatus = async (req, res) => {
         let updated;
         if (type === 'Lesson Plan') {
             updated = await LessonPlan.findOneAndUpdate(
-                { _id: id, schoolId: req.user.schoolId },
+                { _id: id, schoolId: req.user.schoolId?._id || req.user.schoolId },
                 { status },
                 { new: true }
             );
         } else if (type === 'Video Lesson') {
             updated = await VideoLesson.findOneAndUpdate(
-                { _id: id, schoolId: req.user.schoolId },
+                { _id: id, schoolId: req.user.schoolId?._id || req.user.schoolId },
                 { status },
                 { new: true }
             );

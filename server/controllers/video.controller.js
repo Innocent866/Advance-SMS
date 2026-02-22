@@ -80,7 +80,8 @@ const createVideo = async (req, res) => {
 // @access  Private
 const getVideos = async (req, res) => {
     const { classLevelId, subjectId, topic, teacherId } = req.query;
-    let query = { schoolId: req.user.schoolId };
+    const schoolId = req.user.schoolId?._id || req.user.schoolId;
+    let query = { schoolId };
 
     if (classLevelId) query.classLevelId = classLevelId;
     if (subjectId) query.subjectId = subjectId;
@@ -135,7 +136,7 @@ const updateVideo = async (req, res) => {
         const video = await VideoLesson.findById(req.params.id);
         if (!video) return res.status(404).json({ message: 'Video not found' });
 
-        if (video.teacherId.toString() !== req.user.id && req.user.role !== 'school_admin' && req.user.role !== 'admin') {
+        if (video.teacherId.toString() !== req.user.id && req.user.role !== 'school_admin' && req.user.role !== 'super_admin') {
             return res.status(401).json({ message: 'Not authorized' });
         }
 
@@ -155,7 +156,7 @@ const deleteVideo = async (req, res) => {
         const video = await VideoLesson.findById(req.params.id);
         if (!video) return res.status(404).json({ message: 'Video not found' });
 
-        if (video.teacherId.toString() !== req.user.id && req.user.role !== 'school_admin' && req.user.role !== 'admin') {
+        if (video.teacherId.toString() !== req.user.id && req.user.role !== 'school_admin' && req.user.role !== 'super_admin') {
             return res.status(401).json({ message: 'Not authorized' });
         }
 
@@ -170,7 +171,8 @@ const deleteVideo = async (req, res) => {
         // Update School Usage (Decrease count, storage is hard to decrease accurately unless we stored the EXACT size per video)
         // For this MVP, we might just decrease count or ignore storage decrement to be safe (or store size in VideoLesson to be accurate).
         // Let's just decrement count for now.
-        await School.findByIdAndUpdate(req.user.schoolId, {
+        const schoolId = req.user.schoolId?._id || req.user.schoolId;
+        await School.findByIdAndUpdate(schoolId, {
             $inc: { 'mediaUsage.uploadCount': -1 }
         });
 
@@ -220,7 +222,7 @@ const getVideoAnalytics = async (req, res) => {
         if (!video) return res.status(404).json({ message: 'Video not found' });
 
         // Verify ownership
-        if (video.teacherId.toString() !== req.user.id && req.user.role !== 'school_admin' && req.user.role !== 'admin') {
+        if (video.teacherId.toString() !== req.user.id && req.user.role !== 'school_admin' && req.user.role !== 'super_admin') {
             return res.status(401).json({ message: 'Not authorized' });
         }
 

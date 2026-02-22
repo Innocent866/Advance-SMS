@@ -132,8 +132,11 @@ const createStudent = async (req, res) => {
         );
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Create Student Error:', error);
+        if (error.code === 11000) {
+            return res.status(400).json({ message: 'A user with this email or ID already exists.' });
+        }
+        res.status(500).json({ message: error.message || 'Server error creating student' });
     }
 };
 
@@ -508,7 +511,6 @@ module.exports = {
     getStudents,
     getTeacherStudents,
     getMyProfile,
-    getStudentById,
     getStudentById,
     updateStudent,
     deleteStudent

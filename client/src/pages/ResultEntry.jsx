@@ -111,7 +111,6 @@ const ResultEntry = () => {
             setSubjects(availableSubjects);
 
         } catch (error) {
-            console.error('Error fetching metadata:', error);
             showNotification('Failed to load classes/subjects', 'error');
         }
     };

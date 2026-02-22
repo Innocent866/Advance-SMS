@@ -32,8 +32,9 @@ exports.createReport = async (req, res) => {
             attachment
         } = req.body;
 
+        const schoolId = req.user.schoolId?._id || req.user.schoolId;
         const report = new StaffReport({
-            schoolId: req.user.schoolId,
+            schoolId,
             creatorId: req.user.userId || req.user._id, // Handle potential difference in auth middleware
             senderRole,
             reportType,
@@ -51,7 +52,7 @@ exports.createReport = async (req, res) => {
         // Notify Admins
         // Find all users with 'school_admin' or 'super_admin' role in this school
         const admins = await User.find({
-            schoolId: req.user.schoolId,
+            schoolId,
             role: { $in: ['school_admin', 'super_admin'] }
         });
 
@@ -81,7 +82,8 @@ exports.getAllReports = async (req, res) => {
     try {
         const { role, type, status, startDate, endDate } = req.query;
         
-        let query = { schoolId: req.user.schoolId };
+        const schoolId = req.user.schoolId?._id || req.user.schoolId;
+        let query = { schoolId };
 
         if (role) query.senderRole = role;
         if (type) query.reportType = type;
@@ -110,8 +112,9 @@ exports.getAllReports = async (req, res) => {
 // --- Get My Reports (Staff) ---
 exports.getMyReports = async (req, res) => {
     try {
+        const schoolId = req.user.schoolId?._id || req.user.schoolId;
         const reports = await StaffReport.find({
-            schoolId: req.user.schoolId,
+            schoolId,
             creatorId: req.user.userId || req.user._id
         })
         .populate('relatedClassId', 'name')
@@ -132,7 +135,8 @@ exports.addReply = async (req, res) => {
         const { id } = req.params;
         const { comment } = req.body;
 
-        const report = await StaffReport.findOne({ _id: id, schoolId: req.user.schoolId });
+        const schoolId = req.user.schoolId?._id || req.user.schoolId;
+        const report = await StaffReport.findOne({ _id: id, schoolId });
         if (!report) {
             return res.status(404).json({ message: 'Report not found' });
         }
@@ -160,7 +164,7 @@ exports.addReply = async (req, res) => {
         if (isCreator) {
             // Notify Admins
             const admins = await User.find({
-                schoolId: req.user.schoolId,
+                schoolId,
                 role: { $in: ['school_admin', 'super_admin'] }
             });
             const notificationMessage = `New reply on report "${report.title}" from ${req.user.name}`;
@@ -192,7 +196,8 @@ exports.updateReportStatus = async (req, res) => {
         const { id } = req.params;
         const { status, comment } = req.body;
 
-        const report = await StaffReport.findOne({ _id: id, schoolId: req.user.schoolId });
+        const schoolId = req.user.schoolId?._id || req.user.schoolId;
+        const report = await StaffReport.findOne({ _id: id, schoolId });
         if (!report) {
             return res.status(404).json({ message: 'Report not found' });
         }
@@ -243,7 +248,8 @@ exports.updateReport = async (req, res) => {
             attachment
         } = req.body;
 
-        const report = await StaffReport.findOne({ _id: id, schoolId: req.user.schoolId });
+        const schoolId = req.user.schoolId?._id || req.user.schoolId;
+        const report = await StaffReport.findOne({ _id: id, schoolId });
         if (!report) {
             return res.status(404).json({ message: 'Report not found' });
         }
@@ -279,7 +285,8 @@ exports.deleteReport = async (req, res) => {
          const { id } = req.params;
          // Allow admin or creator to delete? Usually just admin or nobody for audit logs.
          // Let's check permissions.
-         const report = await StaffReport.findOne({ _id: id, schoolId: req.user.schoolId });
+         const schoolId = req.user.schoolId?._id || req.user.schoolId;
+         const report = await StaffReport.findOne({ _id: id, schoolId });
          
          if (!report) {
              return res.status(404).json({ message: 'Report not found' });

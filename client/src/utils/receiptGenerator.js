@@ -1,6 +1,5 @@
-import { jsPDF } from 'jspdf';
-
-export const generateReceipt = (tx, schoolSettings) => {
+export const generateReceipt = async (tx, schoolSettings) => {
+    const { jsPDF } = await import('jspdf');
     const doc = new jsPDF();
     
     // Settings or Defaults

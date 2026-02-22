@@ -1,11 +1,12 @@
 const School = require('../models/School');
 const Payment = require('../models/Payment');
 
-// Plan Definitions
+const subscriptionPlans = require('../config/subscriptionPlans');
+
 const PLANS = {
-    'Basic': { price: 50000, duration: 90, maxStudents: 300, maxTeachers: 40 }, // 50k / Term (3 Months)
-    'Standard': { price: 100000, duration: 90, maxStudents: 700, maxTeachers: 70 }, // 100k / Term
-    'Premium': { price: 200000, duration: 90, maxStudents: 1500, maxTeachers: 200 } // 200k / Term
+    'Basic': { ...subscriptionPlans.Basic, price: 50000, duration: 90 },
+    'Standard': { ...subscriptionPlans.Standard, price: 100000, duration: 90 },
+    'Premium': { ...subscriptionPlans.Premium, price: 200000, duration: 90 }
 };
 
 const activateSubscription = async (schoolId, planName, amount, reference) => {
@@ -45,7 +46,7 @@ const activateSubscription = async (schoolId, planName, amount, reference) => {
             'subscription.expiryDate': newExpiryDate,
             'subscription.paymentRef': reference,
             'subscription.maxStudents': planDetails.maxStudents,
-            'subscription.maxTeachers': planDetails.maxTeachers
+            'subscription.maxTeachers': planDetails.maxStaff 
         }
     }, { new: true, runValidators: true });
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FileText, CheckCircle, Brain, RefreshCw, Save, AlertCircle, Upload, Download } from 'lucide-react';
 import api from '../utils/api';
 import usePageTitle from '../hooks/usePageTitle';
-import jsPDF from 'jspdf';
+// jspdf dynamically imported below
 
 const AIExamMarking = () => {
     usePageTitle('AI Exam Marking');
@@ -65,8 +65,9 @@ const AIExamMarking = () => {
         alert(`Score Finalized: ${finalizedScore}/${result?.maxPossibleScore}`);
     };
 
-    const handleDownloadPDF = () => {
+    const handleDownloadPDF = async () => {
         if (!result) return;
+        const { jsPDF } = await import('jspdf');
         const doc = new jsPDF();
         
         doc.setFontSize(18);

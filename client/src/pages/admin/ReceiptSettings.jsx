@@ -3,7 +3,7 @@ import usePageTitle from '../../hooks/usePageTitle';
 import api from '../../utils/api';
 import { Save, FileText, Upload } from 'lucide-react';
 import { useNotification } from '../../context/NotificationContext';
-import { jsPDF } from 'jspdf';
+// jspdf dynamically imported below
 
 const ReceiptSettings = () => {
     usePageTitle('Receipt Settings');
@@ -46,7 +46,8 @@ const ReceiptSettings = () => {
         }
     };
 
-    const handlePreview = () => {
+    const handlePreview = async () => {
+        const { jsPDF } = await import('jspdf');
         const doc = new jsPDF();
         
         // Mock Data for Preview
