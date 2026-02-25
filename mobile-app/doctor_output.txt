@@ -1,0 +1,24 @@
+Running 17 checks on your project...
+14/17 checks passed. 3 checks failed. Possible issues detected:
+Use the --verbose flag to see more details about passed checks.
+
+✖ Check for common project setup issues
+The .expo directory is not ignored by Git. It contains machine-specific device history and development server settings and should not be committed.
+Advice:
+Add ".expo/" to your .gitignore to avoid committing local Expo state.
+
+✖ Check dependencies for packages that should not be installed directly
+The package  "@types/react-native" should not be installed directly in your project, as types are included with the "react-native" package.
+Advice:
+Remove these packages from your package.json.
+
+✖ Check that required peer dependencies are installed
+Missing peer dependency: expo-font
+Required by: @expo/vector-icons
+Missing peer dependency: react-native-worklets
+Required by: react-native-reanimated
+Advice:
+Install missing required peer dependencies with "npx expo install expo-font react-native-worklets"
+Your app may crash outside of Expo Go without these dependencies. Native module peer dependencies must be installed directly.
+
+3 checks failed, indicating possible issues with the project.
