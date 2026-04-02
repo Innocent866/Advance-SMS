@@ -80,28 +80,28 @@ const AdminFinanceDashboard = () => {
             value: formatCurrency(stats?.overview?.totalRevenue || 0),
             trend: stats?.overview?.revenueGrowth,
             icon: Wallet,
-            color: 'blue',
+            color: { bg: 'bg-blue-50', text: 'text-blue-600' },
             description: 'Total successful collections'
         },
         {
             title: 'Transactions',
             value: stats?.overview?.totalTransactions || 0,
             icon: CreditCard,
-            color: 'purple',
+            color: { bg: 'bg-purple-50', text: 'text-purple-600' },
             description: 'Total payment attempts'
         },
         {
             title: 'Success Rate',
             value: `${((stats?.overview?.successfulTransactions / stats?.overview?.totalTransactions) * 100 || 0).toFixed(1)}%`,
             icon: CheckCircle,
-            color: 'green',
+            color: { bg: 'bg-green-50', text: 'text-green-600' },
             description: 'Percentage of completed payments'
         },
         {
             title: 'Pending Volume',
             value: formatCurrency(stats?.overview?.pendingVolume || 0),
             icon: Clock,
-            color: 'orange',
+            color: { bg: 'bg-orange-50', text: 'text-orange-600' },
             description: 'Payments awaiting processing'
         }
     ];
@@ -117,7 +117,7 @@ const AdminFinanceDashboard = () => {
                         animate={{ opacity: 1, x: 0 }}
                     >
                         <h1 className="text-4xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                            School <span className="text-primary-600">Finance</span>
+                            School <span className="text-primary">Finance</span>
                         </h1>
                         <p className="text-gray-500 mt-2 font-medium">Track your school's income and payments.</p>
                     </motion.div>
@@ -130,7 +130,7 @@ const AdminFinanceDashboard = () => {
                         >
                             <RotateCcw size={20} className={loading ? 'animate-spin' : ''} />
                         </button>
-                        <button className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-2xl font-bold shadow-lg shadow-primary-200 hover:bg-primary-700 transition-all transform hover:-translate-y-1">
+                        <button className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/30 hover:opacity-90 transition-all transform hover:-translate-y-1">
                             <Download size={20} />
                             Export Report
                         </button>
@@ -147,11 +147,11 @@ const AdminFinanceDashboard = () => {
                             transition={{ delay: idx * 0.1 }}
                             className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/50 group relative overflow-hidden"
                         >
-                            <div className={`absolute top-0 right-0 w-32 h-32 bg-${card.color}-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110 opacity-50`} />
+                            <div className={`absolute top-0 right-0 w-32 h-32 ${card.color.bg} rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110 opacity-50`} />
                             
                             <div className="relative z-10 flex flex-col h-full">
                                 <div className="flex justify-between items-start mb-4">
-                                    <div className={`p-3 bg-${card.color}-50 text-${card.color}-600 rounded-2xl`}>
+                                    <div className={`p-3 ${card.color.bg} ${card.color.text} rounded-2xl`}>
                                         <card.icon size={24} />
                                     </div>
                                     {card.trend !== undefined && (
@@ -197,7 +197,7 @@ const AdminFinanceDashboard = () => {
                                             placeholder="Search records..." 
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary-500/20 transition-all font-medium text-sm"
+                                            className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all font-medium text-sm"
                                         />
                                     </div>
                                     <div className="p-3 bg-gray-50 rounded-2xl text-gray-400">
@@ -240,7 +240,7 @@ const AdminFinanceDashboard = () => {
                                                     </td>
                                                     <td className="px-8 py-6">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 bg-primary-50 text-primary-600 rounded-xl flex items-center justify-center font-black text-sm">
+                                                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center font-black text-sm">
                                                                 {tx.student?.firstName?.[0] || 'U'}
                                                             </div>
                                                             <div className="flex flex-col">
@@ -277,7 +277,7 @@ const AdminFinanceDashboard = () => {
                                                     <td className="px-8 py-6 text-right">
                                                         <button 
                                                             onClick={() => setSelectedTransaction(tx)}
-                                                            className="p-2.5 bg-gray-50 text-gray-400 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-primary-50 hover:text-primary-600"
+                                                            className="p-2.5 bg-gray-50 text-gray-400 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-primary/10 hover:text-primary"
                                                         >
                                                             <ExternalLink size={18} />
                                                         </button>
@@ -298,7 +298,7 @@ const AdminFinanceDashboard = () => {
                         <motion.div 
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="bg-primary-600 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl shadow-primary-200"
+                            className="bg-primary rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl shadow-primary/30"
                         >
                             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl" />
                             <div className="relative z-10 flex flex-col h-full">
@@ -323,15 +323,15 @@ const AdminFinanceDashboard = () => {
 
                                 <div className="space-y-6">
                                     <div>
-                                        <p className="text-[10px] text-primary-200 font-black uppercase tracking-widest mb-1">Bank Name</p>
+                                        <p className="text-[10px] text-white/60 font-black uppercase tracking-widest mb-1">Bank Name</p>
                                         <h3 className="text-xl font-black">{school?.bankDetails?.bankName || 'Not Set'}</h3>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] text-primary-200 font-black uppercase tracking-widest mb-1">Account Name</p>
+                                        <p className="text-[10px] text-white/60 font-black uppercase tracking-widest mb-1">Account Name</p>
                                         <p className="text-lg font-bold">{school?.bankDetails?.accountName || 'Not Set'}</p>
                                     </div>
                                     <div className="pt-4 border-t border-white/10">
-                                        <p className="text-[10px] text-primary-200 font-black uppercase tracking-widest mb-2">Account Number</p>
+                                        <p className="text-[10px] text-white/60 font-black uppercase tracking-widest mb-2">Account Number</p>
                                         <div className="flex items-center justify-between">
                                             <span className="text-2xl font-black tracking-[0.2em] font-mono">
                                                 {school?.bankDetails?.accountNumber || '0000000000'}
@@ -354,7 +354,7 @@ const AdminFinanceDashboard = () => {
                         >
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-lg font-black text-gray-900 flex items-center gap-2">
-                                    <PieChart size={20} className="text-primary-600" />
+                                    <PieChart size={20} className="text-primary" />
                                     Fee Breakdown
                                 </h3>
                                 <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400">
@@ -373,7 +373,7 @@ const AdminFinanceDashboard = () => {
                                             <motion.div 
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${75 - (idx * 15)}%` }}
-                                                className={`h-full bg-primary-${600 - (idx * 100)} rounded-full`}
+                                                className={`h-full ${idx === 0 ? 'bg-primary' : idx === 1 ? 'bg-primary/100' : 'bg-primary-400'} rounded-full`}
                                             />
                                         </div>
                                     </div>
@@ -382,7 +382,7 @@ const AdminFinanceDashboard = () => {
 
                             <div className="mt-8 p-6 bg-gray-50 rounded-3xl border border-gray-100 text-center">
                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Collection Status</p>
-                                <h4 className="text-2xl font-black text-primary-600">EXCELLENT</h4>
+                                <h4 className="text-2xl font-black text-primary">EXCELLENT</h4>
                                 <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase">Payments are on track</p>
                             </div>
                         </motion.div>
@@ -408,7 +408,7 @@ const AdminFinanceDashboard = () => {
                             className="bg-white rounded-[2.5rem] w-full max-w-lg relative z-10 overflow-hidden shadow-2xl"
                         >
                             <div className="p-10">
-                                <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-2">Bank <span className="text-primary-600">Details</span></h3>
+                                <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-2">Bank <span className="text-primary">Details</span></h3>
                                 <p className="text-gray-400 font-medium mb-8 uppercase text-[10px] tracking-widest font-black">Update where payments are sent</p>
                                 
                                 <form onSubmit={async (e) => {
@@ -432,7 +432,7 @@ const AdminFinanceDashboard = () => {
                                                 type="text"
                                                 value={bankForm[field.key]}
                                                 onChange={(e) => setBankForm({...bankForm, [field.key]: e.target.value})}
-                                                className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary-500/20 text-sm font-bold placeholder:text-gray-300 transition-all"
+                                                className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 text-sm font-bold placeholder:text-gray-300 transition-all"
                                                 placeholder={field.placeholder}
                                                 required
                                             />
@@ -449,7 +449,7 @@ const AdminFinanceDashboard = () => {
                                         </button>
                                         <button 
                                             type="submit"
-                                            className="flex-2 px-10 py-4 bg-primary-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-primary-200 hover:bg-primary-700 transition-all"
+                                            className="flex-2 px-10 py-4 bg-primary text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-primary/30 hover:opacity-90 transition-all"
                                         >
                                             Save Changes
                                         </button>
@@ -478,12 +478,12 @@ const AdminFinanceDashboard = () => {
                             exit={{ opacity: 0, scale: 0.9, y: 30 }}
                             className="bg-white rounded-[3rem] w-full max-w-2xl relative z-10 overflow-hidden shadow-2xl"
                         >
-                            <div className="bg-primary-900 p-12 text-white relative overflow-hidden">
-                                <div className="absolute bottom-0 right-0 w-64 h-64 bg-primary-600 rounded-full -mb-32 -mr-32 blur-3xl opacity-50" />
+                            <div className="bg-gray-900 p-12 text-white relative overflow-hidden">
+                                <div className="absolute bottom-0 right-0 w-64 h-64 bg-primary rounded-full -mb-32 -mr-32 blur-3xl opacity-50" />
                                 <div className="relative z-10">
                                     <div className="flex justify-between items-start mb-12">
                                         <div className="bg-white/10 p-4 rounded-[1.5rem] backdrop-blur-md">
-                                            <Wallet size={32} className="text-primary-300" />
+                                            <Wallet size={32} className="text-primary/70" />
                                         </div>
                                         <button 
                                             onClick={() => setSelectedTransaction(null)}
@@ -492,7 +492,7 @@ const AdminFinanceDashboard = () => {
                                             ×
                                         </button>
                                     </div>
-                                    <p className="text-primary-300 text-xs font-black uppercase tracking-[0.3em] mb-2 font-mono">Reference: {selectedTransaction.reference}</p>
+                                    <p className="text-primary/70 text-xs font-black uppercase tracking-[0.3em] mb-2 font-mono">Reference: {selectedTransaction.reference}</p>
                                     <h2 className="text-5xl font-black leading-none">{formatCurrency(selectedTransaction.amount)}</h2>
                                     <div className="flex items-center gap-4 mt-6">
                                         <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
@@ -500,7 +500,7 @@ const AdminFinanceDashboard = () => {
                                         }`}>
                                             Transaction {selectedTransaction.status}
                                         </span>
-                                        <span className="text-primary-300 text-[10px] font-bold uppercase tracking-widest">
+                                        <span className="text-primary/70 text-[10px] font-bold uppercase tracking-widest">
                                             {new Date(selectedTransaction.createdAt).toLocaleTimeString()} • Verified
                                         </span>
                                     </div>
@@ -545,7 +545,7 @@ const AdminFinanceDashboard = () => {
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Academic Period</p>
-                                            <span className="text-xs font-black text-primary-600 bg-primary-50 px-3 py-1.5 rounded-lg uppercase">
+                                            <span className="text-xs font-black text-primary bg-primary/10 px-3 py-1.5 rounded-lg uppercase">
                                                 {selectedTransaction.session} • {selectedTransaction.term}
                                             </span>
                                         </div>
@@ -555,7 +555,7 @@ const AdminFinanceDashboard = () => {
                                 <div className="mt-12 pt-8 border-t border-gray-100 flex gap-4">
                                     <button 
                                         onClick={() => generateReceipt(selectedTransaction, school)}
-                                        className="flex-1 py-4 bg-primary-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-primary-200 hover:bg-primary-700 transition-all flex items-center justify-center gap-2"
+                                        className="flex-1 py-4 bg-primary text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-primary/30 hover:opacity-90 transition-all flex items-center justify-center gap-2"
                                     >
                                         <Download size={16} />
                                         Download Receipt

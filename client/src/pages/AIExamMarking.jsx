@@ -189,12 +189,12 @@ const AIExamMarking = () => {
         data.scoreBreakdown.forEach((item, index) => {
              if (yPos > 270) { doc.addPage(); yPos = 20; }
              
-             doc.setFont(undefined, 'bold');
+             doc.setFont("helvetica", "bold");
              const pointTitle = `${index + 1}. ${item.point}`;
              const lines = doc.splitTextToSize(pointTitle, 140);
              doc.text(lines, 10, yPos);
              
-             doc.setFont(undefined, 'normal');
+             doc.setFont("helvetica", "normal");
              doc.text(`${item.marksAwarded}/${item.maxMarks}`, 160, yPos);
              
              yPos += (lines.length * 5) + 2;

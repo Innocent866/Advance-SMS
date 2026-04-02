@@ -23,30 +23,28 @@ const getMarkedScriptUrl = (originalUrl, scoreBreakdown, totalScore, maxScore) =
     let transformations = [];
 
     // --- Add Score Stamp (Top Right) ---
-    // l_text:font_size_bold:text,co_rgb:hex,g_north_east,x_px,y_px
-    const scoreText = encodeURIComponent(`${totalScore}/${maxScore}`);
+    // Cloudinary text overlays strictly require double URL-encoding for slashes.
+    const scoreText = encodeURIComponent(encodeURIComponent(`${totalScore}/${maxScore}`));
     transformations.push(`l_text:Arial_80_bold:${scoreText},co_rgb:ff0000,g_north_east,x_40,y_40`);
-    
-    // Add a red circle around the score (using a builtin effect or another text layer)
-    // For simplicity, we'll just use the bold red text which is standard WAEC style.
     
     // --- Add Ticks and Crosses ---
     scoreBreakdown.forEach((item) => {
         if (item.coord && typeof item.coord.x === 'number' && typeof item.coord.y === 'number') {
             const isCorrect = item.marksAwarded > 0;
+            // Use bold unicode characters since the URL double-encoding handles symbols properly now.
             const mark = isCorrect ? '✓' : '✕';
-            const markEncoded = encodeURIComponent(mark);
+            const markEncoded = encodeURIComponent(encodeURIComponent(mark));
             
-            // l_text:Arial_60_bold:✓,co_rgb:ff0000,g_north_west,x_0.5,y_0.4,fl_relative
             // Coordinates from AI are 0-100, Cloudinary fl_relative uses 0.0-1.0
             const x = (item.coord.x / 100).toFixed(3);
             const y = (item.coord.y / 100).toFixed(3);
             
             transformations.push(`l_text:Arial_60_bold:${markEncoded},co_rgb:ff0000,g_north_west,x_${x},y_${y},fl_relative`);
             
-            // Optional: Add small marks/subscore next to the tick
-            const subScore = encodeURIComponent(`${item.marksAwarded}/${item.maxMarks}`);
-            transformations.push(`l_text:Arial_30:${subScore},co_rgb:ff0000,g_north_west,x_${(item.coord.x + 5) / 100},y_${(item.coord.y) / 100},fl_relative`);
+            // Add small marks subscore next to the mark (shifted right by +0.06 relative width)
+            const subScore = encodeURIComponent(encodeURIComponent(`${item.marksAwarded}/${item.maxMarks}`));
+            const subX = (parseFloat(x) + 0.06).toFixed(3);
+            transformations.push(`l_text:Arial_30:${subScore},co_rgb:ff0000,g_north_west,x_${subX},y_${y},fl_relative`);
         }
     });
 

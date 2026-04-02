@@ -38,12 +38,14 @@ import {
     Legend
 } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
+import * as XLSX from 'xlsx';
 import usePageTitle from '../hooks/usePageTitle';
 
 const AnalyticsDashboard = () => {
     usePageTitle('School Intelligence Center');
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [exportLoading, setExportLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
 
     useEffect(() => {
@@ -60,38 +62,90 @@ const AnalyticsDashboard = () => {
         fetchStats();
     }, []);
 
-    const downloadReport = () => {
-        if (!stats) return;
+    const downloadReport = async () => {
+        if (exportLoading) return;
+        setExportLoading(true);
 
-        const date = new Date().toISOString().split('T')[0];
-        const rows = [
-            ['Intelligence Dimension', 'Metric', 'Value'],
-            ['Platform Usage', 'Total Students', stats.platformUsage?.students],
-            ['Platform Usage', 'Active Teachers', stats.platformUsage?.teachers],
-            ['Platform Usage', 'Lesson Plans', stats.platformUsage?.lessonPlans],
-            ['Platform Usage', 'Video Content', stats.platformUsage?.videoLessons],
-            ['', '', ''],
-            ['Academic Performance', 'Active Students', stats.academic?.activeStudents],
-            ['Academic Performance', 'Participation Rate', `${stats.academic?.participationRate}%`],
-            ['Academic Performance', 'Quiz Pass Rate', `${stats.academic?.quizStats?.passRate}%`],
-            ['Academic Performance', 'Video Completion', `${stats.academic?.videoStats?.completionRate}%`],
-            ['', '', ''],
-            ['Attendance', 'Target Daily Rate', `${stats.attendance?.dailyRate}%`],
-            ['', '', ''],
-            ['Finance', 'Total Revenue (Success)', `NGN ${stats.finance?.totalRevenue.toLocaleString()}`],
-            ['Finance', 'Successful Transactions', stats.finance?.transactions]
-        ];
+        try {
+            const res = await api.get('/admin/analytics/export');
+            const data = res.data;
 
-        let csvContent = "data:text/csv;charset=utf-8," 
-            + rows.map(e => e.join(",")).join("\n");
+            const dateLabel = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            // --- Tab 1: Financial Ledger (Itemized) ---
+            const financeHeader = [
+                ['GT-SCHOOLHUB: FINANCIAL INTELLIGENCE LEDGER', ''],
+                ['Report Generated', dateLabel],
+                ['', ''],
+                ['Transaction Date', 'Reference', 'Student Name', 'Academic Class', 'Amount (NGN)', 'Payment Type', 'Status']
+            ];
 
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `school_intelligence_report_${date}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+            const financeRows = data.financials.map(f => [
+                new Date(f.paidAt || f.createdAt).toLocaleDateString(),
+                f.reference,
+                f.student ? `${f.student.firstName} ${f.student.lastName}` : 'N/A',
+                f.student?.classId?.name || 'N/A',
+                f.amount.toLocaleString(),
+                f.type?.toUpperCase(),
+                f.status?.toUpperCase()
+            ]);
+
+            // --- Tab 2: Academic Performance Roster (Detailed) ---
+            const academicHeader = [
+                ['GT-SCHOOLHUB: ACADEMIC DEPTH ROSTER', ''],
+                ['Report Generated', dateLabel],
+                ['', ''],
+                ['Student Name', 'Admission ID', 'Class', 'Content Completion %', 'Quizzes Passed', 'Total Attempts', 'Engagement Status']
+            ];
+
+            const academicRows = data.academicRoster.map(s => [
+                `${s.firstName} ${s.lastName}`,
+                s.studentId,
+                s.classId?.name || 'N/A',
+                `${s.videoCompletionRate}%`,
+                s.quizzesPassed,
+                s.quizzesAttempted,
+                s.riskLevel
+            ]);
+
+            // --- Tab 3: Platform Activity Ledger (Granular) ---
+            const activityHeader = [
+                ['GT-SCHOOLHUB: PLATFORM ENGAGEMENT LEDGER', ''],
+                ['Report Generated', dateLabel],
+                ['', ''],
+                ['Timestamp', 'User Identity', 'Role', 'Action Category', 'Activity Details']
+            ];
+
+            const activityRows = data.platformActivity.map(a => [
+                new Date(a.timestamp).toLocaleString(),
+                a.user,
+                a.role,
+                a.action,
+                a.details
+            ]);
+
+            const wb = XLSX.utils.book_new();
+            
+            const wsFinance = XLSX.utils.aoa_to_sheet([...financeHeader, ...financeRows]);
+            const wsAcademic = XLSX.utils.aoa_to_sheet([...academicHeader, ...academicRows]);
+            const wsActivity = XLSX.utils.aoa_to_sheet([...activityHeader, ...activityRows]);
+
+            // Professional Sizing
+            wsFinance['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 12 }];
+            wsAcademic['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }];
+            wsActivity['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 12 }, { wch: 20 }, { wch: 50 }];
+
+            XLSX.utils.book_append_sheet(wb, wsFinance, "Financial Ledger");
+            XLSX.utils.book_append_sheet(wb, wsAcademic, "Academic Roster");
+            XLSX.utils.book_append_sheet(wb, wsActivity, "Activity Log");
+
+            XLSX.writeFile(wb, `Intelligence_Export_${new Date().getTime()}.xlsx`);
+        } catch (error) {
+            console.error('Export Failure:', error);
+            alert('Failed to generate detailed report. Please try again.');
+        } finally {
+            setExportLoading(false);
+        }
     };
 
     if (loading) return (
@@ -136,9 +190,19 @@ const AnalyticsDashboard = () => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={downloadReport}
-                        className="flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-xl hover:bg-black transition-all"
+                        disabled={exportLoading}
+                        className={`flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-xl hover:bg-black transition-all ${exportLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                     >
-                        <Download size={18} /> EXPORT DATASETS
+                        {exportLoading ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                GENERATING...
+                            </>
+                        ) : (
+                            <>
+                                <Download size={18} /> EXPORT DATASETS
+                            </>
+                        )}
                     </motion.button>
                 </div>
             </div>

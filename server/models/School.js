@@ -19,6 +19,8 @@ const schoolSchema = new mongoose.Schema({
         email: { type: Boolean, default: true },
         sms: { type: Boolean, default: false }
     },
+    // The matrix of active/inactive modules
+    features: { type: mongoose.Schema.Types.Mixed, default: {} },
     // Media Usage Tracking
     mediaUsage: {
         students: { type: Number, default: 50 },

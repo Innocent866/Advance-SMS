@@ -6,6 +6,7 @@ const VideoLesson = require('../models/VideoLesson');
 const Attendance = require('../models/Attendance');
 const FeePayment = require('../models/FeePayment');
 const ClassLevel = require('../models/ClassLevel');
+const Student = require('../models/Student');
 
 const getLearningStats = async (req, res) => {
     try {
@@ -247,6 +248,94 @@ const getLearningStats = async (req, res) => {
     }
 };
 
+const getExportData = async (req, res) => {
+    try {
+        const schoolId = req.user.schoolId._id || req.user.schoolId;
+
+        // 1. Raw Financial Ledger
+        const financials = await FeePayment.find({ school: schoolId })
+            .populate('student', 'firstName lastName studentId classId')
+            .sort({ createdAt: -1 });
+
+        await ClassLevel.populate(financials, { path: 'student.classId', select: 'name' });
+
+        // 2. Raw Academic Ledger Roster (Per Student)
+        const students = await Student.find({ schoolId, status: 'active' })
+            .populate('classId', 'name')
+            .select('firstName lastName studentId classId level')
+            .lean();
+
+        // Aggregate stats for each student efficiently
+        const [allSubmissions, allProgress] = await Promise.all([
+            Submission.find({ schoolId }).select('studentId passed score'),
+            VideoProgress.find({ schoolId }).select('studentId completed')
+        ]);
+
+        const academicRoster = students.map(student => {
+            // Map student to their user ID for matching with submissions/progress which use User IDs
+            // Wait, Student model has userId field.
+            const userIdStr = student.userId?.toString();
+            
+            const studentSubmissions = allSubmissions.filter(s => s.studentId?.toString() === userIdStr);
+            const studentProgress = allProgress.filter(p => p.studentId?.toString() === userIdStr);
+            
+            const totalQuizzes = studentSubmissions.length;
+            const passedQuizzes = studentSubmissions.filter(s => s.passed).length;
+            const totalVideos = studentProgress.length;
+            const completedVideos = studentProgress.filter(p => p.completed).length;
+
+            return {
+                ...student,
+                videoCompletionRate: totalVideos > 0 ? Math.round((completedVideos / totalVideos) * 100) : 0,
+                quizzesPassed: passedQuizzes,
+                quizzesAttempted: totalQuizzes,
+                riskLevel: (totalVideos > 0 && (completedVideos/totalVideos) < 0.2) ? 'At-Risk' : 'Thriving'
+            };
+        });
+
+        // 3. Platform Activity Ledger (Expanded)
+        const recentVideos = await VideoProgress.find({ schoolId })
+            .sort({ updatedAt: -1 })
+            .limit(50)
+            .populate('studentId', 'name email') // User model uses 'name'
+            .populate('videoId', 'title');
+
+        const recentSubmissions = await Submission.find({ schoolId })
+            .sort({ submittedAt: -1 })
+            .limit(50)
+            .populate('studentId', 'name email')
+            .populate('quizId', 'title');
+
+        const platformActivity = [
+            ...recentVideos.map(v => ({
+                timestamp: v.updatedAt,
+                user: v.studentId?.name || 'Unknown Student',
+                role: 'Student',
+                action: 'Video Engagement',
+                details: `${v.videoId?.title || 'Unknown Video'} - ${v.completed ? 'Completed' : 'In Progress'}`
+            })),
+            ...recentSubmissions.map(s => ({
+                timestamp: s.submittedAt || s.createdAt,
+                user: s.studentId?.name || 'Unknown Student',
+                role: 'Student',
+                action: 'Quiz Assessment',
+                details: `${s.quizId?.title || 'Unknown Quiz'} - Score: ${s.score}%`
+            }))
+        ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        res.json({
+            financials,
+            academicRoster,
+            platformActivity
+        });
+
+    } catch (error) {
+        console.error('Export Data Error:', error);
+        res.status(500).json({ message: 'Failed to compile export data' });
+    }
+};
+
 module.exports = {
-    getLearningStats
+    getLearningStats,
+    getExportData
 };

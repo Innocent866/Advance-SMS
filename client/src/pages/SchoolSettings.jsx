@@ -26,9 +26,16 @@ import {
     Lock,
     Zap,
     Trophy,
-    CheckCircle2
+    CheckCircle2,
+    Brain,
+    Video,
+    MessageSquare,
+    LineChart,
+    FileCheck,
+    Library
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { calculatePaystackGross } from '../utils/paymentUtils';
 
 const SchoolSettings = () => {
     usePageTitle('School Settings Hub');
@@ -51,7 +58,13 @@ const SchoolSettings = () => {
         advancedAnalytics: true,
         medicalRecords: true,
         disciplineManagement: true,
-        attendanceTracking: true
+        attendanceTracking: true,
+        aiMarking: true,
+        basicReports: true,
+        learningMaterials: true,
+        continuousAssessment: true,
+        staffAdminComm: true,
+        videoManager: true
     });
     
     // Receipt Settings
@@ -61,6 +74,12 @@ const SchoolSettings = () => {
         message: 'Thank you for your payment.',
         contactDetails: '',
         signature: 'Management',
+    });
+
+    const [bankDetails, setBankDetails] = useState({
+        bankName: '',
+        accountNumber: '',
+        accountName: ''
     });
     
     const [logoFile, setLogoFile] = useState(null);
@@ -87,8 +106,31 @@ const SchoolSettings = () => {
                     defaultTeacherPassword: data.defaultTeacherPassword || 'teacher123'
                 });
                 if(data.notificationPreferences) setNotifications(data.notificationPreferences);
-                if(data.features) setFeatures(data.features);
+                
+                const defaultFeatures = {
+                    aiMarking: true,
+                    learningManagement: true,
+                    advancedAnalytics: true,
+                    financials: true,
+                    learningMaterials: true,
+                    videoManager: true,
+                    continuousAssessment: true,
+                    basicReports: true,
+                    staffAdminComm: true,
+                    medicalRecords: true,
+                    boarding: true,
+                    attendanceTracking: true,
+                    disciplineManagement: true
+                };
+                
+                if (data.features) {
+                    setFeatures({ ...defaultFeatures, ...data.features });
+                } else {
+                    setFeatures(defaultFeatures);
+                }
+
                 if(data.receiptSettings) setReceiptConfig(data.receiptSettings);
+                if(data.bankDetails) setBankDetails(data.bankDetails);
                 
                 if (data.logoUrl) setLogoPreview(data.logoUrl);
 
@@ -99,9 +141,14 @@ const SchoolSettings = () => {
             }
         };
 
-        const verifyPayment = async () => {
+        const initializeSettings = async () => {
              const params = new URLSearchParams(window.location.search);
              const reference = params.get('reference') || params.get('trxref');
+             const tab = params.get('tab');
+
+             if (tab) {
+                setActiveTab(tab);
+             }
 
              if (reference) {
                  try {
@@ -119,7 +166,7 @@ const SchoolSettings = () => {
              }
         };
 
-        verifyPayment();
+        initializeSettings();
     }, []);
 
     const handleLogoChange = (e) => {
@@ -144,6 +191,7 @@ const SchoolSettings = () => {
             formData.append('notificationPreferences', JSON.stringify(notifications));
             formData.append('features', JSON.stringify(features));
             formData.append('receiptSettings', JSON.stringify(receiptConfig));
+            formData.append('bankDetails', JSON.stringify(bankDetails));
 
             if (logoFile) {
                 formData.append('logo', logoFile);
@@ -404,15 +452,34 @@ const SchoolSettings = () => {
                         <div className="p-10 space-y-10">
                             <SectionHeading title="Operational Matrix" subtitle="Activate or hibernate specialized platform modules in real-time" />
                             
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="bg-blue-50/80 border border-blue-100 rounded-2xl p-5 flex items-start gap-4 shadow-sm">
+                                <div className="p-2 bg-white text-blue-600 rounded-xl mt-0.5 shadow-sm border border-blue-100">
+                                    <Shield size={20} />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-blue-900">Non-Destructive Sandbox (Zero Data Loss)</h4>
+                                    <p className="text-sm text-blue-800 mt-1 leading-relaxed">
+                                        Deactivating a module instantly removes its interface from all staff and student dashboards to maintain a perfectly clean workspace. 
+                                        <b className="font-bold"> Absolutely no historical data is deleted.</b> All records (e.g., past boarding attendance, medical logs, old exam algorithms) are securely preserved in the database and will seamlessly restore upon reactivation.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                                 {[
-                                    { id: 'financials', label: 'Financial Ecosystem', icon: CreditCard, color: 'emerald' },
-                                    { id: 'learningManagement', label: 'LMS Engine', icon: Zap, color: 'blue' },
-                                    { id: 'advancedAnalytics', label: 'Analytics Suite', icon: Palette, color: 'indigo' },
-                                    { id: 'medicalRecords', label: 'Vital Records', icon: Shield, color: 'rose' },
-                                    { id: 'boarding', label: 'Residential Hub', icon: Building, color: 'amber' },
-                                    { id: 'attendanceTracking', label: 'Biometric Attendance', icon: CheckCircle2, color: 'primary' },
-                                    { id: 'disciplineManagement', label: 'Precision Discipline', icon: Shield, color: 'gray' },
+                                    { id: 'aiMarking', label: 'AI Exam Marking', icon: Brain, color: 'amber' },
+                                    { id: 'learningManagement', label: 'Student Assignments', icon: Zap, color: 'blue' },
+                                    { id: 'advancedAnalytics', label: 'Analytics & Reports', icon: LineChart, color: 'primary' },
+                                    { id: 'financials', label: 'Fees & Finance', icon: CreditCard, color: 'emerald' },
+                                    { id: 'learningMaterials', label: 'Study Materials', icon: Library, color: 'indigo' },
+                                    { id: 'videoManager', label: 'Video Lessons', icon: Video, color: 'rose' },
+                                    { id: 'continuousAssessment', label: 'Student Results (C.A)', icon: FileCheck, color: 'amber' },
+                                    { id: 'basicReports', label: 'Staff Report Sheets', icon: FileText, color: 'gray' },
+                                    { id: 'staffAdminComm', label: 'Internal Staff Chat', icon: MessageSquare, color: 'primary' },
+                                    { id: 'medicalRecords', label: 'Health & Medical', icon: Shield, color: 'emerald' },
+                                    { id: 'boarding', label: 'Boarding & Hostel', icon: Building, color: 'indigo' },
+                                    { id: 'attendanceTracking', label: 'Daily Attendance', icon: CheckCircle2, color: 'primary' },
+                                    { id: 'disciplineManagement', label: 'Student Discipline', icon: Shield, color: 'rose' },
                                 ].map((feat) => (
                                     <FeatureCard 
                                         key={feat.id}
@@ -531,6 +598,53 @@ const SchoolSettings = () => {
                                     features={['Max 1500 Students', 'Max 200 Staff', 'Everything in Standard', 'AI Marking Intelligence', 'Advanced Analytics Hub']}
                                     onSelect={() => handleUpgrade('Premium')}
                                 />
+                            </div>
+
+                            <div className="mt-12 p-10 bg-emerald-50/50 rounded-[3rem] border border-emerald-100 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -mr-32 -mt-32" />
+                                <div className="relative z-10 flex flex-col lg:flex-row gap-10">
+                                    <div className="flex-1 space-y-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-3 bg-emerald-100 text-emerald-600 rounded-2xl">
+                                                <CreditCard size={20} />
+                                            </div>
+                                            <h4 className="font-black text-gray-800">Direct Settlement Vault</h4>
+                                        </div>
+                                        <p className="text-xs text-emerald-800 leading-relaxed max-w-md">
+                                            Configure your official institution bank account to receive tuition and fee payments directly. 
+                                            Upon saving, the system will automatically synchronize a <span className="font-bold underline">Paystack Subaccount</span> for real-time split settlements.
+                                        </p>
+
+                                        {school?.paystackSubaccountCode && (
+                                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-200">
+                                                <CheckCircle2 size={14} /> Subaccount Verified: {school.paystackSubaccountCode}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-[1.5]">
+                                        <SettingInput 
+                                            label="Settlement Bank Name" 
+                                            placeholder="e.g. GTBank, Zenith" 
+                                            value={bankDetails.bankName} 
+                                            onChange={v => setBankDetails({...bankDetails, bankName: v})} 
+                                        />
+                                        <SettingInput 
+                                            label="Account Number" 
+                                            placeholder="10 Digits" 
+                                            value={bankDetails.accountNumber} 
+                                            onChange={v => setBankDetails({...bankDetails, accountNumber: v})} 
+                                        />
+                                        <div className="md:col-span-2">
+                                            <SettingInput 
+                                                label="Official Account Name" 
+                                                placeholder="Must match bank records" 
+                                                value={bankDetails.accountName} 
+                                                onChange={v => setBankDetails({...bankDetails, accountName: v})} 
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -656,9 +770,14 @@ const PricingPlan = ({ name, price, desc, features, popular, onSelect }) => (
         <h4 className="text-xl font-black text-gray-900">{name}</h4>
         <p className="text-xs text-gray-500 font-medium mt-1 mb-6">{desc}</p>
         
-        <div className="flex items-baseline gap-1 mb-8">
+        <div className="flex items-baseline gap-1 mb-2">
             <span className="text-3xl font-black text-gray-900 tracking-tight font-mono">₦{price}</span>
             <span className="text-gray-400 text-[10px] font-black uppercase tracking-widest">/ Termly</span>
+        </div>
+
+        <div className="mb-8 p-3 bg-gray-100/50 rounded-xl border border-gray-100 flex justify-between items-center text-[10px]">
+            <span className="text-gray-400 font-bold uppercase tracking-widest">Processing Fee</span>
+            <span className="text-blue-600 font-black">+₦{calculatePaystackGross(parseInt(price.replace(/,/g, ''))).fee.toLocaleString()}</span>
         </div>
 
         <ul className="space-y-4 mb-10 flex-1">

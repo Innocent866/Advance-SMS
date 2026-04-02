@@ -16,7 +16,9 @@ const feePaymentSchema = new mongoose.Schema({
         ref: 'Parent' 
         // Optional, maybe paid by student directly or admin? But for this flow, usually parent.
     },
-    amount: { type: Number, required: true },
+    baseAmount: { type: Number, required: true }, // The original tuition amount
+    gatewayFee: { type: Number, default: 0 }, // The Paystack surcharge added
+    amount: { type: Number, required: true }, // Total paid (base + fee)
     reference: { type: String, required: true, unique: true }, // Paystack Ref
     receiptNumber: { type: String, unique: true, sparse: true }, // Generated on success
     status: { 

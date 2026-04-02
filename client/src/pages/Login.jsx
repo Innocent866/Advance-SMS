@@ -75,9 +75,9 @@ const Login = () => {
          <div className="h-screen flex bg-white overflow-hidden">
             
             {/* Left Side: Visuals & Hero (Desktop Only) */}
-            <div className="hidden lg:flex w-1/2 bg-primary-900 relative overflow-hidden flex-col justify-between p-12 text-white h-full">
+            <div className="hidden lg:flex w-1/2 bg-hub-900 relative overflow-hidden flex-col justify-between p-12 text-white h-full">
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
-                <div className="absolute top-0 right-0 w-2/3 h-full bg-primary-800 rounded-l-full opacity-50 blur-3xl transform translate-x-1/3"></div>
+                <div className="absolute top-0 right-0 w-2/3 h-full bg-hub-800 rounded-l-full opacity-50 blur-3xl transform translate-x-1/3"></div>
                 
                 <div className="relative z-10">
                     <Link to="/" className="flex items-center gap-3 text-3xl font-bold mb-12 hover:opacity-90 transition-opacity w-fit" aria-label="Advance SMS Home">
@@ -92,9 +92,9 @@ const Login = () => {
                         className="max-w-md"
                     >
                         <h1 className="text-5xl font-extrabold mb-6 leading-tight">
-                            Welcome Back to <span className="text-primary-300">Excellence.</span>
+                            Welcome Back to <span className="text-hub-300">Excellence.</span>
                         </h1>
-                        <p className="text-primary-100 text-lg leading-relaxed mb-8">
+                        <p className="text-hub-100 text-lg leading-relaxed mb-8">
                             Sign in to access your dashboard, manage records, and stay connected with your school community.
                         </p>
                         
@@ -111,7 +111,7 @@ const Login = () => {
                     </motion.div>
                 </div>
 
-                <div className="relative z-10 text-sm text-primary-300">
+                <div className="relative z-10 text-sm text-hub-300">
                     &copy; {new Date().getFullYear()} Goldima Tech. All rights reserved.
                 </div>
             </div>
@@ -155,7 +155,7 @@ const Login = () => {
                                          name="email"
                                          autoComplete="email"
                                          required
-                                         className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                                         className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all"
                                          placeholder="your@email.com"
                                          value={email}
                                          onChange={(e) => setEmail(e.target.value)}
@@ -166,7 +166,7 @@ const Login = () => {
                              <div>
                                  <div className="flex justify-between items-center mb-2">
                                      <label htmlFor="password" className="block text-sm font-semibold text-gray-700">Password</label>
-                                     <Link to="/forgot-password" className="text-xs text-primary-600 font-medium hover:underline">Forgot Password?</Link>
+                                     <Link to="/forgot-password" className="text-xs text-hub-600 font-medium hover:underline">Forgot Password?</Link>
                                  </div>
                                  <div className="relative">
                                      <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} aria-hidden="true" />
@@ -176,7 +176,7 @@ const Login = () => {
                                          name="password"
                                          autoComplete="current-password"
                                          required
-                                         className="w-full pl-11 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                                         className="w-full pl-11 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all"
                                          placeholder="••••••••"
                                          value={password}
                                          onChange={(e) => setPassword(e.target.value)}
@@ -197,7 +197,7 @@ const Login = () => {
                                  disabled={isLoading}
                                  aria-busy={isLoading}
                                   className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2 ${
-                                      isLoading ? 'bg-primary-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'
+                                      isLoading ? 'bg-hub-400 cursor-not-allowed' : 'bg-hub-600 hover:bg-hub-700'
                                   }`}
                              >
                                  {isLoading ? (
@@ -218,7 +218,7 @@ const Login = () => {
                                         required
                                         maxLength="6"
                                         autoFocus
-                                        className="w-full text-center text-3xl tracking-[1em] font-bold py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                                        className="w-full text-center text-3xl tracking-[1em] font-bold py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all"
                                         placeholder="000000"
                                         value={otpCode}
                                         onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
@@ -230,7 +230,7 @@ const Login = () => {
                                 type="submit"
                                 disabled={isLoading}
                                 className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2 ${
-                                    isLoading ? 'bg-primary-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'
+                                    isLoading ? 'bg-hub-400 cursor-not-allowed' : 'bg-hub-600 hover:bg-hub-700'
                                 }`}
                             >
                                 {isLoading ? (
@@ -243,7 +243,7 @@ const Login = () => {
                             <button 
                                 type="button"
                                 onClick={() => setShowOTP(false)}
-                                className="w-full text-sm text-gray-500 hover:text-primary-600 transition-colors font-medium text-center"
+                                className="w-full text-sm text-gray-500 hover:text-hub-600 transition-colors font-medium text-center"
                             >
                                 Back to Login
                             </button>
@@ -253,7 +253,7 @@ const Login = () => {
                     {!showOTP && (
                         <div className="mt-8 text-center text-sm text-gray-600">
                             Don't have an account?{' '}
-                            <Link to="/register-school" className="text-primary-600 font-bold hover:underline">
+                            <Link to="/register-school" className="text-hub-600 font-bold hover:underline">
                                 Register your school
                             </Link>
                         </div>

@@ -294,7 +294,10 @@ const DashboardHome = () => {
                             </div>
                             <h4 className="text-lg font-black text-slate-900 mb-2">School Features</h4>
                             <p className="text-xs font-semibold text-slate-400 mb-6">Need more features? Explore our available add-ons.</p>
-                            <button className="text-primary font-black uppercase tracking-widest text-[10px] flex items-center gap-2 group hover:gap-4 transition-all">
+                            <button 
+                                onClick={() => navigate('/settings?tab=features')}
+                                className="text-primary font-black uppercase tracking-widest text-[10px] flex items-center gap-2 group hover:gap-4 transition-all"
+                            >
                                 View Options <ArrowUpRight size={14} />
                             </button>
                         </div>

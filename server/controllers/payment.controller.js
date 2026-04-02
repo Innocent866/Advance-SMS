@@ -2,11 +2,24 @@ const FeePayment = require('../models/FeePayment');
 const Parent = require('../models/Parent');
 const School = require('../models/School'); // For accessing paystack keys if stored there, or env
 
+/**
+ * Paystack Fee Calculation Utility (Nigeria)
+ * Gross = (TargetNet + 100) / 0.985
+ */
+const calculatePaystackGross = (targetNet) => {
+    if (!targetNet || targetNet <= 0) return 0;
+    const PERCENT = 0.015;
+    const FLAT = targetNet >= 2500 ? 100 : 0;
+    const gross = Math.ceil((targetNet + FLAT) / (1 - PERCENT));
+    const fee = gross - targetNet;
+    return fee > 2000 ? targetNet + 2000 : gross;
+};
+
 // @desc    Initialize Payment (Return Paystack Config/Key)
 // @route   POST /api/payments/initialize
 // --- Teacher Assignment ---
 const initializePayment = async (req, res) => {
-    const { amount, type, term, session, plan } = req.body;
+    const { amount, baseAmount, gatewayFee, type, term, session, plan } = req.body;
 
     try {
         const role = req.user.role ? req.user.role.toLowerCase() : '';
@@ -24,9 +37,18 @@ const initializePayment = async (req, res) => {
 
             // Check for School Subaccount
             const school = await School.findById(parent.school);
+            if (!school) return res.status(404).json({ message: 'School not found' });
+
             let subaccount = null;
-            if (school && school.paystackSubaccountCode) {
+            if (school.paystackSubaccountCode) {
                 subaccount = school.paystackSubaccountCode;
+            } else {
+                // REGRESSION GUARD: Do not allow parent payments if school hasn't set up bank details
+                // This prevents money from mistakenly landing in the platform's main account.
+                return res.status(400).json({ 
+                    message: 'Institutional settlement account not configured. Please contact school administration.',
+                    isConfigurationIssue: true
+                });
             }
 
             return res.json({
@@ -42,6 +64,8 @@ const initializePayment = async (req, res) => {
                     type: type || 'tuition',
                     term,
                     session,
+                    baseAmount: baseAmount || amount,
+                    gatewayFee: gatewayFee || 0,
                     amount: amount * 100
                 }
             });
@@ -64,15 +88,20 @@ const initializePayment = async (req, res) => {
             const axios = require('axios');
             const reference = `SUB-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
+            // Fee Passing: Surcharge the Paystack fee to the school
+            const grossAmount = calculatePaystackGross(subAmount);
+
             const response = await axios.post('https://api.paystack.co/transaction/initialize', {
                 email: req.user.email,
-                amount: subAmount * 100,
+                amount: grossAmount * 100,
                 reference,
                 callback_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/settings`,
                 metadata: {
                     schoolId: school._id,
                     type: 'subscription',
-                    plan: plan || 'Basic'
+                    plan: plan || 'Basic',
+                    baseAmount: subAmount,
+                    gatewayFee: grossAmount - subAmount
                 }
             }, {
                 headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }
@@ -184,6 +213,8 @@ const verifyPayment = async (req, res) => {
             school: schoolId,
             student: studentId,
             parent: parentId,
+            baseAmount: metadata?.baseAmount || data.amount / 100,
+            gatewayFee: metadata?.gatewayFee || 0,
             amount: data.amount / 100, // Kobo to Naira
             reference,
             receiptNumber,

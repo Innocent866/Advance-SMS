@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getLearningStats } = require('../controllers/analytics.controller');
+const { getLearningStats, getExportData } = require('../controllers/analytics.controller');
 const { protect, admin } = require('../middleware/auth.middleware');
 const { checkFeature } = require('../middleware/feature.middleware');
 
@@ -10,5 +10,6 @@ router.use(protect);
 router.use(checkFeature('advancedAnalytics'));
 
 router.get('/', admin, getLearningStats);
+router.get('/export', admin, getExportData);
 
 module.exports = router;

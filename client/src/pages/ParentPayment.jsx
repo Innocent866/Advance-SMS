@@ -23,7 +23,9 @@ import {
     Hash,
     Receipt,
     Wallet,
-    UserCircle
+    UserCircle,
+    AlertCircle,
+    Building
 } from 'lucide-react';
 import api from '../utils/api';
 import usePageTitle from '../hooks/usePageTitle';
@@ -31,6 +33,7 @@ import Loader from '../components/Loader';
 import { generateReceipt } from '../utils/receiptGenerator';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
+import { calculatePaystackGross } from '../utils/paymentUtils';
 
 const ParentPayment = () => {
     usePageTitle('Payment Intelligence Hub');
@@ -79,8 +82,11 @@ const ParentPayment = () => {
         setLoading(true);
 
         try {
+            const grossData = calculatePaystackGross(parseFloat(amount));
             const res = await api.post('/payments/initialize', {
-                amount: parseFloat(amount),
+                amount: grossData.total, // Total to pay
+                baseAmount: grossData.base, // Actual tuition
+                gatewayFee: grossData.fee, // Added fee
                 type: payType,
                 term,
                 session
@@ -139,6 +145,8 @@ const ParentPayment = () => {
         pendingCount: history.filter(p => p.status === 'pending').length
     };
 
+    const isPaymentReady = school?.paystackSubaccountCode;
+
     if (pageLoading) return <Loader fullScreen={true} />;
 
     return (
@@ -196,6 +204,18 @@ const ParentPayment = () => {
                                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Capital Injection Protocol</p>
                             </div>
                         </div>
+
+                        {!isPaymentReady && (
+                            <div className="mb-8 p-6 bg-amber-50 rounded-[2rem] border border-amber-100 flex items-start gap-4 animate-pulse">
+                                <AlertCircle size={20} className="text-amber-600 shrink-0 mt-1" />
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-1">Gate Hibernate Mode</p>
+                                    <p className="text-xs text-amber-800 leading-relaxed font-medium">
+                                        Your school's payment destination is currently being finalized. Please contact the administrator to activate the Direct Settlement Vault.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
 
                         <form onSubmit={handlePay} className="space-y-8">
                             <div className="space-y-3">
@@ -256,12 +276,30 @@ const ParentPayment = () => {
                                     />
                                 </div>
                             </div>
+                            
+                            {amount && parseFloat(amount) > 0 && (
+                                <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100 space-y-3 animate-in fade-in slide-in-from-bottom-2">
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-gray-400 font-bold uppercase tracking-widest">Base Tuition</span>
+                                        <span className="text-gray-900 font-black">₦{parseFloat(amount).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Institutional Processing Fee</span>
+                                        <span className="text-blue-600 font-black">+₦{calculatePaystackGross(parseFloat(amount)).fee.toLocaleString()}</span>
+                                    </div>
+                                    <div className="h-px bg-gray-200" />
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs font-black text-gray-900 uppercase tracking-widest">Final Total</span>
+                                        <span className="text-lg font-black text-primary">₦{calculatePaystackGross(parseFloat(amount)).total.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            )}
 
                             <button 
                                 type="submit" 
-                                disabled={loading || !amount}
+                                disabled={loading || !amount || !isPaymentReady}
                                 className={`w-full py-6 rounded-[2rem] font-black text-xs uppercase tracking-[0.25em] flex items-center justify-center gap-3 transition-all shadow-2xl ${
-                                    loading 
+                                    (loading || !isPaymentReady)
                                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none' 
                                         : 'bg-primary text-white shadow-primary/30 hover:bg-green-700 hover:y-[-2px]'
                                 }`}
@@ -284,12 +322,48 @@ const ParentPayment = () => {
                             <ShieldCheck size={20} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">Transaction Protocol</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">Gateway Protocol</p>
                             <p className="text-xs text-blue-800 leading-relaxed">
                                 All financial injections are verified via multi-layer encryption gateways. Verify all parameters before authorization.
                             </p>
                         </div>
                     </div>
+
+                    {school?.bankDetails?.accountNumber && (
+                        <div className="p-8 bg-emerald-50/50 rounded-[2.5rem] border border-emerald-100 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl -mr-16 -mt-16" />
+                            <div className="relative z-10 flex items-start gap-5">
+                                <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 shrink-0">
+                                    <Building size={20} />
+                                </div>
+                                <div className="space-y-3">
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">Direct Bank Transfer</p>
+                                        <p className="text-xs text-emerald-800 leading-relaxed font-bold">
+                                            Prefer manual transfer? Use these institutional credentials:
+                                        </p>
+                                    </div>
+                                    <div className="space-y-2 bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-emerald-100/50 shadow-inner">
+                                        <div className="flex justify-between items-center text-[11px]">
+                                            <span className="text-gray-400 font-bold uppercase tracking-widest">Bank</span>
+                                            <span className="text-gray-900 font-black">{school.bankDetails.bankName}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-[11px]">
+                                            <span className="text-gray-400 font-bold uppercase tracking-widest">Account</span>
+                                            <span className="text-gray-900 font-black font-mono tracking-tighter">{school.bankDetails.accountNumber}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-[11px]">
+                                            <span className="text-gray-400 font-bold uppercase tracking-widest">Name</span>
+                                            <span className="text-gray-900 font-black truncate max-w-[150px]">{school.bankDetails.accountName}</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-[9px] text-emerald-600/60 font-black italic">
+                                        * Please upload your transfer receipt to the administration portal.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Transaction Artifact Matrix */}

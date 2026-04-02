@@ -66,6 +66,9 @@ const updateSchool = async (req, res) => {
         if (typeof updateData.notificationPreferences === 'string') {
             try { updateData.notificationPreferences = JSON.parse(updateData.notificationPreferences); } catch (e) {}
         }
+        if (typeof updateData.features === 'string') {
+            try { updateData.features = JSON.parse(updateData.features); } catch (e) {}
+        }
         if (typeof updateData.receiptSettings === 'string') {
             try { updateData.receiptSettings = JSON.parse(updateData.receiptSettings); } catch (e) {}
         }

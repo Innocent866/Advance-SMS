@@ -112,18 +112,18 @@ const RegisterSchool = () => {
                 <div className="bg-gray-50 rounded-2xl p-4 mb-8 text-left space-y-3 border border-gray-100">
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest text-center mb-1">For Emergency</p>
                     <div className="flex items-center gap-3 text-gray-700">
-                        <Phone size={18} className="text-primary-600" />
+                        <Phone size={18} className="text-hub-600" />
                         <span className="font-semibold">09138095613</span>
                     </div>
                     <div className="flex items-center gap-3 text-gray-700">
-                        <Mail size={18} className="text-primary-600" />
+                        <Mail size={18} className="text-hub-600" />
                         <span className="font-semibold">goldima@gt-schoolhub.com.ng</span>
                     </div>
                 </div>
                 
                 <button 
                     onClick={() => navigate('/')}
-                    className="w-full py-4 bg-primary-900 text-white rounded-xl font-bold hover:bg-black transition-all shadow-lg flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-hub-900 text-white rounded-xl font-bold hover:bg-black transition-all shadow-lg flex items-center justify-center gap-2"
                 >
                     Go Back
                 </button>
@@ -135,9 +135,9 @@ const RegisterSchool = () => {
         <div className="h-screen flex bg-white overflow-hidden">
             
             {/* Left Side: Visuals & Hero (Desktop Only) */}
-            <div className="hidden lg:flex w-1/2 bg-primary-900 relative overflow-hidden flex-col justify-between p-12 text-white h-full">
+            <div className="hidden lg:flex w-1/2 bg-hub-900 relative overflow-hidden flex-col justify-between p-12 text-white h-full">
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
-                <div className="absolute top-0 right-0 w-2/3 h-full bg-primary-800 rounded-l-full opacity-50 blur-3xl transform translate-x-1/3"></div>
+                <div className="absolute top-0 right-0 w-2/3 h-full bg-hub-800 rounded-l-full opacity-50 blur-3xl transform translate-x-1/3"></div>
                 
                 <div className="relative z-10">
                     <Link to="/" className="flex items-center gap-3 text-3xl font-bold mb-12 hover:opacity-90 transition-opacity w-fit">
@@ -152,9 +152,9 @@ const RegisterSchool = () => {
                         className="max-w-md"
                     >
                         <h1 className="text-5xl font-extrabold mb-6 leading-tight">
-                            Build a <span className="text-primary-300">Smarter School</span> Today.
+                            Build a <span className="text-hub-300">Smarter School</span> Today.
                         </h1>
-                        <p className="text-primary-100 text-lg leading-relaxed mb-8">
+                        <p className="text-hub-100 text-lg leading-relaxed mb-8">
                             Join thousands of forward-thinking schools using GT-SchoolHub to manage students, staff, payments, and results seamlessly.
                         </p>
                         
@@ -174,7 +174,7 @@ const RegisterSchool = () => {
                     </motion.div>
                 </div>
 
-                <div className="relative z-10 text-sm text-primary-300">
+                <div className="relative z-10 text-sm text-hub-300">
                     &copy; {new Date().getFullYear()} Goldima Tech. All rights reserved.
                 </div>
             </div>
@@ -213,172 +213,187 @@ const RegisterSchool = () => {
                         </motion.div>
                     )}
 
-                     <form onSubmit={handleSubmit} className="space-y-5">
+                     <form onSubmit={handleSubmit} className="space-y-10">
                          
                          {/* School Info Section */}
-                         <div className="space-y-5">
-                             <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">School Details</div>
-                             <div>
-                                 <label className="block text-sm font-semibold text-gray-700 mb-2">School Name</label>
-                                 <div className="relative">
-                                     <School className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                         <div className="bg-gray-50/50 p-8 rounded-[2rem] border border-gray-100 space-y-6">
+                             <div className="flex items-center gap-3 mb-2">
+                                 <div className="p-2 bg-hub-100 text-hub-600 rounded-lg">
+                                     <School size={20} />
+                                 </div>
+                                 <h3 className="text-lg font-bold text-gray-900">School Identity</h3>
+                             </div>
+
+                             <div className="space-y-5">
+                                 <div>
+                                     <label className="block text-sm font-semibold text-gray-700 mb-2">School Name</label>
+                                     <div className="relative">
+                                         <School className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                         <input
+                                             name="schoolName"
+                                             required
+                                             className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all bg-white"
+                                             placeholder="e.g. Springfield Academy"
+                                             onChange={handleChange}
+                                         />
+                                     </div>
+                                 </div>
+                                 
+                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                     <div>
+                                         <label className="block text-sm font-semibold text-gray-700 mb-2">School Email</label>
+                                         <div className="relative">
+                                             <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                             <input
+                                                 name="schoolEmail"
+                                                 type="email"
+                                                 required
+                                                 className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all bg-white"
+                                                 placeholder="info@school.com"
+                                                 onChange={handleChange}
+                                             />
+                                         </div>
+                                     </div>
+                                     <div>
+                                         <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                                         <div className="relative">
+                                             <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                             <input
+                                                 name="phone"
+                                                 type="tel"
+                                                 required
+                                                 className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all bg-white"
+                                                 placeholder="+234..."
+                                                 onChange={handleChange}
+                                             />
+                                         </div>
+                                     </div>
+                                 </div>
+
+                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                     <div>
+                                         <label className="block text-sm font-semibold text-gray-700 mb-2">State/Location</label>
+                                         <div className="relative">
+                                             <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                             <input
+                                                 name="state"
+                                                 required
+                                                 className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all bg-white"
+                                                 placeholder="e.g. Lagos"
+                                                 onChange={handleChange}
+                                             />
+                                         </div>
+                                     </div>
+                                     <div>
+                                         <label className="block text-sm font-semibold text-gray-700 mb-2">School Type</label>
+                                         <div className="relative">
+                                             <select
+                                                 name="schoolType"
+                                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all bg-white appearance-none"
+                                                 onChange={handleChange}
+                                             >
+                                                 <option value="primary">Primary Only</option>
+                                                 <option value="secondary">Secondary Only</option>
+                                                 <option value="primary_secondary">Primary & Secondary</option>
+                                             </select>
+                                         </div>
+                                     </div>
+                                 </div>
+                                 
+                                 <div>
+                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Address</label>
                                      <input
-                                         name="schoolName"
+                                         name="address"
                                          required
-                                         className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                                         placeholder="e.g. Springfield Academy"
+                                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all bg-white"
+                                         placeholder="Full School Address"
                                          onChange={handleChange}
                                      />
                                  </div>
-                             </div>
-                             
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                 <div>
-                                     <label className="block text-sm font-semibold text-gray-700 mb-2">School Email</label>
-                                     <div className="relative">
-                                         <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                                         <input
-                                             name="schoolEmail"
-                                             type="email"
-                                             required
-                                             className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                                             placeholder="info@school.com"
-                                             onChange={handleChange}
-                                         />
-                                     </div>
-                                 </div>
-                                 <div>
-                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
-                                     <div className="relative">
-                                         <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                                         <input
-                                             name="phone"
-                                             type="tel"
-                                             required
-                                             className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                                             placeholder="+234..."
-                                             onChange={handleChange}
-                                         />
-                                     </div>
-                                 </div>
-                             </div>
-
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                 <div>
-                                     <label className="block text-sm font-semibold text-gray-700 mb-2">State/Location</label>
-                                     <div className="relative">
-                                         <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                                         <input
-                                             name="state"
-                                             required
-                                             className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                                             placeholder="e.g. Lagos"
-                                             onChange={handleChange}
-                                         />
-                                     </div>
-                                 </div>
-                                 <div>
-                                     <label className="block text-sm font-semibold text-gray-700 mb-2">School Type</label>
-                                     <div className="relative">
-                                         <select
-                                             name="schoolType"
-                                             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all bg-white appearance-none"
-                                             onChange={handleChange}
-                                         >
-                                             <option value="primary">Primary Only</option>
-                                             <option value="secondary">Secondary Only</option>
-                                             <option value="primary_secondary">Primary & Secondary</option>
-                                         </select>
-                                     </div>
-                                 </div>
-                             </div>
-                             
-                             <div>
-                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Address</label>
-                                 <input
-                                     name="address"
-                                     required
-                                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                                     placeholder="Full School Address"
-                                     onChange={handleChange}
-                                 />
                              </div>
                          </div>
 
                          {/* Admin Info Section */}
-                         <div className="space-y-5 pt-4 border-t border-gray-100">
-                             <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Admin Account</div>
-                             
-                             <div>
-                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Admin Full Name</label>
-                                 <div className="relative">
-                                     <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                                     <input
-                                         name="adminName"
-                                         required
-                                         className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                                         placeholder="John Doe"
-                                         onChange={handleChange}
-                                     />
+                         <div className="bg-hub-50/30 p-8 rounded-[2rem] border border-hub-100/50 space-y-6">
+                             <div className="flex items-center gap-3 mb-2">
+                                 <div className="p-2 bg-hub-100 text-hub-600 rounded-lg">
+                                     <User size={20} />
                                  </div>
-                             </div>
-                             
-                             <div>
-                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Admin Email</label>
-                                 <div className="relative">
-                                     <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                                     <input
-                                         name="adminEmail"
-                                         type="email"
-                                         required
-                                         className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                                         placeholder="admin@school.com"
-                                         onChange={handleChange}
-                                     />
-                                 </div>
+                                 <h3 className="text-lg font-bold text-gray-900">Administrator Details</h3>
                              </div>
 
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                             <div className="space-y-5">
                                  <div>
-                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Admin Full Name</label>
                                      <div className="relative">
-                                         <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                         <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                                          <input
-                                             name="password"
-                                             type={showPassword ? "text" : "password"}
+                                             name="adminName"
                                              required
-                                             className="w-full pl-11 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                                             placeholder="At least 6 chars"
+                                             className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all bg-white"
+                                             placeholder="John Doe"
                                              onChange={handleChange}
                                          />
-                                         <button
-                                             type="button"
-                                             onClick={() => setShowPassword(!showPassword)}
-                                             className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                                         >
-                                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                         </button>
                                      </div>
                                  </div>
+                                 
                                  <div>
-                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
+                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Admin Email</label>
                                      <div className="relative">
-                                         <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                         <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                                          <input
-                                             name="confirmPassword"
-                                             type={showConfirmPassword ? "text" : "password"}
+                                             name="adminEmail"
+                                             type="email"
                                              required
-                                             className="w-full pl-11 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                                             placeholder="Repeat password"
+                                             className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all bg-white"
+                                             placeholder="admin@school.com"
                                              onChange={handleChange}
                                          />
-                                         <button
-                                             type="button"
-                                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                             className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                                         >
-                                             {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                         </button>
+                                     </div>
+                                 </div>
+
+                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                     <div>
+                                         <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                                         <div className="relative">
+                                             <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                             <input
+                                                 name="password"
+                                                 type={showPassword ? "text" : "password"}
+                                                 required
+                                                 className="w-full pl-11 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all bg-white"
+                                                 placeholder="At least 6 chars"
+                                                 onChange={handleChange}
+                                             />
+                                             <button
+                                                 type="button"
+                                                 onClick={() => setShowPassword(!showPassword)}
+                                                 className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                             >
+                                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                             </button>
+                                         </div>
+                                     </div>
+                                     <div>
+                                         <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
+                                         <div className="relative">
+                                             <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                             <input
+                                                 name="confirmPassword"
+                                                 type={showConfirmPassword ? "text" : "password"}
+                                                 required
+                                                 className="w-full pl-11 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all bg-white"
+                                                 placeholder="Repeat password"
+                                                 onChange={handleChange}
+                                             />
+                                             <button
+                                                 type="button"
+                                                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                 className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                             >
+                                                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                             </button>
+                                         </div>
                                      </div>
                                  </div>
                              </div>
@@ -388,7 +403,7 @@ const RegisterSchool = () => {
                              type="submit"
                              disabled={isLoading}
                              className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2 mt-8 ${
-                                 isLoading ? 'bg-primary-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'
+                                 isLoading ? 'bg-hub-400 cursor-not-allowed' : 'bg-hub-600 hover:bg-hub-700'
                              }`}
                          >
                              {isLoading ? (
@@ -401,7 +416,7 @@ const RegisterSchool = () => {
                      </form>
                      
                      <div className="mt-8 text-center">
-                         <p className="text-gray-600">Already have an account? <Link to="/login" className="text-primary-600 font-bold hover:underline">Login here</Link></p>
+                         <p className="text-gray-600">Already have an account? <Link to="/login" className="text-hub-600 font-bold hover:underline">Login here</Link></p>
                      </div>
 
                      {/* Trust Badges */}

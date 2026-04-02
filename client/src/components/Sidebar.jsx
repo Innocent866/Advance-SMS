@@ -30,7 +30,7 @@ const logo = '/logo.png';
 
 
 const Sidebar = () => {
-    const { user, logout, checkAccess } = useAuth();
+    const { user, logout, checkAccess, checkFeature } = useAuth();
     const location = useLocation();
 
     // Derive logo: Check user's school logo first if branding is allowed
@@ -59,56 +59,56 @@ const Sidebar = () => {
         { path: '/students', label: 'Students', icon: GraduationCap, roles: ['school_admin'] },
         { path: '/students?mode=promotion', label: 'Student Promotion', icon: Zap, roles: ['school_admin'] },
         { path: '/my-students', label: 'My Students', icon: GraduationCap, roles: ['teacher'] },
-        { path: '/lessons', label: 'Lesson Plan', icon: BookOpen, roles: ['teacher'] },
+        { path: '/lessons', label: 'Lesson Plan', icon: BookOpen, roles: ['teacher'], module: 'learningManagement' },
         { path: '/teacher-profile', label: 'My Profile', icon: User, roles: ['teacher'] },
-        { path: '/videos/manage', label: 'Video Lessons', icon: Video, roles: ['teacher'] },
-        { path: '/attendance/mark', label: 'Mark Attendance', icon: CheckCircle, roles: ['teacher'] },
-        { path: '/results/entry', label: 'Enter Results', icon: PenTool, roles: ['teacher'] },
-        { path: '/videos', label: 'Video Lessons', icon: Video, roles: ['student'] },
-        { path: '/student-submissions', label: 'My Tasks', icon: CheckCircle, roles: ['student'] },
-        { path: '/student-results', label: 'Check Results', icon: ClipboardList, roles: ['student'] },
-        { path: '/student-history', label: 'Learning History', icon: Clock, roles: ['student'] },
+        { path: '/videos/manage', label: 'Video Lessons', icon: Video, roles: ['teacher'], module: 'videoManager' },
+        { path: '/attendance/mark', label: 'Mark Attendance', icon: CheckCircle, roles: ['teacher'], module: 'attendanceTracking' },
+        { path: '/results/entry', label: 'Enter Results', icon: PenTool, roles: ['teacher'], module: 'continuousAssessment' },
+        { path: '/videos', label: 'Video Lessons', icon: Video, roles: ['student'], module: 'videoManager' },
+        { path: '/student-submissions', label: 'My Tasks', icon: CheckCircle, roles: ['student'], module: 'learningManagement' },
+        { path: '/student-results', label: 'Check Results', icon: ClipboardList, roles: ['student'], module: 'continuousAssessment' },
+        { path: '/student-history', label: 'Learning History', icon: Clock, roles: ['student'], module: 'attendanceTracking' },
         { path: '/student-profile', label: 'My Profile', icon: User, roles: ['student'] },
-        { path: '/content-oversight', label: 'Content Oversight', icon: BookOpen, roles: ['school_admin'] },
-        { path: '/learning-settings', label: 'Learning Settings', icon: CheckCircle, roles: ['school_admin'] }, // Changed icon to avoid confusion, CheckCircle as temp
-        { path: '/analytics', label: 'Analytics', icon: BarChart2, roles: ['school_admin'], feature: 'advancedAnalytics' },
+        { path: '/content-oversight', label: 'Content Oversight', icon: BookOpen, roles: ['school_admin'], module: 'learningManagement' },
+        { path: '/learning-settings', label: 'Learning Settings', icon: CheckCircle, roles: ['school_admin'], module: 'learningManagement' }, // Changed icon to avoid confusion, CheckCircle as temp
+        { path: '/analytics', label: 'Analytics', icon: BarChart2, roles: ['school_admin'], feature: 'advancedAnalytics', module: 'advancedAnalytics' },
         { path: '/academic', label: 'Academic Settings', icon: Settings, roles: ['school_admin'] },
-        { path: '/assessment-config', label: 'Assessment Config', icon: ClipboardList, roles: ['school_admin'], feature: 'continuousAssessment' },
-        { path: '/attendance/history', label: 'Attendance Report', icon: CheckCircle, roles: ['school_admin', 'super_admin'] },
+        { path: '/assessment-config', label: 'Assessment Config', icon: ClipboardList, roles: ['school_admin'], feature: 'continuousAssessment', module: 'continuousAssessment' },
+        { path: '/attendance/history', label: 'Attendance Report', icon: CheckCircle, roles: ['school_admin', 'super_admin'], module: 'attendanceTracking' },
         { path: '/settings', label: 'School Settings', icon: Building, roles: ['school_admin'] },
-        { path: '/finance', label: 'Financial Management', icon: CreditCard, roles: ['school_admin', 'super_admin'] },
+        { path: '/finance', label: 'Financial Management', icon: CreditCard, roles: ['school_admin', 'super_admin'], module: 'financials' },
         { path: '/admin/departments', label: 'Manage Departments', icon: Building, roles: ['school_admin'] },
-        { path: '/department/review', label: 'Department Review', icon: FileText, roles: ['teacher'] },
+        { path: '/department/review', label: 'Department Review', icon: FileText, roles: ['teacher'], module: 'learningMaterials' },
         { path: '/super-admin', label: 'Platform Verification', icon: ShieldCheck, roles: ['super_admin'] },
-        { path: '/boarding', label: 'Boarding Management', icon: Home, roles: ['school_admin', 'super_admin', 'hostel_warden'] },
+        { path: '/boarding', label: 'Boarding Management', icon: Home, roles: ['school_admin', 'super_admin', 'hostel_warden'], module: 'boarding' },
         
         // Boarding Fast-Track (Direct Access)
-        { path: '/boarding/roll-call', label: 'Daily Roll Call', icon: CheckCircle, roles: ['house_parent'] },
-        { path: '/boarding/leaves', label: 'Leave & Exits', icon: Clock, roles: ['house_parent'] },
-        { path: '/boarding/meals', label: 'Meal Attendance', icon: Utensils, roles: ['house_parent'] },
-        { path: '/boarding/medical', label: 'Medical Records', icon: Heart, roles: ['house_parent'] },
-        { path: '/boarding/discipline', label: 'Hostel Discipline', icon: ShieldAlert, roles: ['house_parent'] },
-        { path: '/boarding/reports', label: 'Boarding Reports', icon: FileText, roles: ['house_parent'] },
+        { path: '/boarding/roll-call', label: 'Daily Roll Call', icon: CheckCircle, roles: ['house_parent'], module: 'boarding' },
+        { path: '/boarding/leaves', label: 'Leave & Exits', icon: Clock, roles: ['house_parent'], module: 'boarding' },
+        { path: '/boarding/meals', label: 'Meal Attendance', icon: Utensils, roles: ['house_parent'], module: 'boarding' },
+        { path: '/boarding/medical', label: 'Medical Records', icon: Heart, roles: ['house_parent'], module: 'medicalRecords' },
+        { path: '/boarding/discipline', label: 'Hostel Discipline', icon: ShieldAlert, roles: ['house_parent'], module: 'disciplineManagement' },
+        { path: '/boarding/reports', label: 'Boarding Reports', icon: FileText, roles: ['house_parent'], module: 'boarding' },
 
-        { path: '/staff/reports', label: 'Staff Reports', icon: FileText, roles: ['teacher'], feature: 'staffAdminComm' },
-        { path: '/staff/chat', label: 'Staff Chat', icon: MessageSquare, roles: ['school_admin', 'teacher', 'super_admin', 'house_parent', 'hostel_warden'], feature: 'staffAdminComm' },
+        { path: '/staff/reports', label: 'Staff Reports', icon: FileText, roles: ['teacher'], feature: 'staffAdminComm', module: 'basicReports' },
+        { path: '/staff/chat', label: 'Staff Chat', icon: MessageSquare, roles: ['school_admin', 'teacher', 'super_admin', 'house_parent', 'hostel_warden'], feature: 'staffAdminComm', module: 'staffAdminComm' },
         
         // Health Module
         
 
-        { path: '/admin/reports', label: 'Report Management', icon: FileText, roles: ['school_admin'], feature: 'basicReports' },
-        { path: '/teacher/learning-materials', label: 'Learning Materials', icon: BookOpen, roles: ['teacher'], feature: 'learningMaterials' },
-        { path: '/student/learning-materials', label: 'Study Library', icon: BookOpen, roles: ['student'], feature: 'learningMaterials' },
+        { path: '/admin/reports', label: 'Report Management', icon: FileText, roles: ['school_admin'], feature: 'basicReports', module: 'basicReports' },
+        { path: '/teacher/learning-materials', label: 'Learning Materials', icon: BookOpen, roles: ['teacher'], feature: 'learningMaterials', module: 'learningMaterials' },
+        { path: '/student/learning-materials', label: 'Study Library', icon: BookOpen, roles: ['student'], feature: 'learningMaterials', module: 'learningMaterials' },
         
         // Parent Routes
         { path: '/parent-dashboard', label: 'My Child', icon: User, roles: ['parent'] },
         { path: '/parent/child-profile', label: 'Child Profile', icon: ClipboardList, roles: ['parent'] },
-        { path: '/parent/videos', label: 'Video Lessons', icon: Video, roles: ['parent'] },
-        { path: '/parent/results', label: 'Results', icon: BarChart2, roles: ['parent'] },
-        { path: '/parent/history', label: 'Learning History', icon: Clock, roles: ['parent'] },
-        { path: '/parent/attendance', label: 'Attendance', icon: CheckCircle, roles: ['parent'] },
-        { path: '/parent/materials', label: 'Materials', icon: BookOpen, roles: ['parent'] },
-        { path: '/parent/payments', label: 'Fees & Payments', icon: CreditCard, roles: ['parent'] },
+        { path: '/parent/videos', label: 'Video Lessons', icon: Video, roles: ['parent'], module: 'videoManager' },
+        { path: '/parent/results', label: 'Results', icon: BarChart2, roles: ['parent'], module: 'continuousAssessment' },
+        { path: '/parent/history', label: 'Learning History', icon: Clock, roles: ['parent'], module: 'attendanceTracking' },
+        { path: '/parent/attendance', label: 'Attendance', icon: CheckCircle, roles: ['parent'], module: 'attendanceTracking' },
+        { path: '/parent/materials', label: 'Materials', icon: BookOpen, roles: ['parent'], module: 'learningMaterials' },
+        { path: '/parent/payments', label: 'Fees & Payments', icon: CreditCard, roles: ['parent'], module: 'financials' },
 
     ];
 
@@ -117,6 +117,8 @@ const Sidebar = () => {
         if (!item.roles.includes(user?.role)) return false;
         // Feature check handling
         if (item.feature && !checkAccess(item.feature)) return false;
+        // Module Matrix check handling
+        if (item.module && !checkFeature(item.module)) return false;
         
         // [STRICT OVERSIGHT] HOD check for Department Review
         if (item.path === '/department/review' && user?.role === 'teacher' && !user?.isHod) {

@@ -140,64 +140,64 @@ function App() {
                     <Route path="/students" element={<ProtectedRoute role="school_admin"><StudentsList /></ProtectedRoute>} />
                     <Route path="/students/:id" element={<ProtectedRoute role={['school_admin', 'teacher']}><StudentDetails /></ProtectedRoute>} />
                     <Route path="/academic" element={<ProtectedRoute role="school_admin"><AcademicSettings /></ProtectedRoute>} />
-                    <Route path="/content-oversight" element={<ProtectedRoute role="school_admin"><ContentOversight /></ProtectedRoute>} />
-                    <Route path="/learning-settings" element={<ProtectedRoute role="school_admin"><LearningSettings /></ProtectedRoute>} />
-                    <Route path="/attendance/history" element={<AttendanceHistory />} />
-                    <Route path="/analytics" element={<ProtectedRoute feature="advancedAnalytics"><AnalyticsDashboard /></ProtectedRoute>} />
+                    <Route path="/content-oversight" element={<ProtectedRoute role="school_admin" module="learningManagement"><ContentOversight /></ProtectedRoute>} />
+                    <Route path="/learning-settings" element={<ProtectedRoute role="school_admin" module="learningManagement"><LearningSettings /></ProtectedRoute>} />
+                    <Route path="/attendance/history" element={<ProtectedRoute module="attendanceTracking"><AttendanceHistory /></ProtectedRoute>} />
+                    <Route path="/analytics" element={<ProtectedRoute feature="advancedAnalytics" module="advancedAnalytics"><AnalyticsDashboard /></ProtectedRoute>} />
                     <Route path="/settings" element={<ProtectedRoute role="school_admin"><SchoolSettings /></ProtectedRoute>} />
-                    <Route path="/settings/receipts" element={<ProtectedRoute role="school_admin"><ReceiptSettings /></ProtectedRoute>} />
+                    <Route path="/settings/receipts" element={<ProtectedRoute role="school_admin" module="financials"><ReceiptSettings /></ProtectedRoute>} />
                     <Route path="/admin/management" element={<ProtectedRoute role="school_admin"><AdminManagement /></ProtectedRoute>} />
-                    <Route path="/assessment-config" element={<ProtectedRoute role="school_admin"><AssessmentSettings /></ProtectedRoute>} />
+                    <Route path="/assessment-config" element={<ProtectedRoute role="school_admin" module="continuousAssessment"><AssessmentSettings /></ProtectedRoute>} />
 
-                    <Route path="/admin/reports" element={<ProtectedRoute feature="basicReports"><AdminReportDashboard /></ProtectedRoute>} />
-                    <Route path="/finance" element={<ProtectedRoute role="school_admin"><AdminFinanceDashboard /></ProtectedRoute>} />
-                    <Route path="/admin/learning-materials" element={<AdminMaterialReview />} />
+                    <Route path="/admin/reports" element={<ProtectedRoute feature="basicReports" module="basicReports"><AdminReportDashboard /></ProtectedRoute>} />
+                    <Route path="/finance" element={<ProtectedRoute role="school_admin" module="financials"><AdminFinanceDashboard /></ProtectedRoute>} />
+                    <Route path="/admin/learning-materials" element={<ProtectedRoute module="learningMaterials"><AdminMaterialReview /></ProtectedRoute>} />
 
                     {/* Teacher Routes */}
-                    <Route path="/lessons/create" element={<ProtectedRoute feature="learningMaterials"><LessonGenerator /></ProtectedRoute>} />
-                    <Route path="/lessons" element={<ProtectedRoute feature="learningMaterials"><LessonLibrary /></ProtectedRoute>} />
-                    <Route path="/results/entry" element={<ProtectedRoute feature="continuousAssessment"><ResultEntry /></ProtectedRoute>} />
+                    <Route path="/lessons/create" element={<ProtectedRoute feature="learningMaterials" module="learningManagement"><LessonGenerator /></ProtectedRoute>} />
+                    <Route path="/lessons" element={<ProtectedRoute feature="learningMaterials" module="learningManagement"><LessonLibrary /></ProtectedRoute>} />
+                    <Route path="/results/entry" element={<ProtectedRoute feature="continuousAssessment" module="continuousAssessment"><ResultEntry /></ProtectedRoute>} />
                     <Route path="/teacher-profile" element={<ProtectedRoute role="teacher"><TeacherProfile /></ProtectedRoute>} />
-                    <Route path="/videos/manage" element={<ProtectedRoute role="teacher"><VideoManager /></ProtectedRoute>} />
+                    <Route path="/videos/manage" element={<ProtectedRoute role="teacher" module="videoManager"><VideoManager /></ProtectedRoute>} />
                     <Route path="/my-students" element={<ProtectedRoute role="teacher"><MyStudents /></ProtectedRoute>} />
-                    <Route path="/attendance/mark" element={<ProtectedRoute role="teacher"><AttendanceMarking /></ProtectedRoute>} />
-                    <Route path="/teacher/ai-marking" element={<ProtectedRoute role="teacher" feature="aiMarking"><AIExamMarking /></ProtectedRoute>} />
+                    <Route path="/attendance/mark" element={<ProtectedRoute role="teacher" module="attendanceTracking"><AttendanceMarking /></ProtectedRoute>} />
+                    <Route path="/teacher/ai-marking" element={<ProtectedRoute role="teacher" feature="aiMarking" module="aiMarking"><AIExamMarking /></ProtectedRoute>} />
 
-                    <Route path="/staff/reports" element={<ProtectedRoute feature="basicReports"><StaffReportDashboard /></ProtectedRoute>} />
-                    <Route path="/staff/chat" element={<ProtectedRoute feature="staffAdminComm"><StaffChat /></ProtectedRoute>} />
+                    <Route path="/staff/reports" element={<ProtectedRoute feature="basicReports" module="basicReports"><StaffReportDashboard /></ProtectedRoute>} />
+                    <Route path="/staff/chat" element={<ProtectedRoute feature="staffAdminComm" module="staffAdminComm"><StaffChat /></ProtectedRoute>} />
                     <Route path="/admin/departments" element={<ProtectedRoute role="school_admin"><DepartmentSettings /></ProtectedRoute>} />
-                    <Route path="/department/review" element={<DepartmentReview />} />
-                    <Route path="/teacher/learning-materials" element={<ProtectedRoute role="teacher" feature="learningMaterials"><TeacherMaterialDashboard /></ProtectedRoute>} />
+                    <Route path="/department/review" element={<ProtectedRoute module="learningMaterials"><DepartmentReview /></ProtectedRoute>} />
+                    <Route path="/teacher/learning-materials" element={<ProtectedRoute role="teacher" feature="learningMaterials" module="learningMaterials"><TeacherMaterialDashboard /></ProtectedRoute>} />
 
                     {/* Boarding & Hostel Routes */}
-                    <Route path="/boarding" element={<ProtectedRoute role={['school_admin', 'super_admin', 'hostel_warden', 'house_parent']}><BoardingManagement /></ProtectedRoute>} />
-                    <Route path="/hostel-management" element={<ProtectedRoute role={['school_admin', 'super_admin', 'assistant_admin']}><HostelManagement /></ProtectedRoute>} />
-                    <Route path="/hostel-management/:id/rooms" element={<ProtectedRoute role={['school_admin', 'super_admin', 'assistant_admin']}><HostelRooms /></ProtectedRoute>} />
-                    <Route path="/boarding/roll-call" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']}><HostelAttendance /></ProtectedRoute>} />
-                    <Route path="/boarding/allocate" element={<ProtectedRoute role={['school_admin', 'assistant_admin']}><RoomAllocation /></ProtectedRoute>} />
-                    <Route path="/boarding/medical" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']}><BoardingMedical /></ProtectedRoute>} />
-                    <Route path="/boarding/reports" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']}><BoardingReports /></ProtectedRoute>} />
-                    <Route path="/boarding/meals" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']}><MealTracking /></ProtectedRoute>} />
-                    <Route path="/boarding/discipline" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']}><DisciplineManagement /></ProtectedRoute>} />
-                    <Route path="/boarding/leaves" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']}><LeaveManagement /></ProtectedRoute>} />
+                    <Route path="/boarding" element={<ProtectedRoute role={['school_admin', 'super_admin', 'hostel_warden', 'house_parent']} module="boarding"><BoardingManagement /></ProtectedRoute>} />
+                    <Route path="/hostel-management" element={<ProtectedRoute role={['school_admin', 'super_admin', 'assistant_admin']} module="boarding"><HostelManagement /></ProtectedRoute>} />
+                    <Route path="/hostel-management/:id/rooms" element={<ProtectedRoute role={['school_admin', 'super_admin', 'assistant_admin']} module="boarding"><HostelRooms /></ProtectedRoute>} />
+                    <Route path="/boarding/roll-call" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']} module="boarding"><HostelAttendance /></ProtectedRoute>} />
+                    <Route path="/boarding/allocate" element={<ProtectedRoute role={['school_admin', 'assistant_admin']} module="boarding"><RoomAllocation /></ProtectedRoute>} />
+                    <Route path="/boarding/medical" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']} module="medicalRecords"><BoardingMedical /></ProtectedRoute>} />
+                    <Route path="/boarding/reports" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']} module="boarding"><BoardingReports /></ProtectedRoute>} />
+                    <Route path="/boarding/meals" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']} module="boarding"><MealTracking /></ProtectedRoute>} />
+                    <Route path="/boarding/discipline" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']} module="disciplineManagement"><DisciplineManagement /></ProtectedRoute>} />
+                    <Route path="/boarding/leaves" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']} module="boarding"><LeaveManagement /></ProtectedRoute>} />
 
                     {/* Student Routes */}
-                    <Route path="/videos" element={<StudentVideos />} />
-                    <Route path="/student-submissions" element={<ProtectedRoute role="student"><StudentSubmissions /></ProtectedRoute>} />
-                    <Route path="/student-history" element={<ProtectedRoute role="student"><StudentHistory /></ProtectedRoute>} />
-                    <Route path="/student-results" element={<ProtectedRoute role="student"><StudentResults /></ProtectedRoute>} />
+                    <Route path="/videos" element={<ProtectedRoute module="videoManager"><StudentVideos /></ProtectedRoute>} />
+                    <Route path="/student-submissions" element={<ProtectedRoute role="student" module="learningManagement"><StudentSubmissions /></ProtectedRoute>} />
+                    <Route path="/student-history" element={<ProtectedRoute role="student" module="attendanceTracking"><StudentHistory /></ProtectedRoute>} />
+                    <Route path="/student-results" element={<ProtectedRoute role="student" module="continuousAssessment"><StudentResults /></ProtectedRoute>} />
                     <Route path="/student-profile" element={<ProtectedRoute role="student"><StudentProfile /></ProtectedRoute>} />
-                    <Route path="/student/learning-materials" element={<StudentMaterialList />} />
+                    <Route path="/student/learning-materials" element={<ProtectedRoute module="learningMaterials"><StudentMaterialList /></ProtectedRoute>} />
 
                     {/* Parent Routes */}
                     <Route path="/parent-dashboard" element={<ProtectedRoute role="parent"><ParentDashboard /></ProtectedRoute>} />
                     <Route path="/parent/child-profile" element={<ProtectedRoute role="parent"><ChildProfileParent /></ProtectedRoute>} />
-                    <Route path="/parent/videos" element={<ProtectedRoute role="parent"><ParentVideos /></ProtectedRoute>} />
-                    <Route path="/parent/results" element={<ProtectedRoute role="parent"><ParentResults /></ProtectedRoute>} />
-                    <Route path="/parent/history" element={<ProtectedRoute role="parent"><ParentHistory /></ProtectedRoute>} />
-                    <Route path="/parent/materials" element={<ProtectedRoute role="parent"><ParentMaterials /></ProtectedRoute>} />
-                    <Route path="/parent/attendance" element={<ProtectedRoute role="parent"><ParentAttendance /></ProtectedRoute>} />
-                    <Route path="/parent/payments" element={<ProtectedRoute role="parent"><ParentPayment /></ProtectedRoute>} />
+                    <Route path="/parent/videos" element={<ProtectedRoute role="parent" module="videoManager"><ParentVideos /></ProtectedRoute>} />
+                    <Route path="/parent/results" element={<ProtectedRoute role="parent" module="continuousAssessment"><ParentResults /></ProtectedRoute>} />
+                    <Route path="/parent/history" element={<ProtectedRoute role="parent" module="attendanceTracking"><ParentHistory /></ProtectedRoute>} />
+                    <Route path="/parent/materials" element={<ProtectedRoute role="parent" module="learningMaterials"><ParentMaterials /></ProtectedRoute>} />
+                    <Route path="/parent/attendance" element={<ProtectedRoute role="parent" module="attendanceTracking"><ParentAttendance /></ProtectedRoute>} />
+                    <Route path="/parent/payments" element={<ProtectedRoute role="parent" module="financials"><ParentPayment /></ProtectedRoute>} />
     
                  </Route>
               </Route>
