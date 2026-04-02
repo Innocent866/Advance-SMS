@@ -1,30 +1,51 @@
 import { useAuth } from '../context/AuthContext';
-import { BookOpen, Video, CheckCircle, Clock, User, Trophy, PlayCircle, UserPlus } from 'lucide-react';
+import { 
+    BookOpen, 
+    Video, 
+    CheckCircle, 
+    Clock, 
+    User, 
+    Trophy, 
+    PlayCircle, 
+    UserPlus, 
+    Zap, 
+    Binary, 
+    ChevronRight, 
+    ArrowUpRight, 
+    Star, 
+    Cpu, 
+    Activity,
+    Layers,
+    Gamepad2,
+    Search
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import usePageTitle from '../hooks/usePageTitle';
-
-const StatCard = ({ label, value, icon: Icon, color, to }) => (
-    <Link to={to} className="block group">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4 transition-transform group-hover:scale-105">
-            <div className={`p-3 rounded-lg ${color}`}>
-                <Icon size={24} className="text-white" />
-            </div>
-            <div>
-                <p className="text-gray-500 text-sm font-medium">{label}</p>
-                <h3 className="text-2xl font-bold text-gray-800">{value !== undefined ? value : '-'}</h3>
-            </div>
-        </div>
-    </Link>
-);
-
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import AddParentModal from '../components/AddParentModal';
 
-// ... StatCard ...
+const StatCard = ({ label, value, icon: Icon, color, to, delay }) => (
+    <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay }}
+    >
+        <Link to={to} className="block group h-full">
+            <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100 flex flex-col items-center text-center transition-all hover:-translate-y-2 hover:shadow-indigo-200/40 h-full">
+                <div className={`p-4 rounded-3xl mb-4 transition-all group-hover:rotate-6 shadow-lg ${color}`}>
+                    <Icon size={24} className="text-white" />
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">{label}</p>
+                <h3 className="text-lg font-black text-slate-800 group-hover:text-primary transition-colors">{value}</h3>
+            </div>
+        </Link>
+    </motion.div>
+);
 
 const StudentDashboard = () => {
-    usePageTitle('Student Dashboard');
+    usePageTitle('My Dashboard');
     const { user } = useAuth();
     const [studentData, setStudentData] = useState(null);
     const [isParentModalOpen, setIsParentModalOpen] = useState(false);
@@ -43,74 +64,115 @@ const StudentDashboard = () => {
     }, []);
 
     return (
-        <div>
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-800">Hi, {user?.name?.split(' ')[0]} 👋</h1>
-                <p className="text-gray-500 mt-2">Ready to start learning today?</p>
-            </header>
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="max-w-7xl mx-auto pb-20 px-4"
+        >
+            {/* Learning Journey Hero */}
+            <div className="relative mb-12 p-12 rounded-[3.5rem] overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-black text-white shadow-3xl border border-white/5">
+                <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px] -mr-80 -mt-80" />
+                <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-[100px] -ml-40 -mb-40" />
+                
+                <div className="relative flex flex-col lg:flex-row justify-between items-center gap-12">
+                    <div className="space-y-6 text-center lg:text-left flex-1">
+                        <div className="inline-flex items-center gap-3 px-5 py-2 bg-white/5 backdrop-blur-3xl rounded-full border border-white/10 text-[11px] font-black uppercase tracking-[0.25em]">
+                            <Binary size={14} className="text-primary" /> Student Hub
+                        </div>
+                        <h1 className="text-5xl lg:text-7xl font-black tracking-tight leading-[1.1]">
+                            Hi, <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-indigo-400 to-blue-400">{user?.name?.split(' ')[0] || 'Learner'}</span> 👋
+                        </h1>
+                        <p className="text-slate-400 font-medium max-w-xl text-xl leading-relaxed">
+                            Welcome back to your learning hub. Your classes and materials are ready.
+                        </p>
+                    </div>
 
-            {/* Quick Stats / Navigation Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div className="hidden lg:flex flex-col gap-4">
+                        <div className="bg-white/5 backdrop-blur-3xl p-6 rounded-[2rem] border border-white/10 flex items-center gap-6">
+                            <div className="p-4 bg-primary/20 rounded-2xl text-primary">
+                                <Trophy size={24} />
+                            </div>
+                            <div>
+                                <p className="text-3xl font-black">{user?.classId?.name || '1'}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">My Class</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Academic Quest Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
                 <StatCard 
-                    label="Video Lessons" 
-                    value="Start Learning" 
+                    label="Learning" 
+                    value="Video Lessons" 
                     icon={Video} 
-                    color="bg-purple-500" 
+                    color="bg-purple-600 shadow-purple-500/30" 
                     to="/videos" 
+                    delay={0.1}
                 />
                 <StatCard 
-                    label="My Tasks" 
-                    value="View Pending" 
+                    label="Status" 
+                    value="Assignments" 
                     icon={CheckCircle} 
-                    color="bg-orange-500" 
+                    color="bg-orange-600 shadow-orange-500/30" 
                     to="/student-submissions" 
+                    delay={0.2}
                 />
                 <StatCard 
                     label="History" 
-                    value="View Progress" 
+                    value="Attendance" 
                     icon={Clock} 
-                    color="bg-blue-500" 
+                    color="bg-blue-600 shadow-blue-500/30" 
                     to="/student-history" 
+                    delay={0.3}
                 />
                 <StatCard 
-                    label="My Profile" 
-                    value="Update Info" 
+                    label="Profile" 
+                    value="My Account" 
                     icon={User} 
-                    color="bg-green-500" 
+                    color="bg-emerald-600 shadow-emerald-500/30" 
                     to="/student-profile" 
+                    delay={0.4}
                 />
             </div>
 
-            {/* Parent Access Section */}
-            <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-6 text-white mb-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                    <div className="bg-white/10 p-4 rounded-full">
-                        <UserPlus size={32} className="text-white" />
+            {/* Parent Proxy Section */}
+            <div className="relative group mb-16 overflow-hidden bg-slate-900 rounded-[3.5rem] p-1 shadow-3xl shadow-indigo-900/40">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                <div className="relative bg-slate-900/90 backdrop-blur-3xl rounded-[3.4rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-12">
+                    <div className="flex items-center gap-8">
+                        <div className="p-6 bg-white/5 rounded-[2.5rem] border border-white/10 text-primary shadow-2xl">
+                            <UserPlus size={40} />
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-3xl font-black text-white tracking-tight">Parent Account</h3>
+                            <p className="text-slate-400 font-medium max-w-lg leading-relaxed">
+                                {studentData?.parentName 
+                                    ? `Linked with ${studentData.parentName}` 
+                                    : "Link your account to your parent or guardian to manage fees and view results."}
+                            </p>
+                        </div>
                     </div>
                     <div>
-                        <h3 className="text-xl font-bold">Parent Access</h3>
-                        <p className="text-gray-300 max-w-lg">
-                            {studentData?.parentName 
-                                ? `Connected to ${studentData.parentName}` 
-                                : "Link a parent account to allow them to view your results and pay fees."}
-                        </p>
+                    {studentData?.parentName ? (
+                            <div className="flex items-center gap-4 bg-emerald-500/10 text-emerald-400 px-8 py-4 rounded-[2rem] font-black uppercase tracking-widest text-xs border border-emerald-500/20 shadow-xl shadow-emerald-500/10">
+                                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+                                LINKED
+                            </div>
+                    ) : (
+                            <motion.button 
+                                onClick={() => setIsParentModalOpen(true)}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="bg-white text-slate-900 px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-2xl hover:bg-slate-50 transition-all flex items-center gap-3"
+                            >
+                                <UserPlus size={18} />
+                                Link Parent
+                            </motion.button>
+                    )}
                     </div>
-                </div>
-                <div>
-                   {studentData?.parentName ? (
-                        <div className="flex items-center gap-2 bg-green-500/20 text-green-300 px-4 py-2 rounded-lg font-medium border border-green-500/30">
-                            <CheckCircle size={20} />
-                            <span>Connected</span>
-                        </div>
-                   ) : (
-                        <button 
-                            onClick={() => setIsParentModalOpen(true)}
-                            className="bg-white text-gray-900 px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition-colors flex items-center gap-2"
-                        >
-                            <UserPlus size={20} />
-                            <span>Add Parent</span>
-                        </button>
-                   )}
                 </div>
             </div>
 
@@ -121,42 +183,82 @@ const StudentDashboard = () => {
                 studentId={studentData?._id}
             />
 
-            {/* Learning Path / Activity Area */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Featured / Continue Learning */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-bold text-gray-800">Continue Learning</h3>
-                        <Link to="/videos" className="text-primary text-sm font-medium hover:underline">View All Library</Link>
+            {/* Quest Progress / Activity Area */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                {/* Pedagogical Stream */}
+                <div className="lg:col-span-2 space-y-8">
+                    <div className="flex items-center justify-between px-4">
+                        <h3 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-4">
+                            <div className="p-3 bg-slate-900 rounded-2xl text-white shadow-xl shadow-slate-900/20">
+                                <Layers size={24} />
+                            </div>
+                            Recent Lessons
+                        </h3>
+                        <Link to="/videos" className="text-primary font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:gap-4 transition-all">
+                            View All <ArrowUpRight size={14} />
+                        </Link>
                     </div>
                     
-                    <div className="bg-gray-50 rounded-lg p-6 text-center border border-dashed border-gray-300">
-                        <PlayCircle size={48} className="mx-auto text-gray-400 mb-3" />
-                        <h4 className="font-bold text-gray-700">No active sessions</h4>
-                        <p className="text-sm text-gray-500 mb-4">Pick a video from the library to start monitoring your progress.</p>
-                        <Link to="/videos" className="bg-primary text-white px-6 py-2 rounded-lg inline-block font-medium hover:bg-opacity-90">
-                            Browse Videos
-                        </Link>
+                    <div className="bg-slate-50 rounded-[3.5rem] p-16 text-center border-2 border-dashed border-slate-200/60 relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="relative transition-transform group-hover:scale-105 duration-700">
+                            <PlayCircle size={64} className="mx-auto text-slate-300 mb-6" />
+                            <h4 className="text-2xl font-black text-slate-400 mb-2 tracking-tight">No Active Lesson</h4>
+                            <p className="text-slate-400 font-bold max-w-sm mx-auto mb-8">You haven't started any video lessons yet. Open a lesson to begin learning.</p>
+                            <Link to="/videos" className="bg-slate-900 text-white px-10 py-5 rounded-[2rem] inline-flex items-center gap-3 font-black uppercase tracking-widest text-xs shadow-2xl hover:bg-black transition-all">
+                                Open Lessons <Search size={16} />
+                            </Link>
+                        </div>
                     </div>
                 </div>
 
-                {/* Motivation / Tips Panel */}
-                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-xl text-white shadow-lg">
-                    <div className="flex items-center gap-2 mb-4">
-                        <Trophy size={24} className="text-yellow-300" />
-                        <h3 className="text-lg font-bold">Daily Tip</h3>
+                {/* Motivational Intel Dashlet */}
+                <div className="space-y-8">
+                    <div className="bg-indigo-950 rounded-[3.5rem] p-10 text-white shadow-3xl shadow-indigo-900/40 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -mr-16 -mt-16" />
+                        <h3 className="text-xl font-black mb-8 flex items-center gap-3 relative">
+                            <div className="p-3 bg-white/10 rounded-2xl text-primary"><Star size={18} /></div>
+                            Student Tips
+                        </h3>
+                        <p className="font-medium text-slate-400 leading-relaxed italic mb-8">
+                            "Consistency is the key to success. Try to watch one video lesson every day to stay ahead."
+                        </p>
+                        
+                        <div className="bg-white/5 rounded-3xl p-8 border border-white/10 backdrop-blur-3xl">
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">My Class</p>
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-primary/20 rounded-xl text-primary">
+                                    <Gamepad2 size={24} />
+                                </div>
+                                <div>
+                                    <p className="text-2xl font-black text-white">{user?.classId?.name || 'Loading...'}</p>
+                                    <p className="text-[10px] font-bold text-slate-400">Current Level</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 pt-8 border-t border-white/10">
+                            <Link to="/student-results" className="w-full bg-white text-indigo-900 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-2 hover:bg-slate-50 transition-all">
+                                View Results <Activity size={14} />
+                            </Link>
+                        </div>
                     </div>
-                    <p className="mb-6 opacity-90 leading-relaxed">
-                        "Consistency is key! Try to watch at least one lesson video every day to stay on top of your subjects."
-                    </p>
-                    <div className="bg-white/20 rounded-lg p-4 backdrop-blur-sm">
-                        <div className="text-sm font-bold opacity-80 mb-1">YOUR LEVEL</div>
-                        <div className="text-2xl font-bold">{user?.classId?.name || 'Students'}</div>
-                        <div className="text-xs opacity-75">Keep up the great work!</div>
+                    
+                    <div className="bg-primary p-1 rounded-[3.5rem] shadow-xl shadow-primary/20">
+                        <div className="bg-white rounded-[3.4rem] p-10 flex flex-col items-center text-center">
+                            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4">
+                                <Star size={24} />
+                            </div>
+                            <h4 className="text-lg font-black text-slate-900 mb-2">Study Help</h4>
+                            <p className="text-xs font-semibold text-slate-400 mb-6">Unlock extra materials and AI tools to help with your studies.</p>
+                            <button className="text-primary font-black uppercase tracking-widest text-[10px] flex items-center gap-2 group hover:gap-4 transition-all">
+                                View Options <Zap size={14} />
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

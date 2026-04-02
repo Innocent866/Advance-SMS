@@ -70,13 +70,13 @@ const FAQ = () => {
   return (
     <div className="bg-white min-h-screen">
       {/* Hero Section */}
-      <div className="bg-primary-900 py-24 sm:py-32 relative overflow-hidden">
+      <div className="bg-hub-900 py-24 sm:py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 text-center">
             <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl mb-6">
                 Frequently Asked Questions
             </h1>
-            <p className="text-xl text-primary-100 max-w-2xl mx-auto">
+            <p className="text-xl text-hub-100 max-w-2xl mx-auto">
                 Everything you need to know about GT-SchoolHub. Can't find the answer you're looking for? Reach out to our support team.
             </p>
         </div>
@@ -93,7 +93,7 @@ const FAQ = () => {
                     onClick={() => { setActiveTab(cat.category); setOpenIndex(null); }}
                     className={`px-6 py-2.5 rounded-full font-medium transition-all ${
                         activeTab === cat.category 
-                        ? 'bg-primary-600 text-white shadow-lg' 
+                        ? 'bg-hub-600 text-white shadow-lg' 
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                 >
@@ -116,14 +116,14 @@ const FAQ = () => {
                     {activeQuestions.map((faq, index) => (
                         <div 
                             key={index} 
-                            className="border border-gray-200 rounded-2xl overflow-hidden transition-all duration-300 hover:border-primary-200 hover:shadow-sm"
+                            className="border border-gray-200 rounded-2xl overflow-hidden transition-all duration-300 hover:border-hub-200 hover:shadow-sm"
                         >
                             <button
                                 onClick={() => toggleFAQ(index)}
                                 className="w-full flex items-center justify-between p-6 text-left bg-white focus:outline-none"
                             >
                                 <span className="font-bold text-lg text-gray-900">{faq.q}</span>
-                                <span className={`flex-shrink-0 ml-4 p-2 rounded-full transition-colors ${openIndex === index ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-400'}`}>
+                                <span className={`flex-shrink-0 ml-4 p-2 rounded-full transition-colors ${openIndex === index ? 'bg-hub-100 text-hub-600' : 'bg-gray-100 text-gray-400'}`}>
                                     {openIndex === index ? <Minus size={18} /> : <Plus size={18} />}
                                 </span>
                             </button>
@@ -149,7 +149,7 @@ const FAQ = () => {
 
         {/* Still have questions? */}
         <div className="mt-20 text-center bg-gray-50 rounded-3xl p-10 border border-gray-100">
-            <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-primary-600 shadow-sm mx-auto mb-6">
+            <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-hub-600 shadow-sm mx-auto mb-6">
                 <MessageCircle size={32} />
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">Still have questions?</h3>
@@ -157,7 +157,7 @@ const FAQ = () => {
                 Can't find the answer you're looking for? Please chat to our friendly team.
             </p>
             <Link to="/contact">
-                <button className="px-8 py-3 bg-primary-600 text-white font-bold rounded-xl shadow-lg hover:bg-primary-700 transition-all hover:-translate-y-1">
+                <button className="px-8 py-3 bg-hub-600 text-white font-bold rounded-xl shadow-lg hover:bg-hub-700 transition-all hover:-translate-y-1">
                     Get in touch
                 </button>
             </Link>

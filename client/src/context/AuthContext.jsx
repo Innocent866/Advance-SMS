@@ -42,6 +42,16 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         const response = await api.post('/auth/login', { email, password });
+        // If 2FA is required, we don't set user yet, just return the status
+        if (!response.data.requires2FA && response.data.token) {
+            localStorage.setItem('user', JSON.stringify(response.data));
+            setUser(response.data);
+        }
+        return response.data;
+    };
+
+    const verify2FA = async (userId, otpCode) => {
+        const response = await api.post('/auth/verify-2fa', { userId, otpCode });
         if (response.data.token) {
             localStorage.setItem('user', JSON.stringify(response.data));
             setUser(response.data);
@@ -74,24 +84,26 @@ export const AuthProvider = ({ children }) => {
                     const fresherUser = { ...res.data, token: parsedUser.token };
                     setUser(fresherUser);
                     localStorage.setItem('user', JSON.stringify(fresherUser));
+                    return fresherUser;
                 }
             }
         } catch (error) {
             console.error("Refresh user failed", error);
         }
+        return null;
     };
     
     // Helpers Wrapper
     const checkAccess = (feature) => checkAccessUtil(user, feature);
     const checkLimit = (resource, count) => checkLimitUtil(user, resource, count);
-
-    if (loading) {
-        return <Loader fullScreen={true} />;
-    }
+    const checkFeature = (featureName) => {
+        if (user?.role === 'super_admin') return true;
+        return user?.schoolId?.features?.[featureName] !== false;
+    };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, registerSchool, logout, refreshUser, checkAccess, checkLimit }}>
-            {children}
+        <AuthContext.Provider value={{ user, loading, login, verify2FA, registerSchool, logout, refreshUser, checkAccess, checkLimit, checkFeature }}>
+            {loading ? <Loader fullScreen={true} /> : children}
         </AuthContext.Provider>
     );
 };

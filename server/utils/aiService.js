@@ -12,15 +12,29 @@ const openai = new OpenAI({
 const generateMock = async ({ subject, topic, week }) => {
     await new Promise(resolve => setTimeout(resolve, 1500));
     return {
-        objectives: ["Understand the concept", "Apply the concept"],
-        teachingMaterial: "Textbook, Board",
-        teacherActivities: ["Explain definitions", "Show examples"],
-        studentActivities: ["Take notes", "Ask questions"],
+        week: week ? week.toString() : "1",
+        date: new Date().toLocaleDateString(),
+        class: "Mock Class",
+        topic: topic,
+        subTopic: "Introduction",
+        duration: "40 Minutes",
+        teachersName: "Mock Teacher",
+        subject: subject,
+        period: "1st Period",
+        behaviouralObjectives: ["Understand the concept", "Apply the concept"],
+        instructionalMaterials: ["Textbook", "Board"],
+        previousKnowledge: "Basic understanding",
+        entryBehaviour: "Students are ready to learn",
+        recommendedText: ["Core Textbook"],
+        referenceText: ["Reference Material"],
+        content: "Detailed mock content for " + topic,
+        presentation: ["The Teacher introduces the topic", "The Teacher explains key concepts"],
+        studentActivity: ["Listen and take notes", "Ask questions"],
+        summaryConclusion: "Summary of the topic.",
         evaluation: ["What is the definition?", "Give one example"],
-        assignment: "Read Chapter 5",
-        conclusion: "Summary of the topic.",
-        lessonNotes: `# ${topic}\n\nNotes content here...`,
-        slideOutline: ["Slide 1: Intro", "Slide 2: Main Point"]
+        assignment: "Read the next chapter.",
+        remark: "Good active participation.",
+        lessonNotes: `# Introduction to ${topic}\n\nThis is a highly detailed mock note. It breaks down the concept into multiple fundamental pillars.\n\n## 1. Core Definition\n${topic} is a critical subject in our curriculum...\n\n## 2. Real World Application\nFor example, in Lagos markets, this concept can be seen when...\n\n## 3. Step by Step Analysis\n- First point\n- Second point\n\n## Summary\nOverall, the students must understand the underlying principles...`
     };
 };
 
@@ -35,21 +49,40 @@ const generateLessonPlanAI = async ({ subject, classLevel, topic, term, week, sc
     // 2. Construct Prompt (Strict Nigerian Curriculum Enforcement)
     const systemPrompt = `
 You are an expert Nigerian secondary school teacher and curriculum planner. 
-Your task is to generate a detailed Lesson Plan, Lesson Notes, and Slide Content for a specific subject and class.
+Your task is to generate a detailed Lesson Plan and Lesson Notes for a specific subject and class.
 STRICTLY FOLLOW the Nigerian Educational Research and Development Council (NERDC) curriculum standards for WAEC/NECO/BECE.
 Use local Nigerian examples (e.g., Lagos, Abuja, Naira, local markets, local culture) where relevant.
 
+Crucially:
+1. For "lessonNotes", provide a highly detailed, extensive textbook-style breakdown. The 'lessonNotes' must be very long, comprehensive, and broken down with headers, bullet points, and real-world examples. It should serve as a complete study material for the teacher to deliver effectively.
+2. "behaviouralObjectives", "presentation", and "studentActivity" MUST be arrays of strings (lists).
+3. Each item in the "presentation" list MUST start with the phrase "The Teacher ".
+
 Output must be valid JSON in the following structure:
 {
-  "objectives": ["string"],
-  "teachingMaterial": "string",
-  "teacherActivities": ["string"],
-  "studentActivities": ["string"],
+  "week": "string",
+  "date": "string",
+  "class": "string",
+  "topic": "string",
+  "subTopic": "string",
+  "duration": "string",
+  "teachersName": "string",
+  "subject": "string",
+  "period": "string",
+  "behaviouralObjectives": ["string"],
+  "instructionalMaterials": ["string"],
+  "previousKnowledge": "string",
+  "entryBehaviour": "string",
+  "recommendedText": ["string"],
+  "referenceText": ["string"],
+  "content": "string",
+  "presentation": ["string"],
+  "studentActivity": ["string"],
+  "summaryConclusion": "string",
   "evaluation": ["string"],
   "assignment": "string",
-  "conclusion": "string",
-  "lessonNotes": "markdown string",
-  "slideContent": ["string"]
+  "remark": "string",
+  "lessonNotes": "markdown string"
 }
 `;
 
@@ -137,10 +170,21 @@ You are an expert WAEC/NECO Chief Examiner.
 Your task is to mark a student's answer based STRICTLY on the provided Marking Scheme.
 You must be objective, fair, and follow the standard marking guide.
 
+Crucially: 
+1. If an image/script is provided, you must also provide the COORDINATES (x, y) for each marking point where you find evidence (for ticks) or where an error occurred (for crosses). 
+2. Coordinates must be normalized (0 to 100) representing the percentage from top-left.
+3. Use your vision capabilities to accurately locate the handwritten text.
+
 Output must be valid JSON in the following structure:
 {
   "scoreBreakdown": [
-    { "point": "string (what was looked for)", "marksAwarded": number, "maxMarks": number, "reason": "string (justification)" }
+    { 
+      "point": "string (what was looked for)", 
+      "marksAwarded": number, 
+      "maxMarks": number, 
+      "reason": "string (justification)",
+      "coord": { "x": number, "y": number }
+    }
   ],
   "totalSuggestedScore": number,
   "maxPossibleScore": number,

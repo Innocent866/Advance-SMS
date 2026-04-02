@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, CheckCircle, Brain, RefreshCw, Save, AlertCircle, Upload, Download } from 'lucide-react';
 import api from '../utils/api';
 import usePageTitle from '../hooks/usePageTitle';
@@ -20,6 +20,25 @@ const AIExamMarking = () => {
     const [result, setResult] = useState(null);
     const [error, setError] = useState('');
     const [finalizedScore, setFinalizedScore] = useState(null);
+
+    const [history, setHistory] = useState([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+
+    const fetchHistory = async () => {
+        setLoadingHistory(true);
+        try {
+            const res = await api.get('/marking/history');
+            setHistory(res.data);
+        } catch (err) {
+            console.error("Failed to fetch marking history", err);
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchHistory();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -61,33 +80,113 @@ const AIExamMarking = () => {
         }
     };
 
-    const handleConfirm = () => {
-        alert(`Score Finalized: ${finalizedScore}/${result?.maxPossibleScore}`);
+    const handleConfirm = async () => {
+        if (!result) return;
+        try {
+            await api.post('/marking/save', {
+                ...formData,
+                scriptUrl: result.scriptUrl,
+                scoreBreakdown: result.scoreBreakdown,
+                totalSuggestedScore: result.totalSuggestedScore,
+                finalizedScore: finalizedScore || result.totalSuggestedScore,
+                maxPossibleScore: result.maxPossibleScore,
+                feedback: result.feedback
+            });
+            alert(`Score Finalized and Saved: ${finalizedScore || result.totalSuggestedScore}/${result?.maxPossibleScore}`);
+            fetchHistory();
+        } catch (err) {
+            console.error(err);
+            alert('Failed to save marking result');
+        }
     };
 
-    const handleDownloadPDF = async () => {
-        if (!result) return;
+    const toDataURL = url => fetch(url)
+      .then(response => response.blob())
+      .then(blob => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      }));
+
+    const generateMarkedScriptPDF = async (data) => {
         const { jsPDF } = await import('jspdf');
         const doc = new jsPDF();
         
-        doc.setFontSize(18);
-        doc.text("AI Exam Marking Report", 10, 20);
+        doc.setFontSize(22);
+        doc.setTextColor(220, 38, 38); // Red stamp
+        doc.text(`GRADED: ${data.finalizedScore || data.totalSuggestedScore} / ${data.maxPossibleScore}`, 10, 20);
         
-        doc.setFontSize(12);
-        doc.text(`Subject: ${formData.subject}`, 10, 30);
-        doc.text(`Exam Type: ${formData.examType}`, 10, 38);
-        doc.text(`Review Date: ${new Date().toLocaleDateString()}`, 10, 46);
+        doc.setTextColor(0, 0, 0); // Black text
+        doc.setFontSize(14);
+        doc.text(`Subject: ${data.subject}`, 10, 30);
+        doc.text(`Exam Type: ${data.examType}`, 10, 38);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 10, 46);
 
         doc.setLineWidth(0.5);
         doc.line(10, 50, 200, 50);
 
-        doc.setFontSize(14);
-        doc.text(`Total Score: ${finalizedScore || result.totalSuggestedScore} / ${result.maxPossibleScore}`, 10, 60);
-
+        let yPos = 60;
+        doc.setFontSize(16);
+        doc.text("Student Submission:", 10, yPos);
+        yPos += 10;
         doc.setFontSize(12);
-        let yPos = 70;
+
+        if (data.studentAnswer) {
+            const answerLines = doc.splitTextToSize(data.studentAnswer, 180);
+            doc.text(answerLines, 10, yPos);
+            yPos += (answerLines.length * 5) + 10;
+        }
+
+        if (data.scriptUrl) {
+           const isImage = /\.(jpg|jpeg|png|webp|gif|avif)$/i.test(data.scriptUrl) || data.scriptUrl.includes('image/upload');
+           
+           if (isImage) {
+               try {
+                   const imgData = await toDataURL(data.scriptUrl);
+                   // Dynamic format detection (jspdf usually handles this if prefixed correctly)
+                   const format = data.scriptUrl.toLowerCase().endsWith('.png') ? 'PNG' : 'JPEG';
+                   
+                   // Attempt to keep aspect ratio if we can load it into an image object first
+                   const img = new Image();
+                   img.crossOrigin = "Anonymous";
+                   img.src = imgData;
+                   
+                   await new Promise((resolve) => {
+                       img.onload = resolve;
+                       img.onerror = resolve; // Continue even if sizing fails
+                   });
+
+                   const imgWidth = 180;
+                   const imgHeight = (img.height * imgWidth) / img.width || 120; // fallback height
+                   
+                   doc.addImage(imgData, format, 10, yPos, imgWidth, Math.min(imgHeight, 180));
+                   yPos += Math.min(imgHeight, 180) + 10;
+               } catch (e) {
+                   console.warn("Failed to embed image, falling back to link", e);
+                   doc.setTextColor(0, 0, 255);
+                   doc.text("Click to View Attached Script: " + data.scriptUrl, 10, yPos);
+                   doc.setTextColor(0, 0, 0);
+                   yPos += 10;
+               }
+           } else {
+               // Non-image file (PDF, Doc)
+               doc.setTextColor(0, 0, 255);
+               doc.text("Attached Document (View Online): " + data.scriptUrl, 10, yPos);
+               doc.setTextColor(0, 0, 0);
+               yPos += 10;
+           }
+        }
+
+        doc.addPage();
+        yPos = 20;
         
-        result.scoreBreakdown.forEach((item, index) => {
+        doc.setFontSize(18);
+        doc.text("Detailed Marking Report", 10, yPos);
+        yPos += 10;
+        
+        doc.setFontSize(12);
+        data.scoreBreakdown.forEach((item, index) => {
              if (yPos > 270) { doc.addPage(); yPos = 20; }
              
              doc.setFont(undefined, 'bold');
@@ -106,7 +205,16 @@ const AIExamMarking = () => {
              yPos += (reasonLines.length * 5) + 5;
         });
 
-        doc.save(`${formData.subject}_AI_Grading_Report.pdf`);
+        doc.save(`${data.subject}_Marked_Script.pdf`);
+    };
+
+    const handleDownloadCurrentMarkedScript = () => {
+        if (!result) return;
+        generateMarkedScriptPDF({
+            ...formData,
+            ...result,
+            finalizedScore: finalizedScore || result.totalSuggestedScore
+        });
     };
 
     return (
@@ -174,7 +282,7 @@ const AIExamMarking = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Marking Scheme / Guide</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Marking Scheme</label>
                             <textarea
                                 name="markingScheme"
                                 value={formData.markingScheme}
@@ -218,12 +326,12 @@ const AIExamMarking = () => {
                             {loading ? (
                                 <>
                                     <RefreshCw className="animate-spin" size={20} />
-                                    Analyzing & Grading...
+                                    Grading...
                                 </>
                             ) : (
                                 <>
                                     <Brain size={20} />
-                                    Generate AI Score
+                                    Grade with AI
                                 </>
                             )}
                         </button>
@@ -297,11 +405,11 @@ const AIExamMarking = () => {
                                     Confirm Score
                                 </button>
                                 <button 
-                                    onClick={handleDownloadPDF}
+                                    onClick={handleDownloadCurrentMarkedScript}
                                     className="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
                                 >
                                     <Download size={20} />
-                                    Download Result
+                                    Download Marked Script
                                 </button>
                             </div>
 
@@ -315,6 +423,46 @@ const AIExamMarking = () => {
                         </div>
                     )}
                 </div>
+            </div>
+
+            {/* History Section */}
+            <div className="mt-12 mb-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                    <Save size={24} className="text-primary" />
+                    Previous Marks History
+                </h2>
+                {loadingHistory ? (
+                    <div className="text-center text-gray-500 py-8">Loading history...</div>
+                ) : history.length === 0 ? (
+                    <div className="text-center text-gray-500 py-8 bg-white rounded-xl shadow-sm border border-gray-100">
+                        No previous marking history found.
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {history.map((item) => (
+                            <div key={item._id} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+                                <div>
+                                    <h3 className="font-bold text-lg text-gray-800">{item.subject}</h3>
+                                    <p className="text-sm text-gray-500 mb-3">{item.examType}</p>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <span className="text-gray-600 text-sm">Score:</span>
+                                        <span className="font-bold text-lg text-primary">{item.finalizedScore || item.totalSuggestedScore} / {item.maxPossibleScore}</span>
+                                    </div>
+                                    <p className="text-sm text-gray-500 line-clamp-2 italic mb-4">"{item.feedback}"</p>
+                                </div>
+                                <div className="flex justify-start">
+                                    <button 
+                                        onClick={() => generateMarkedScriptPDF(item)}
+                                        className="text-primary hover:text-green-700 text-sm font-bold flex items-center gap-1 transition-colors bg-green-50 px-3 py-2 rounded-lg"
+                                    >
+                                        <Download size={16} />
+                                        Download Marked Script
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Bell, Check, X, Trash2 } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
@@ -10,7 +10,7 @@ const NotificationBell = () => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = useCallback(async () => {
         try {
             const res = await api.get('/notifications');
             setNotifications(res.data);
@@ -18,7 +18,7 @@ const NotificationBell = () => {
         } catch (error) {
             console.error('Error fetching notifications');
         }
-    };
+    }, []);
 
     useEffect(() => {
         if (user) {
@@ -27,7 +27,7 @@ const NotificationBell = () => {
             const interval = setInterval(fetchNotifications, 60000);
             return () => clearInterval(interval);
         }
-    }, [user]);
+    }, [user, fetchNotifications]);
 
     // Close dropdown when clicking outside
     useEffect(() => {

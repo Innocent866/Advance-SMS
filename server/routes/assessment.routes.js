@@ -5,8 +5,10 @@ const upload = require('../middleware/upload.middleware');
 const { checkFeatureAccess } = require('../middleware/subscription.middleware');
 const { createOrUpdateConfig, getConfig } = require('../controllers/assessment.controller');
 
-router.get('/', protect, getConfig);
-router.post('/', protect, authorize('school_admin', 'super_admin'), checkFeatureAccess('continuousAssessment'), createOrUpdateConfig);
+router.use(protect);
+
+router.get('/', getConfig);
+router.post('/', authorize('school_admin', 'super_admin'), checkFeatureAccess('continuousAssessment'), createOrUpdateConfig);
 
 
 module.exports = router;

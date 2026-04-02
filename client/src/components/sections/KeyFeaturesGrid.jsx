@@ -30,9 +30,9 @@ const KeyFeaturesGrid = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: i * 0.05 }}
-                        className="p-8 bg-white rounded-3xl border border-primary-50 shadow-sm hover:shadow-xl transition-all group"
+                        className="p-8 bg-white rounded-3xl border border-hub-50 shadow-sm hover:shadow-xl transition-all group"
                     >
-                        <div className="w-14 h-14 rounded-2xl bg-gray-50 text-primary-600 flex items-center justify-center mb-6 group-hover:bg-primary-600 group-hover:text-white transition-all duration-300">
+                        <div className="w-14 h-14 rounded-2xl bg-gray-50 text-hub-600 flex items-center justify-center mb-6 group-hover:bg-hub-600 group-hover:text-white transition-all duration-300">
                             {React.cloneElement(feature.icon, { size: 28 })}
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>

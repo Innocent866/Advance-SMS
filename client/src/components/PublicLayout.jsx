@@ -64,12 +64,12 @@ const PublicLayout = () => {
                   key={link.name} 
                   to={link.path}
                   aria-current={location.pathname === link.path ? 'page' : undefined}
-                  className={`text-sm font-medium transition-colors hover:text-primary-600 relative group ${
-                    location.pathname === link.path ? 'text-primary-600' : 'text-gray-600'
+                  className={`text-sm font-medium transition-colors hover:text-hub-600 relative group ${
+                    location.pathname === link.path ? 'text-hub-600' : 'text-gray-600'
                   }`}
                 >
                   {link.name}
-                  <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary-600 transition-all duration-300 ${
+                  <span className={`absolute -bottom-1 left-0 h-0.5 bg-hub-600 transition-all duration-300 ${
                     location.pathname === link.path ? 'w-full' : 'w-0 group-hover:w-full'
                   }`} aria-hidden="true" />
                 </Link>
@@ -81,19 +81,19 @@ const PublicLayout = () => {
                {user ? (
                  <Link to="/dashboard">
                     <button
-                        className="px-5 py-2.5 rounded-full bg-gradient-to-r from-primary-600 to-primary-500 text-white font-medium shadow-lg hover:shadow-xl transition-all flex items-center gap-2 hover:scale-105 active:scale-95"
+                        className="px-5 py-2.5 rounded-full bg-gradient-to-r from-hub-600 to-hub-500 text-white font-medium shadow-lg hover:shadow-xl transition-all flex items-center gap-2 hover:scale-105 active:scale-95"
                     >
                         Dashboard <ChevronRight size={16} />
                     </button>
                  </Link>
                ) : (
                  <>
-                    <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors">
+                    <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-hub-600 transition-colors">
                         Log In
                     </Link>
                     <Link to="/register-school">
                         <button
-                            className="px-5 py-2.5 rounded-full bg-gradient-to-r from-primary-600 to-primary-500 text-white font-medium shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
+                            className="px-5 py-2.5 rounded-full bg-gradient-to-r from-hub-600 to-hub-500 text-white font-medium shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
                         >
                             Get Started
                         </button>
@@ -105,7 +105,7 @@ const PublicLayout = () => {
              <div className="md:hidden">
                <button 
                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                 className="text-gray-600 hover:text-primary-600 focus:outline-none p-2"
+                 className="text-gray-600 hover:text-hub-600 focus:outline-none p-2"
                  aria-label={isMobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
                  aria-expanded={isMobileMenuOpen}
                >
@@ -128,7 +128,7 @@ const PublicLayout = () => {
                 key={link.name} 
                 to={link.path}
                 className={`block py-3 text-base font-medium border-b border-gray-50 ${
-                   location.pathname === link.path ? 'text-primary-600' : 'text-gray-600'
+                   location.pathname === link.path ? 'text-hub-600' : 'text-gray-600'
                 }`}
               >
                 {link.name}
@@ -138,7 +138,7 @@ const PublicLayout = () => {
             <div className="pt-4 flex flex-col gap-3">
                {user ? (
                     <Link to="/dashboard" className="w-full">
-                        <button className="w-full py-3 rounded-xl bg-primary-600 text-white font-medium shadow-md">
+                        <button className="w-full py-3 rounded-xl bg-hub-600 text-white font-medium shadow-md">
                             Go to Dashboard
                         </button>
                     </Link>
@@ -150,7 +150,7 @@ const PublicLayout = () => {
                         </button>
                     </Link>
                     <Link to="/register-school" className="w-full">
-                        <button className="w-full py-3 rounded-xl bg-primary-600 text-white font-medium shadow-md">
+                        <button className="w-full py-3 rounded-xl bg-hub-600 text-white font-medium shadow-md">
                             Get Started Free
                         </button>
                     </Link>
@@ -187,16 +187,16 @@ const PublicLayout = () => {
                         Empowering schools with cutting-edge technology to streamline administration and enhance learning experiences.
                     </p>
                      <div className="flex gap-4">
-                         <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-600 transition-colors" aria-label="Facebook">
+                         <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-hub-600 transition-colors" aria-label="Facebook">
                              <Facebook size={18} aria-hidden="true" />
                          </a>
-                         <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-600 transition-colors" aria-label="Twitter">
+                         <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-hub-600 transition-colors" aria-label="Twitter">
                              <Twitter size={18} aria-hidden="true" />
                          </a>
-                         <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-600 transition-colors" aria-label="Instagram">
+                         <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-hub-600 transition-colors" aria-label="Instagram">
                              <Instagram size={18} aria-hidden="true" />
                          </a>
-                         <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-600 transition-colors" aria-label="Linkedin">
+                         <a href="#" className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-hub-600 transition-colors" aria-label="Linkedin">
                              <Linkedin size={18} aria-hidden="true" />
                          </a>
                      </div>
@@ -206,10 +206,10 @@ const PublicLayout = () => {
                 <div>
                     <h3 className="text-white font-semibold mb-6">Product</h3>
                     <ul className="space-y-4 text-sm">
-                        <li><Link to="/features" className="hover:text-primary-400 transition-colors">Features</Link></li>
-                        <li><Link to="/pricing" className="hover:text-primary-400 transition-colors">Pricing</Link></li>
-                        <li><Link to="/about" className="hover:text-primary-400 transition-colors">About Us</Link></li>
-                        <li><Link to="/contact" className="hover:text-primary-400 transition-colors">Contact</Link></li>
+                        <li><Link to="/features" className="hover:text-hub-400 transition-colors">Features</Link></li>
+                        <li><Link to="/pricing" className="hover:text-hub-400 transition-colors">Pricing</Link></li>
+                        <li><Link to="/about" className="hover:text-hub-400 transition-colors">About Us</Link></li>
+                        <li><Link to="/contact" className="hover:text-hub-400 transition-colors">Contact</Link></li>
                     </ul>
                 </div>
 
@@ -217,10 +217,10 @@ const PublicLayout = () => {
                 <div>
                     <h3 className="text-white font-semibold mb-6">Resources</h3>
                     <ul className="space-y-4 text-sm">
-                        <li><Link to="/help" className="hover:text-primary-400 transition-colors">Help Center</Link></li>
-                        <li><Link to="/blog" className="hover:text-primary-400 transition-colors">Blog</Link></li>
-                        <li><Link to="/community" className="hover:text-primary-400 transition-colors">Community</Link></li>
-                        <li><Link to="/faq" className="hover:text-primary-400 transition-colors">FAQs</Link></li>
+                        <li><Link to="/help" className="hover:text-hub-400 transition-colors">Help Center</Link></li>
+                        <li><Link to="/blog" className="hover:text-hub-400 transition-colors">Blog</Link></li>
+                        <li><Link to="/community" className="hover:text-hub-400 transition-colors">Community</Link></li>
+                        <li><Link to="/faq" className="hover:text-hub-400 transition-colors">FAQs</Link></li>
                     </ul>
                 </div>
 
@@ -229,11 +229,11 @@ const PublicLayout = () => {
                     <h3 className="text-white font-semibold mb-6">Contact Us</h3>
                     <ul className="space-y-4 text-sm">
                         <li className="flex items-center gap-3">
-                            <Phone size={18} className="text-primary-500" />
+                            <Phone size={18} className="text-hub-500" />
                             <span>+2349138095613</span>
                         </li>
                         <li className="flex items-center gap-3">
-                            <Mail size={18} className="text-primary-500" />
+                            <Mail size={18} className="text-hub-500" />
                             <span>goldima@gt-schoolhub.com.ng</span>
                         </li>
                     </ul>

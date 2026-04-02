@@ -6,6 +6,7 @@ const classLevelSchema = new mongoose.Schema({
     category: { type: String, enum: ['JSS', 'SSS'], required: true },
     arms: [{ 
         name: { type: String, required: true }, // A, B, Gold, etc.
+        classTeacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Assigned class teacher
         subjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }] // Arm-specific subjects
     }], 
     subjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }], // Subjects offered by this class
@@ -16,5 +17,7 @@ const classLevelSchema = new mongoose.Schema({
     
     createdAt: { type: Date, default: Date.now }
 });
+
+classLevelSchema.index({ schoolId: 1 });
 
 module.exports = mongoose.model('ClassLevel', classLevelSchema);

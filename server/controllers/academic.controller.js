@@ -1,5 +1,6 @@
 const Subject = require('../models/Subject');
 const ClassLevel = require('../models/ClassLevel');
+const cache = require('../utils/cache');
 const AcademicSession = require('../models/AcademicSession');
 const User = require('../models/User');
 const Student = require('../models/Student');
@@ -13,6 +14,7 @@ const createSubject = async (req, res) => {
             name,
             code
         });
+        cache.clear(`classes_${req.user.schoolId._id || req.user.schoolId}`);
         res.status(201).json(subject);
     } catch (error) {
         console.error(error);
@@ -41,6 +43,7 @@ const createClassLevel = async (req, res) => {
             arms: [],
             subjects: []
         });
+        cache.clear(`classes_${req.user.schoolId._id || req.user.schoolId}`);
         res.status(201).json(classLevel);
     } catch (error) {
         console.error(error);
@@ -56,6 +59,7 @@ const updateClassArms = async (req, res) => {
 
         classLevel.arms.push({ name: armName });
         await classLevel.save();
+        cache.clear(`classes_${req.user.schoolId._id || req.user.schoolId}`);
         res.json(classLevel);
     } catch (error) {
         console.error(error);
@@ -113,6 +117,7 @@ const assignSubjectToClass = async (req, res) => {
             await Student.updateMany(query, { $pull: { subjects: subjectId } });
         }
 
+        cache.clear(`classes_${req.user.schoolId._id || req.user.schoolId}`);
         res.json(classLevel);
     } catch (error) {
          console.error(error);
@@ -121,22 +126,46 @@ const assignSubjectToClass = async (req, res) => {
 };
 
 const getClassLevels = async (req, res) => {
-    try {
-        let query = { schoolId: req.user.schoolId._id || req.user.schoolId };
+    const schoolId = req.user.schoolId._id || req.user.schoolId;
+    const cacheKey = `classes_${schoolId}`;
 
-        // If Teacher, return only assigned classes
+    // Admin/Staff fetching all classes can be cached
+    if (req.user.role !== 'teacher') {
+        const cached = cache.get(cacheKey);
+        if (cached) return res.json(cached);
+    }
+
+    try {
+        let query = { schoolId };
+
+        // If Teacher, return only assigned classes or all if no assignments exist
         if (req.user.role === 'teacher') {
              const Teacher = require('../models/Teacher');
              const teacher = await Teacher.findOne({ userId: req.user._id });
+             
              if (teacher) {
-                 // Get unique class IDs from assignments
-                 const assignedClassIds = teacher.teachingAssignments.map(a => a.classId);
-                 // Also include 'classes' field if used for form teachers
-                 if (teacher.classes && teacher.classes.length > 0) {
-                     assignedClassIds.push(...teacher.classes);
+                 const assignedClassIds = new Set();
+                 
+                 // Collect IDs from teaching assignments
+                 if (Array.isArray(teacher.teachingAssignments)) {
+                     teacher.teachingAssignments.forEach(a => {
+                         if (a && a.classId) assignedClassIds.add(a.classId.toString());
+                     });
                  }
-                 query._id = { $in: assignedClassIds };
+                 
+                 // Collect IDs from direct classes array
+                 if (Array.isArray(teacher.classes)) {
+                     teacher.classes.forEach(c => {
+                         if (c) assignedClassIds.add(c.toString());
+                     });
+                 }
+
+                 // If specific assignments exist, filter. Otherwise, allow access to all school nodes.
+                 if (assignedClassIds.size > 0) {
+                     query._id = { $in: Array.from(assignedClassIds) };
+                 }
              }
+             // Note: If no teacher profile exists, we fall through to the default schoolId query (unrestricted).
         }
 
         const classLevels = await ClassLevel.find(query)
@@ -149,6 +178,9 @@ const getClassLevels = async (req, res) => {
         // For now, filtering the Class List is a good first step. 
         // The frontend "Mark Attendance" uses this list.
         
+        if (req.user.role !== 'teacher') {
+            cache.set(cacheKey, classLevels);
+        }
         res.json(classLevels);
     } catch (error) {
         console.error(error);
@@ -257,9 +289,9 @@ const updateClassSettings = async (req, res) => {
         if (videoSubjects !== undefined) classLevel.videoSubjects = videoSubjects;
 
         await classLevel.save();
+        cache.clear(`classes_${req.user.schoolId._id || req.user.schoolId}`);
         res.json(classLevel);
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: 'Server error' });
     }
 };

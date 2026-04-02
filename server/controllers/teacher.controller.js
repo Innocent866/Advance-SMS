@@ -8,19 +8,30 @@ const { createNotification } = require('./notification.controller');
 // @route   POST /api/teachers
 // @access  Private (School Admin)
 const createTeacher = async (req, res) => {
-    let { firstName, lastName, email, password, gender, qualification, phoneNumber, subjects, classification } = req.body;
+    let { 
+            firstName, lastName, email, password, gender, qualification, 
+            phoneNumber, subjects, classification, departmentId, role,
+            address, employmentType, dateOfJoining
+        } = req.body;
+    
+    // Default to 'teacher' if no role provided or invalid role
+    const validRoles = ['teacher', 'hostel_warden', 'house_parent', 'assistant_admin'];
+    const finalRole = (role && validRoles.includes(role)) ? role : 'teacher';
 
-    // Handle subjects from FormData (empty string or JSON string)
+    // Handle subjects from FormData (JSON string or array already)
     if (typeof subjects === 'string') {
-        if (subjects === '' || subjects === '[]') {
+        if (!subjects || subjects === '' || subjects === '[]') {
             subjects = [];
         } else {
             try {
                 subjects = JSON.parse(subjects);
             } catch (e) {
-                subjects = [];
+                // If it's a comma separated string (fallback)
+                subjects = subjects.split(',').filter(id => id.trim() !== '');
             }
         }
+    } else if (!Array.isArray(subjects)) {
+        subjects = [];
     }
 
     try {
@@ -41,8 +52,7 @@ const createTeacher = async (req, res) => {
             name: `${firstName} ${lastName}`,
             email,
             passwordHash,
-            role: 'teacher',
-            subjects // Keep for simple auth/access check if needed, or rely on Teacher model
+            role: finalRole
         });
 
         // 2. Create Teacher Profile
@@ -57,7 +67,11 @@ const createTeacher = async (req, res) => {
             profilePicture: req.file ? req.file.path : null, // Cloudinary URL
             qualification,
             subjects,
-            status: 'active'
+            departmentId: departmentId || null,
+            status: 'active',
+            address,
+            employmentType,
+            dateOfJoining
         });
 
         // Update School Usage
@@ -75,13 +89,13 @@ const createTeacher = async (req, res) => {
             firstName: teacher.firstName,
             lastName: teacher.lastName,
             email: teacher.email,
-            role: 'teacher'
+            role: finalRole
         });
 
         // Notify Admin
         await createNotification(
             req.user._id,
-            `New Teacher Added: ${firstName} ${lastName}`,
+            `New Staff Added: ${firstName} ${lastName} (${finalRole})`,
             'success'
         );
 
@@ -99,10 +113,22 @@ const createTeacher = async (req, res) => {
 // @access  Private (School Admin)
 const getTeachers = async (req, res) => {
     try {
-        // Fetch from Teacher collection to get full details
+        // Fetch from Teacher collection and get roles from User collection
         const schoolId = req.user.schoolId?._id || req.user.schoolId;
-        const teachers = await Teacher.find({ schoolId }).populate('subjects', 'name');
-        res.json(teachers);
+        const teachers = await Teacher.find({ schoolId })
+            .populate('subjects', 'name')
+            .populate('userId', 'role')
+            .sort({ createdAt: -1 });
+            
+        // Map role from user to teacher object and filter out admins
+        const staffWithRoles = teachers
+            .map(t => ({
+                ...t.toObject(),
+                role: t.userId?.role || 'teacher'
+            }))
+            .filter(staff => !['school_admin', 'assistant_admin', 'super_admin'].includes(staff.role));
+        
+        res.json(staffWithRoles);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
@@ -193,16 +219,24 @@ const updateTeacher = async (req, res) => {
             });
         }
 
-        if (req.body.firstName) teacher.firstName = req.body.firstName;
-        if (req.body.lastName) teacher.lastName = req.body.lastName;
-        if (req.body.email) teacher.email = req.body.email;
-        if (req.body.phoneNumber) teacher.phoneNumber = req.body.phoneNumber;
-        if (req.body.qualification) teacher.qualification = req.body.qualification;
-        if (req.body.gender) teacher.gender = req.body.gender;
+        let { 
+            firstName, lastName, email, gender, qualification, phoneNumber, subjects, 
+            departmentId, role, 
+            address, employmentType, dateOfJoining 
+        } = req.body;
+
+        if (firstName) teacher.firstName = firstName;
+        if (lastName) teacher.lastName = lastName;
+        if (email) teacher.email = email;
+        if (phoneNumber) teacher.phoneNumber = phoneNumber;
+        if (qualification) teacher.qualification = qualification;
+        if (gender) teacher.gender = gender;
+        if (address) teacher.address = address;
+        if (employmentType) teacher.employmentType = employmentType;
+        if (dateOfJoining) teacher.dateOfJoining = dateOfJoining;
 
         // Handle subjects update with sanitization
-        if (req.body.subjects !== undefined) {
-            let subjects = req.body.subjects;
+        if (subjects !== undefined) {
             if (typeof subjects === 'string') {
                 if (subjects === '' || subjects === '[]') {
                     subjects = [];
@@ -216,15 +250,20 @@ const updateTeacher = async (req, res) => {
             }
             teacher.subjects = subjects;
         }
+
+        if (req.body.departmentId !== undefined) {
+            teacher.departmentId = req.body.departmentId || null;
+        }
         
-        // Also update the linked User account if name/email/password changed
-        if (req.body.firstName || req.body.lastName || req.body.email || req.body.password) {
+        // Also update the linked User account if name/email/password/role changed
+        if (req.body.firstName || req.body.lastName || req.body.email || req.body.password || req.body.role) {
             const user = await User.findById(teacher.userId);
             if (user) {
                 if (req.body.firstName || req.body.lastName) {
                     user.name = `${req.body.firstName || teacher.firstName} ${req.body.lastName || teacher.lastName}`;
                 }
                 if (req.body.email) user.email = req.body.email;
+                if (req.body.role) user.role = req.body.role;
                 if (req.body.password) {
                     const salt = await bcrypt.genSalt(10);
                     user.passwordHash = await bcrypt.hash(req.body.password, salt);

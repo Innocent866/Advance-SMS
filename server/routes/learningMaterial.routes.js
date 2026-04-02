@@ -11,6 +11,7 @@ router.post('/:id/download', protect, learningMaterialController.incrementDownlo
 router.post('/', protect, learningMaterialController.createMaterial);
 router.get('/my-materials', protect, learningMaterialController.getMyMaterials);
 router.put('/:id', protect, learningMaterialController.updateMaterial);
+router.put('/:id/hod-review', protect, learningMaterialController.hodReview);
 
 // Admin Routes
 router.put('/:id/status', protect, admin, learningMaterialController.updateStatus);

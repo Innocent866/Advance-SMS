@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../middleware/upload.middleware');
+const videoUpload = require('../middleware/videoUpload.middleware');
 const { 
     createVideo, 
     getVideos, 
@@ -14,7 +14,7 @@ const { protect, teacher } = require('../middleware/auth.middleware');
 const { checkSubscription, checkFeatureAccess } = require('../middleware/subscription.middleware');
 const { checkQuota } = require('../middleware/quota.middleware');
 
-router.post('/', protect, teacher, checkSubscription, checkFeatureAccess('videoLessons'), checkQuota, upload.single('video'), createVideo);
+router.post('/', protect, teacher, checkSubscription, checkFeatureAccess('videoLessons'), checkQuota, videoUpload.single('video'), createVideo);
 router.get('/', protect, checkSubscription, getVideos);
 
 router.get('/:id', protect, getVideoById);
@@ -25,4 +25,3 @@ router.get('/:id/stats', protect, teacher, getVideoStats);
 router.get('/:id/analytics', protect, teacher, getVideoAnalytics);
 
 module.exports = router;
-

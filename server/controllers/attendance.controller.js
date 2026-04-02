@@ -107,7 +107,88 @@ const getAttendance = async (req, res) => {
     }
 };
 
+// @desc    Get Attendance Stats for Analytics
+// @route   GET /api/attendance/stats
+// @access  Private
+const getAttendanceStats = async (req, res) => {
+    const { classId, arm } = req.query;
+
+    try {
+        if (!classId || !arm) {
+            return res.status(400).json({ message: 'Class ID and Arm are required' });
+        }
+
+        // 1. Get last 30 days of attendance
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 30);
+        thirtyDaysAgo.setUTCHours(0, 0, 0, 0);
+
+        const attendanceRecords = await Attendance.find({
+            classId,
+            arm,
+            date: { $gte: thirtyDaysAgo }
+        }).sort({ date: 1 });
+
+        // 2. Calculate Trends (Daily Stats)
+        const trends = attendanceRecords.map(record => {
+            const total = record.records.length;
+            const present = record.records.filter(r => r.status === 'Present' || r.status === 'Late').length;
+            const percentage = total > 0 ? Math.round((present / total) * 100) : 0;
+            return {
+                date: record.date,
+                percentage,
+                total,
+                present,
+                absent: total - present
+            };
+        });
+
+        // 3. Overall Statistics
+        let totalStudentDays = 0;
+        let presentDays = 0;
+        const studentAbsenceCount = {}; // { studentId: count }
+
+        attendanceRecords.forEach(record => {
+            record.records.forEach(r => {
+                totalStudentDays++;
+                const isPresent = r.status === 'Present' || r.status === 'Late';
+                if (isPresent) presentDays++;
+                
+                if (r.status === 'Absent') {
+                    const id = r.studentId.toString();
+                    studentAbsenceCount[id] = (studentAbsenceCount[id] || 0) + 1;
+                }
+            });
+        });
+
+        const overallPercentage = totalStudentDays > 0 ? Math.round((presentDays / totalStudentDays) * 100) : 0;
+
+        // 4. Identify At-Risk Students (Absent more than 3 times in 30 days)
+        const atRiskIds = Object.keys(studentAbsenceCount).filter(id => studentAbsenceCount[id] >= 3);
+        const atRiskStudents = await Student.find({
+            _id: { $in: atRiskIds }
+        }).select('firstName lastName studentId profilePicture');
+
+        const atRiskResults = atRiskStudents.map(s => ({
+            ...s.toObject(),
+            absences: studentAbsenceCount[s._id.toString()]
+        }));
+
+        res.json({
+            overallPercentage,
+            trends,
+            atRiskStudents: atRiskResults,
+            totalRecordsAnalyzed: attendanceRecords.length
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 module.exports = {
     markAttendance,
-    getAttendance
+    getAttendance,
+    getAttendanceStats
 };

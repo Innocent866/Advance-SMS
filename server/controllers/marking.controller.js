@@ -1,15 +1,20 @@
 const { generateExamGradingAI } = require('../utils/aiService');
 const School = require('../models/School');
 const AIUsageLog = require('../models/AIUsageLog');
+const AIMarkingResult = require('../models/AIMarkingResult');
 
 const subscriptionPlans = require('../config/subscriptionPlans');
+
+const { getMarkedScriptUrl } = require('../utils/markingPainter');
+const cloudinary = require('../config/cloudinary');
+const { Readable } = require('stream');
 
 // @desc    Grade an exam answer using AI
 // @route   POST /api/marking/grade
 // @access  Private (Teacher)
 const gradeExam = async (req, res) => {
     const { subject, examType, question, markingScheme, studentAnswer } = req.body;
-    const scriptFile = req.file; // From multer
+    const scriptFile = req.file; // From multer (memoryStorage)
 
     if (!subject || !examType || !question || !markingScheme) {
         return res.status(400).json({ message: 'Please provide subject, exam type, question, and marking scheme.' });
@@ -25,7 +30,6 @@ const gradeExam = async (req, res) => {
         const school = await School.findById(req.user.schoolId._id || req.user.schoolId);
         const currentPlan = school.subscription?.plan || 'Basic'; 
         
-        // ... (Limit check omitted for brevity, logic remains same) ...
         const startOfMonth = new Date();
         startOfMonth.setDate(1);
         startOfMonth.setHours(0,0,0,0);
@@ -47,18 +51,51 @@ const gradeExam = async (req, res) => {
              });
         }
 
-        // 2. Generate
+        // 2. Upload to Cloudinary if file provided
+        let scriptUrl = null;
+        if (scriptFile) {
+            const uploadStream = () => {
+                return new Promise((resolve, reject) => {
+                    const stream = cloudinary.uploader.upload_stream(
+                        {
+                            folder: 'school_management_system/marking_scripts',
+                            resource_type: 'auto',
+                        },
+                        (error, result) => {
+                            if (error) return reject(error);
+                            resolve(result);
+                        }
+                    );
+                    Readable.from(scriptFile.buffer).pipe(stream);
+                });
+            };
+            const uploadResult = await uploadStream();
+            scriptUrl = uploadResult.secure_url;
+        }
+
+        // 3. Generate Grading Result
         const gradingResult = await generateExamGradingAI({ 
             subject, 
             examType, 
             question, 
             markingScheme, 
             studentAnswer,
-            scriptFile: scriptFile ? scriptFile.path : null, // Cloudinary URL
+            scriptFile: scriptUrl, // Pass Cloudinary URL to AI
             scriptFileType: scriptFile ? scriptFile.mimetype : null,
             schoolId: req.user.schoolId._id || req.user.schoolId,
             teacherId: req.user._id
         });
+
+        if (scriptUrl) {
+            // Apply Visual Red Ink marking
+            const markedUrl = getMarkedScriptUrl(
+                scriptUrl, 
+                gradingResult.scoreBreakdown, 
+                gradingResult.totalSuggestedScore, 
+                gradingResult.maxPossibleScore
+            );
+            gradingResult.scriptUrl = markedUrl;
+        }
 
         res.json(gradingResult);
     } catch (error) {
@@ -67,6 +104,53 @@ const gradeExam = async (req, res) => {
     }
 };
 
+// @desc    Save an AI marking result to history
+// @route   POST /api/marking/save
+// @access  Private (Teacher)
+const saveResult = async (req, res) => {
+    try {
+        const { subject, examType, question, markingScheme, studentAnswer, scriptUrl, scoreBreakdown, totalSuggestedScore, finalizedScore, maxPossibleScore, feedback } = req.body;
+
+        const record = await AIMarkingResult.create({
+            schoolId: req.user.schoolId._id || req.user.schoolId,
+            teacherId: req.user._id,
+            subject,
+            examType,
+            question,
+            markingScheme,
+            studentAnswer,
+            scriptUrl,
+            scoreBreakdown,
+            totalSuggestedScore,
+            finalizedScore,
+            maxPossibleScore,
+            feedback
+        });
+
+        res.status(201).json(record);
+    } catch (error) {
+        console.error('Error saving marking result:', error);
+        res.status(500).json({ message: 'Error saving marking result' });
+    }
+};
+
+// @desc    Get marking history for the teacher
+// @route   GET /api/marking/history
+// @access  Private (Teacher)
+const getHistory = async (req, res) => {
+    try {
+        const history = await AIMarkingResult.find({ teacherId: req.user._id })
+            .sort({ createdAt: -1 })
+            .limit(50);
+        res.json(history);
+    } catch (error) {
+        console.error('Error fetching marking history:', error);
+        res.status(500).json({ message: 'Error fetching marking history' });
+    }
+};
+
 module.exports = {
-    gradeExam
+    gradeExam,
+    saveResult,
+    getHistory
 };

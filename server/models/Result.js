@@ -56,6 +56,7 @@ const resultSchema = new mongoose.Schema({
 });
 
 // Indexes for fast lookup
+resultSchema.index({ schoolId: 1, session: 1, term: 1 });
 resultSchema.index({ schoolId: 1, studentId: 1, session: 1, term: 1 });
 resultSchema.index({ schoolId: 1, classId: 1, subjectId: 1 });
 

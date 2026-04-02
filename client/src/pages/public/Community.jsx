@@ -17,13 +17,13 @@ const Community = () => {
               <Globe size={16} /> 10,000+ Educators & Admins
           </motion.div>
           <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight">
-              Join the <span className="text-primary-600">Conversation</span>
+              Join the <span className="text-hub-600">Conversation</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-10">
               Connect with other school administrators, share best practices, and help shape the future of education in Nigeria.
           </p>
           <div className="flex justify-center gap-4">
-               <button className="px-8 py-3 bg-primary-600 text-white font-bold rounded-full hover:bg-primary-700 transition-colors shadow-lg">
+               <button className="px-8 py-3 bg-hub-600 text-white font-bold rounded-full hover:bg-hub-700 transition-colors shadow-lg">
                    Join Community
                </button>
                <button className="px-8 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-full hover:bg-gray-50 transition-colors">
@@ -51,7 +51,7 @@ const Community = () => {
                               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> {topic.active} Online
                           </div>
                       </div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">{topic.title}</h3>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-hub-600 transition-colors">{topic.title}</h3>
                       <p className="text-gray-500 text-sm">{topic.desc}</p>
                   </div>
               ))}
@@ -59,27 +59,27 @@ const Community = () => {
       </div>
 
       {/* Events Section */}
-      <div className="bg-primary-900 text-white py-24">
+      <div className="bg-hub-900 text-white py-24">
            <div className="max-w-7xl mx-auto px-6">
                <div className="flex flex-col md:flex-row justify-between items-end mb-12">
                    <div>
                        <h2 className="text-3xl font-bold mb-4">Upcoming Events</h2>
-                       <p className="text-primary-200">Webinars, workshops, and meetups for educators.</p>
+                       <p className="text-hub-200">Webinars, workshops, and meetups for educators.</p>
                    </div>
-                   <button className="hidden md:flex items-center gap-2 text-primary-200 hover:text-white transition-colors font-bold">
+                   <button className="hidden md:flex items-center gap-2 text-hub-200 hover:text-white transition-colors font-bold">
                        View All Events <ArrowUpRight size={18} />
                    </button>
                </div>
 
                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                    {[1, 2, 3].map((i) => (
-                       <div key={i} className="bg-primary-800 rounded-2xl p-6 border border-primary-700 hover:border-primary-500 transition-colors">
-                           <div className="text-sm font-bold text-primary-300 mb-4 flex items-center gap-2">
+                       <div key={i} className="bg-hub-800 rounded-2xl p-6 border border-hub-700 hover:border-hub-500 transition-colors">
+                           <div className="text-sm font-bold text-hub-300 mb-4 flex items-center gap-2">
                                <Calendar size={16} /> Nov {10 + i}, 2025 • 2:00 PM
                            </div>
                            <h3 className="text-xl font-bold mb-4">Digital Transformation in Schools: A Practical Guide</h3>
-                           <p className="text-primary-200 text-sm mb-6">Learn how to effectively transition your school records to a digital system without disrupting operations.</p>
-                           <button className="w-full py-3 bg-primary-600 rounded-xl font-bold hover:bg-primary-500 transition-colors">
+                           <p className="text-hub-200 text-sm mb-6">Learn how to effectively transition your school records to a digital system without disrupting operations.</p>
+                           <button className="w-full py-3 bg-hub-600 rounded-xl font-bold hover:bg-hub-500 transition-colors">
                                Register Free
                            </button>
                        </div>

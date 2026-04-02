@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import usePageTitle from '../hooks/usePageTitle';
-import logoImg from '../assets/logo.png';
+// import logoImg from '../assets/logo.png'; // Replaced by global /logo.png for better preloading
+const logoImg = '/logo.png';
 import { 
     School, 
     Mail, 
@@ -20,8 +21,11 @@ const Login = () => {
     usePageTitle('Login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [otpCode, setOtpCode] = useState('');
+    const [showOTP, setShowOTP] = useState(false);
+    const [tempUserId, setTempUserId] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
-    const { login } = useAuth();
+    const { login, verify2FA } = useAuth();
     const navigate = useNavigate();
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -31,16 +35,39 @@ const Login = () => {
         setError('');
         setIsLoading(true);
         try {
-            const userData = await login(email, password);
-            setIsLoading(false);
-            if (userData.role === 'parent') {
-                navigate('/parent-dashboard');
+            const data = await login(email, password);
+            if (data.requires2FA) {
+                setTempUserId(data.userId);
+                setShowOTP(true);
+                setIsLoading(false);
             } else {
-                navigate('/dashboard');
+                handleLoginSuccess(data);
             }
         } catch (err) {
             setIsLoading(false);
-            setError(err.response?.data?.message || 'Login failed. Please checks your credentials.');
+            setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+        }
+    };
+
+    const handleVerifyOTP = async (e) => {
+        e.preventDefault();
+        setError('');
+        setIsLoading(true);
+        try {
+            const userData = await verify2FA(tempUserId, otpCode);
+            handleLoginSuccess(userData);
+        } catch (err) {
+            setIsLoading(false);
+            setError(err.response?.data?.message || 'Invalid or expired verification code.');
+        }
+    };
+
+    const handleLoginSuccess = (userData) => {
+        setIsLoading(false);
+        if (userData.role === 'parent') {
+            navigate('/parent-dashboard');
+        } else {
+            navigate('/dashboard');
         }
     };
 
@@ -93,101 +120,144 @@ const Login = () => {
             <div className="w-full lg:w-1/2 h-full overflow-y-auto">
                 <div className="min-h-full flex flex-col justify-center p-6 sm:p-12 lg:p-24">
                      
-                     <div className="mb-8">
-                         <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h2>
-                         <p className="text-gray-600">Enter your credentials to continue.</p>
+                    <div className="mb-8">
+                         <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                             {showOTP ? 'Verify Account' : 'Sign In'}
+                         </h2>
+                         <p className="text-gray-600">
+                             {showOTP ? `A verification code has been sent to ${email}.` : 'Enter your credentials to continue.'}
+                         </p>
                      </div>
                     {error && (
                         <motion.div 
                             initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 0, y: 0 }}
+                            animate={{ opacity: 1, y: 0 }}
                             role="alert"
                             className="bg-red-50 text-red-700 p-4 rounded-xl mb-6 flex flex-col gap-2 border border-red-100 text-sm shadow-sm"
                         >
                             <div className="flex items-center gap-2 font-bold">
                                 <AlertCircle size={18} aria-hidden="true" />
-                                Login Failed
+                                {showOTP ? 'Verification Failed' : 'Login Failed'}
                             </div>
                            <div>{error.replace('checks', 'check')}</div>
-                           
-                           <div className="mt-2 pt-2 border-t border-red-100 text-xs text-red-600">
-                                <p>Trouble logging in? Contact Support:</p>
-                                <p>Email: goldimatech@gmail.com</p>
-                                <p>Phone: +234 913 809 5613</p>
-                           </div>
                         </motion.div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                         <div>
-                             <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-                             <div className="relative">
-                                 <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} aria-hidden="true" />
-                                 <input
-                                     id="email"
-                                     type="email"
-                                     name="email"
-                                     autoComplete="email"
-                                     required
-                                     className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                                     placeholder="your@email.com"
-                                     value={email}
-                                     onChange={(e) => setEmail(e.target.value)}
-                                 />
+                    {!showOTP ? (
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                             <div>
+                                 <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                                 <div className="relative">
+                                     <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} aria-hidden="true" />
+                                     <input
+                                         id="email"
+                                         type="email"
+                                         name="email"
+                                         autoComplete="email"
+                                         required
+                                         className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                                         placeholder="your@email.com"
+                                         value={email}
+                                         onChange={(e) => setEmail(e.target.value)}
+                                     />
+                                 </div>
                              </div>
-                         </div>
-                        
-                         <div>
-                             <div className="flex justify-between items-center mb-2">
-                                 <label htmlFor="password" className="block text-sm font-semibold text-gray-700">Password</label>
-                                 <Link to="/reset-password" class="text-xs text-primary-600 font-medium hover:underline">Forgot Password?</Link>
+                            
+                             <div>
+                                 <div className="flex justify-between items-center mb-2">
+                                     <label htmlFor="password" className="block text-sm font-semibold text-gray-700">Password</label>
+                                     <Link to="/forgot-password" className="text-xs text-primary-600 font-medium hover:underline">Forgot Password?</Link>
+                                 </div>
+                                 <div className="relative">
+                                     <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} aria-hidden="true" />
+                                     <input
+                                         id="password"
+                                         type={showPassword ? "text" : "password"}
+                                         name="password"
+                                         autoComplete="current-password"
+                                         required
+                                         className="w-full pl-11 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                                         placeholder="••••••••"
+                                         value={password}
+                                         onChange={(e) => setPassword(e.target.value)}
+                                     />
+                                     <button
+                                         type="button"
+                                         onClick={() => setShowPassword(!showPassword)}
+                                         className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                         aria-label={showPassword ? "Hide password" : "Show password"}
+                                     >
+                                         {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+                                     </button>
+                                 </div>
                              </div>
-                             <div className="relative">
-                                 <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} aria-hidden="true" />
-                                 <input
-                                     id="password"
-                                     type={showPassword ? "text" : "password"}
-                                     name="password"
-                                     autoComplete="current-password"
-                                     required
-                                     className="w-full pl-11 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                                     placeholder="••••••••"
-                                     value={password}
-                                     onChange={(e) => setPassword(e.target.value)}
-                                 />
-                                 <button
-                                     type="button"
-                                     onClick={() => setShowPassword(!showPassword)}
-                                     className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                                     aria-label={showPassword ? "Hide password" : "Show password"}
-                                 >
-                                     {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
-                                 </button>
-                             </div>
-                         </div>
 
-                         <button
-                             type="submit"
-                             disabled={isLoading}
-                             aria-busy={isLoading}
-                              className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2 ${
-                                  isLoading ? 'bg-primary-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'
-                              }`}
-                         >
-                             {isLoading ? (
-                                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" aria-label="Logging in..."></div>
-                             ) : (
-                                 <>Sign In <ArrowRight size={20} aria-hidden="true" /></>
-                             )}
-                         </button>
-                    </form>
+                             <button
+                                 type="submit"
+                                 disabled={isLoading}
+                                 aria-busy={isLoading}
+                                  className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2 ${
+                                      isLoading ? 'bg-primary-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'
+                                  }`}
+                             >
+                                 {isLoading ? (
+                                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" aria-label="Logging in..."></div>
+                                 ) : (
+                                     <>Sign In <ArrowRight size={20} aria-hidden="true" /></>
+                                 )}
+                             </button>
+                        </form>
+                    ) : (
+                        <form onSubmit={handleVerifyOTP} className="space-y-6">
+                            <div>
+                                <label htmlFor="otp" className="block text-sm font-semibold text-gray-700 mb-2">Verification Code</label>
+                                <div className="relative">
+                                    <input
+                                        id="otp"
+                                        type="text"
+                                        required
+                                        maxLength="6"
+                                        autoFocus
+                                        className="w-full text-center text-3xl tracking-[1em] font-bold py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                                        placeholder="000000"
+                                        value={otpCode}
+                                        onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2 ${
+                                    isLoading ? 'bg-primary-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'
+                                }`}
+                            >
+                                {isLoading ? (
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                ) : (
+                                    <>Verify & Login <ArrowRight size={20} /></>
+                                )}
+                            </button>
+
+                            <button 
+                                type="button"
+                                onClick={() => setShowOTP(false)}
+                                className="w-full text-sm text-gray-500 hover:text-primary-600 transition-colors font-medium text-center"
+                            >
+                                Back to Login
+                            </button>
+                        </form>
+                    )}
                     
-                    <div className="mt-8 text-center text-sm text-gray-600">
-                        Don't have an account?{' '}
-                        <Link to="/register-school" className="text-primary-600 font-bold hover:underline">
-                            Register your school
-                        </Link>
-                    </div>
+                    {!showOTP && (
+                        <div className="mt-8 text-center text-sm text-gray-600">
+                            Don't have an account?{' '}
+                            <Link to="/register-school" className="text-primary-600 font-bold hover:underline">
+                                Register your school
+                            </Link>
+                        </div>
+                    )}
 
                 </div>
             </div>

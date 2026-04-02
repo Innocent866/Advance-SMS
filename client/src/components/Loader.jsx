@@ -1,18 +1,9 @@
 import { useAuth } from '../context/AuthContext';
-import defaultLogo from '../assets/logo.png';
+const defaultLogo = '/logo.png';
 
 const Loader = ({ fullScreen = true, logoUrl, type = 'logo' }) => {
-    let user;
-    try {
-        const auth = useAuth();
-        user = auth?.user;
-    } catch (e) {
-        // useAuth might throw if used outside provider, or return undefined
-        console.warn("Loader used outside AuthContext", e);
-    }
-    
-    // Try to get school logo if available
-    const logo = logoUrl || user?.schoolId?.logoUrl || defaultLogo;
+    // Note: We avoid useAuth here to prevent circularity during AuthProvider boot
+    const logo = logoUrl || defaultLogo;
 
     if (type === 'spinner') {
         return (

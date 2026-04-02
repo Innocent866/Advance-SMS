@@ -6,11 +6,15 @@ const { protect, admin } = require('../middleware/auth.middleware');
 // We need STRICT super_admin.
 
 const superAdminStrict = (req, res, next) => {
-    if (req.user && req.user.role === 'super_admin') {
-        next();
-    } else {
-        res.status(401).json({ message: 'Not authorized. Super Admin only.' });
+    console.log(`[SuperAdmin Access Attempt] Path: ${req.originalUrl}, Method: ${req.method}`);
+    if (req.user) {
+        console.log(`[SuperAdmin Access Attempt] User Role: ${req.user.role}`);
+        if (req.user.role && req.user.role.toLowerCase() === 'super_admin') {
+            return next();
+        }
     }
+    console.warn(`[SuperAdmin Access Denied] Path: ${req.originalUrl}, Method: ${req.method}, Role: ${req.user?.role}`);
+    res.status(401).json({ message: 'Not authorized. Super Admin only.' });
 };
 
 const { 

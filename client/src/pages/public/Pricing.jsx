@@ -93,7 +93,7 @@ const Pricing = () => {
         
         {/* Header */}
         <div className="mx-auto max-w-2xl sm:text-center mb-20">
-          <h2 className="text-base font-semibold leading-7 text-primary-600">Pricing Plans</h2>
+          <h2 className="text-base font-semibold leading-7 text-hub-600">Pricing Plans</h2>
           <p className="mt-2 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
             Invest in your school's future
           </p>
@@ -113,18 +113,18 @@ const Pricing = () => {
                     transition={{ delay: index * 0.1 }}
                     className={`relative flex flex-col p-8 bg-white rounded-3xl border transition-all duration-300 ${
                         plan.recommended 
-                        ? 'border-primary-600 shadow-2xl ring-2 ring-primary-600 scale-105 z-10' 
+                        ? 'border-hub-600 shadow-2xl ring-2 ring-hub-600 scale-105 z-10' 
                         : 'border-gray-200 shadow-lg hover:shadow-xl hover:-translate-y-1'
                     }`}
                 >
                     {plan.recommended && (
-                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-4 bg-primary-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1 uppercase tracking-wide">
+                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-4 bg-hub-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1 uppercase tracking-wide">
                             <Star size={12} fill="white" /> Most Popular
                         </div>
                     )}
 
                     <div className="mb-6">
-                        <h3 className={`text-xl font-bold ${plan.recommended ? 'text-primary-700' : 'text-gray-900'}`}>{plan.name}</h3>
+                        <h3 className={`text-xl font-bold ${plan.recommended ? 'text-hub-700' : 'text-gray-900'}`}>{plan.name}</h3>
                         <p className="text-gray-500 text-sm mt-2 min-h-[40px] leading-relaxed">{plan.desc}</p>
                     </div>
 
@@ -136,7 +136,7 @@ const Pricing = () => {
                     <ul className="flex-1 space-y-4 mb-8">
                         {plan.features.map((feature) => (
                             <li key={feature} className="flex items-start gap-3 text-sm text-gray-700">
-                                <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${plan.recommended ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-500'}`}>
+                                <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${plan.recommended ? 'bg-hub-100 text-hub-600' : 'bg-gray-100 text-gray-500'}`}>
                                     <Check size={12} strokeWidth={3} />
                                 </div>
                                 <span className="font-medium">{feature}</span>
@@ -154,7 +154,7 @@ const Pricing = () => {
                         <button
                             className={`w-full py-4 px-6 rounded-xl font-bold transition-all duration-300 transform active:scale-95 ${
                                 plan.recommended 
-                                ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-primary-500/30' 
+                                ? 'bg-hub-600 text-white hover:bg-hub-700 shadow-lg hover:shadow-hub-500/30' 
                                 : 'bg-gray-900 text-white hover:bg-gray-800 shadow-md'
                             }`}
                         >

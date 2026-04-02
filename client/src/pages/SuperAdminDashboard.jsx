@@ -75,7 +75,7 @@ const SuperAdminDashboard = () => {
             alert('School verified successfully');
             fetchData();
         } catch (error) {
-            alert('Verification failed');
+            alert(error.response?.data?.error || error.response?.data?.message || 'Verification failed');
         }
     };
 
@@ -117,7 +117,7 @@ const SuperAdminDashboard = () => {
             setEditingSchool(null);
             fetchData();
         } catch (error) {
-            alert('Update failed');
+            alert(error.response?.data?.error || error.response?.data?.message || 'Subscription update failed');
         }
     };
 
@@ -132,7 +132,7 @@ const SuperAdminDashboard = () => {
             setEditingDetailsSchool(null);
             fetchData();
         } catch (error) {
-            alert('Update failed');
+            alert(error.response?.data?.error || error.response?.data?.message || 'Details update failed');
         }
     };
 

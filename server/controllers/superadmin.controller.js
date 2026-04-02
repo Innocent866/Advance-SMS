@@ -17,8 +17,8 @@ const getSchools = async (req, res) => {
         const schools = await School.find(query).sort({ createdAt: -1 });
         res.json(schools);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('[getSchools Error]:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -33,10 +33,46 @@ const verifySchool = async (req, res) => {
         school.isVerified = true;
         await school.save();
 
-        res.json({ message: 'School verified successfully', school });
+        // Auto-verify the school admin's email when the school is approved
+        await User.updateMany(
+            { schoolId: school._id, role: 'school_admin' },
+            { isEmailVerified: true }
+        );
+
+        // Send confirmation email to school admin
+        const sendEmail = require('../utils/emailService');
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const loginUrl = `${frontendUrl}/login`;
+
+        const message = `Congratulations! Your school account for ${school.name} has been verified. You can now log in and start managing your school.`;
+        const html = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                <h2 style="color: #16a34a; text-align: center;">School Verified!</h2>
+                <p>Hello,</p>
+                <p>We are pleased to inform you that your school account for <strong>${school.name}</strong> has been successfully verified by our team.</p>
+                <p>You can now access your dashboard and begin setting up your staff, students, and academic configurations.</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${loginUrl}" style="background: #16a34a; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">SIGN IN TO DASHBOARD</a>
+                </div>
+                <p style="color: #666; font-size: 14px;">If you have any questions, please reach out to our support team.</p>
+            </div>
+        `;
+
+        try {
+            await sendEmail({
+                email: school.contactEmail,
+                subject: 'School Account Verified - GT-SchoolHub',
+                message,
+                html
+            });
+        } catch (err) {
+            console.error('Verification email could not be sent', err);
+        }
+
+        res.json({ message: 'School verified successfully and notification sent.', school });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('[verifySchool Error]:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -74,8 +110,8 @@ const getPlatformStats = async (req, res) => {
             pendingSchools
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('[getPlatformStats Error]:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -90,8 +126,8 @@ const getAllPayments = async (req, res) => {
             .limit(100); // Limit to last 100 for now
         res.json(payments);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('[getAllPayments Error]:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -121,8 +157,8 @@ const deleteSchool = async (req, res) => {
 
         res.json({ message: 'School and associated data deleted successfully' });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('[deleteSchool Error]:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -138,6 +174,7 @@ const updateSchoolSubscription = async (req, res) => {
 
         // Update Plan & Sync Limits
         if (plan) {
+            if (!school.subscription) school.subscription = {};
             school.subscription.plan = plan;
             
             // Sync Limits from Config
@@ -157,8 +194,8 @@ const updateSchoolSubscription = async (req, res) => {
 
         res.json({ message: 'Subscription updated', school });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('[updateSchoolSubscription Error]:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -209,8 +246,8 @@ const createSchool = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('[createSchool Error]:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -232,8 +269,8 @@ const updateSchoolDetails = async (req, res) => {
 
         res.json({ message: 'School details updated successfully', school });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('[updateSchoolDetails Error]:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 

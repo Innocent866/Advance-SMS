@@ -11,16 +11,17 @@ router.use(protect, checkFeatureAccess('staffAdminComm'));
 // Base path: /api/staff-reports (to be configured in server.js)
 
 // Staff Routes
-router.post('/', protect, staffReportController.createReport);
-router.get('/my-reports', protect, staffReportController.getMyReports);
-router.post('/:id/reply', protect, staffReportController.addReply);
-router.put('/:id', protect, staffReportController.updateReport);
+router.post('/', staffReportController.createReport);
+router.get('/my-reports', staffReportController.getMyReports);
+router.post('/:id/reply', staffReportController.addReply);
+router.put('/:id', staffReportController.updateReport);
 
-// Admin Routes
-router.get('/', protect, admin, staffReportController.getAllReports);
-router.put('/:id/status', protect, admin, staffReportController.updateReportStatus);
+// HOD & Admin Review Routes
+router.get('/', teacher, staffReportController.getAllReports); 
+router.post('/hod-review/:id', teacher, staffReportController.hodReview);
+router.put('/:id/status', admin, staffReportController.updateReportStatus);
 
 // Optional
-router.delete('/:id', protect, admin, staffReportController.deleteReport);
+router.delete('/:id', admin, staffReportController.deleteReport);
 
 module.exports = router;

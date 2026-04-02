@@ -9,7 +9,9 @@ const initializePayment = async (req, res) => {
     const { amount, type, term, session, plan } = req.body;
 
     try {
-        if (req.user.role === 'parent') {
+        const role = req.user.role ? req.user.role.toLowerCase() : '';
+
+        if (role === 'parent') {
             const parent = await Parent.findOne({ user: req.user._id });
             if (!parent) return res.status(404).json({ message: 'Parent not found' });
 
@@ -43,7 +45,7 @@ const initializePayment = async (req, res) => {
                     amount: amount * 100
                 }
             });
-        } else if (req.user.role === 'school_admin' || req.user.role === 'super_admin') {
+        } else if (['school_admin', 'super_admin', 'admin', 'assistant_admin'].includes(role)) {
             // School Subscription Flow
             const schoolId = req.user.schoolId?._id || req.user.schoolId;
             const school = await School.findById(schoolId);
@@ -66,7 +68,7 @@ const initializePayment = async (req, res) => {
                 email: req.user.email,
                 amount: subAmount * 100,
                 reference,
-                callback_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard/settings?tab=billing`,
+                callback_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/settings`,
                 metadata: {
                     schoolId: school._id,
                     type: 'subscription',
@@ -91,7 +93,7 @@ const initializePayment = async (req, res) => {
 // @route   POST /api/payments/verify
 // @access  Private (Parent)
 const verifyPayment = async (req, res) => {
-    const reference = req.body.reference || req.params.reference || req.query.reference;
+    const reference = req.body?.reference || req.params.reference || req.query.reference;
 
     if (!reference) {
         return res.status(400).json({ message: 'Missing transaction reference' });
@@ -111,7 +113,16 @@ const verifyPayment = async (req, res) => {
         }
 
         const data = paystackRes.data.data;
-        const metadata = data.metadata;
+        let metadata = data.metadata;
+
+        // Paystack metadata can sometimes be a stringified JSON depending on how it was sent
+        if (typeof metadata === 'string') {
+            try {
+                metadata = JSON.parse(metadata);
+            } catch (e) {
+                console.error('Error parsing Paystack metadata:', e);
+            }
+        }
 
         // --- Handle Subscription Payment ---
         if (metadata?.type === 'subscription') {
@@ -126,15 +137,15 @@ const verifyPayment = async (req, res) => {
             const expiryDate = new Date();
             expiryDate.setDate(expiryDate.getDate() + (plan.duration || 90)); // Default 90 days/term
 
-            const updatedSchool = await School.findByIdAndUpdate(schoolId, {
-                'subscription.plan': planName,
-                'subscription.status': 'active',
-                'subscription.startDate': new Date(),
-                'subscription.expiryDate': expiryDate,
-                'subscription.lastPaymentReference': reference
-            }, { new: true });
+            const school = await School.findById(schoolId);
+            if (!school) return res.status(404).json({ message: 'School not found' });
 
-            return res.status(200).json({ message: 'Subscription activated', school: updatedSchool });
+            school.updateSubscription(planName);
+            school.subscription.status = 'active';
+            school.subscription.lastPaymentReference = reference;
+            await school.save();
+
+            return res.status(200).json({ message: 'Subscription activated', school });
         }
 
         // --- Handle Fee Payment (Parent) ---
@@ -347,8 +358,31 @@ const getFinancialStats = async (req, res) => {
         { $sort: { _id: 1 } }
        ]);
 
+       // Get growth (last 30 days vs previous 30 days)
+       const last30Days = new Date();
+       last30Days.setDate(last30Days.getDate() - 30);
+       const prev30Days = new Date();
+       prev30Days.setDate(prev30Days.getDate() - 60);
+
+       const currentRevenue = await FeePayment.aggregate([
+           { $match: { ...matchStage, status: 'success', paidAt: { $gte: last30Days } } },
+           { $group: { _id: null, total: { $sum: "$amount" } } }
+       ]);
+
+       const previousRevenue = await FeePayment.aggregate([
+           { $match: { ...matchStage, status: 'success', paidAt: { $gte: prev30Days, $lt: last30Days } } },
+           { $group: { _id: null, total: { $sum: "$amount" } } }
+       ]);
+
+       const revenueGrowth = previousRevenue[0]?.total > 0 
+           ? ((currentRevenue[0]?.total - previousRevenue[0]?.total) / previousRevenue[0]?.total * 100).toFixed(1)
+           : (currentRevenue[0]?.total > 0 ? 100 : 0);
+
        res.json({
-           overview: stats[0] || { totalRevenue: 0, totalTransactions: 0, successfulTransactions: 0, pendingTransactions: 0 },
+           overview: {
+               ...(stats[0] || { totalRevenue: 0, totalTransactions: 0, successfulTransactions: 0, pendingTransactions: 0 }),
+               revenueGrowth
+           },
            dailyIncome
        });
 

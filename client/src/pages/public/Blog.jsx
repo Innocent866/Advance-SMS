@@ -67,7 +67,7 @@ const Blog = () => {
                   >
                       <div className="h-48 overflow-hidden relative">
                           <img src={post.image} alt={post.title} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
-                          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-primary-700 flex items-center gap-1 shadow-sm">
+                          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-hub-700 flex items-center gap-1 shadow-sm">
                               <Tag size={12} /> {post.category}
                           </div>
                       </div>
@@ -76,13 +76,13 @@ const Blog = () => {
                               <div className="flex items-center gap-1"><User size={14}/> {post.author}</div>
                               <div className="flex items-center gap-1"><Calendar size={14}/> {post.date}</div>
                           </div>
-                          <h3 className="text-xl font-bold text-gray-900 mb-3 hover:text-primary-600 transition-colors cursor-pointer">
+                          <h3 className="text-xl font-bold text-gray-900 mb-3 hover:text-hub-600 transition-colors cursor-pointer">
                               {post.title}
                           </h3>
                           <p className="text-gray-600 text-sm leading-relaxed mb-6 flex-1">
                               {post.excerpt}
                           </p>
-                          <Link to="#" className="inline-flex items-center text-primary-600 font-bold text-sm hover:gap-2 transition-all">
+                          <Link to="#" className="inline-flex items-center text-hub-600 font-bold text-sm hover:gap-2 transition-all">
                               Read Article <ArrowRight size={16} className="ml-1" />
                           </Link>
                       </div>
@@ -92,19 +92,19 @@ const Blog = () => {
       </div>
 
       {/* Newsletter */}
-      <div className="bg-primary-900 py-20 px-6 border-t border-gray-100">
-          <div className="max-w-4xl mx-auto bg-primary-800 rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500 rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2"></div>
+      <div className="bg-hub-900 py-20 px-6 border-t border-gray-100">
+          <div className="max-w-4xl mx-auto bg-hub-800 rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-64 h-64 bg-hub-500 rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2"></div>
                <div className="relative z-10">
                    <h2 className="text-3xl font-bold text-white mb-4">Subscribe to our newsletter</h2>
-                   <p className="text-primary-200 mb-8 max-w-xl mx-auto">Get the latest educational insights and platform updates delivered directly to your inbox.</p>
+                   <p className="text-hub-200 mb-8 max-w-xl mx-auto">Get the latest educational insights and platform updates delivered directly to your inbox.</p>
                    <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
                        <input 
                           type="email" 
                           placeholder="Enter your email address" 
-                          className="flex-1 px-6 py-4 rounded-xl bg-primary-700/50 border border-primary-600 text-white placeholder-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-400"
+                          className="flex-1 px-6 py-4 rounded-xl bg-hub-700/50 border border-hub-600 text-white placeholder-hub-300 focus:outline-none focus:ring-2 focus:ring-hub-400"
                        />
-                       <button className="px-8 py-4 bg-white text-primary-900 font-bold rounded-xl hover:bg-gray-100 transition-colors">
+                       <button className="px-8 py-4 bg-white text-hub-900 font-bold rounded-xl hover:bg-gray-100 transition-colors">
                            Subscribe
                        </button>
                    </div>

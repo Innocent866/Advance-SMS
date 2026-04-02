@@ -1,9 +1,14 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 
-const NotificationContext = createContext();
+const NotificationContext = createContext({
+    showNotification: () => console.warn('NotificationContext not found')
+});
 
-export const useNotification = () => useContext(NotificationContext);
+export const useNotification = () => {
+    const context = useContext(NotificationContext);
+    return context || { showNotification: () => {} };
+};
 
 export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
@@ -38,7 +43,7 @@ export const NotificationProvider = ({ children }) => {
     return (
         <NotificationContext.Provider value={{ showNotification }}>
             {children}
-            <div className="fixed top-5 right-5 z-50 flex flex-col gap-2">
+            <div className="fixed top-5 right-5 z-[9999] flex flex-col gap-2">
                 {notifications.map(n => (
                     <div 
                         key={n.id} 

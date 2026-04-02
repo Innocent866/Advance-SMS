@@ -122,10 +122,10 @@ const getLessons = async (req, res) => {
     if (term) query.term = term;
     if (week) query.week = week;
 
-    // If teacher, maybe only show their own? Or show all in library?
-    // Requirement: "Central lesson library per school". So show all for the school.
-    // Maybe filter by published status if not the author?
-    // For MVP, show all.
+    // If teacher, only show their own lesson plans
+    if (req.user.role === 'teacher') {
+        query.teacherId = req.user._id || req.user.userId;
+    }
 
     try {
         const lessons = await LessonPlan.find(query)
@@ -153,6 +153,12 @@ const getLessonById = async (req, res) => {
         if (!lesson) {
             return res.status(404).json({ message: 'Lesson not found' });
         }
+        
+        // Strict ownership check for teachers
+        if (req.user.role === 'teacher' && lesson.teacherId._id.toString() !== (req.user._id || req.user.userId).toString()) {
+            return res.status(403).json({ message: 'Not authorized to view this lesson plan' });
+        }
+
         res.json(lesson);
     } catch (error) {
         console.error(error);

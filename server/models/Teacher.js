@@ -22,12 +22,23 @@ const teacherSchema = new mongoose.Schema({
     email: { type: String, required: true },
     phoneNumber: { type: String },
     gender: { type: String, enum: ['Male', 'Female', 'Other'] },
-    profilePicture: { type: String },
+    address: { type: String },
     profilePicture: { type: String }, // URL or path to image
+    emergencyContact: {
+        name: String,
+        relationship: String,
+        phone: String
+    },
     
     // --- Professional Details ---
     employeeId: { type: String },
     qualification: { type: String }, // e.g., B.Ed, MSc
+    employmentType: { 
+        type: String, 
+        enum: ['Full-time', 'Part-time', 'Contract'],
+        default: 'Full-time'
+    },
+    dateOfJoining: { type: Date, default: Date.now },
     yearsOfExperience: { type: Number, default: 0 },
     
     // --- Academic Assignments ---
@@ -63,6 +74,13 @@ const teacherSchema = new mongoose.Schema({
     lastAiGeneratedAt: { type: Date },
     lessonCount: { type: Number, default: 0 }, // Cache for analytics
     videoLessonCount: { type: Number, default: 0 }, // Cache for analytics
+
+    // --- Department ---
+    departmentId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Department',
+        index: true
+    },
 
 }, { 
     timestamps: true 

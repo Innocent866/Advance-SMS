@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import BrandingProvider from './context/BrandingProvider';
 import { NotificationProvider } from './context/NotificationContext';
+import { Toaster } from 'react-hot-toast';
 import Loader from './components/Loader';
 
 // Eager load critical components - CHANGED TO LAZY
@@ -43,7 +44,11 @@ const AttendanceHistory = lazy(() => import('./pages/AttendanceHistory'));
 const StaffReportDashboard = lazy(() => import('./pages/StaffReportDashboard'));
 const AdminReportDashboard = lazy(() => import('./pages/AdminReportDashboard'));
 const TeacherMaterialDashboard = lazy(() => import('./pages/TeacherMaterialDashboard'));
+const StaffChat = lazy(() => import('./pages/StaffChat'));
+
 const AdminMaterialReview = lazy(() => import('./pages/AdminMaterialReview'));
+const DepartmentSettings = lazy(() => import('./pages/DepartmentSettings'));
+const DepartmentReview = lazy(() => import('./pages/DepartmentReview'));
 const StudentMaterialList = lazy(() => import('./pages/StudentMaterialList'));
 const ParentDashboard = lazy(() => import('./pages/ParentDashboard'));
 const ParentPayment = lazy(() => import('./pages/ParentPayment'));
@@ -54,9 +59,23 @@ const ParentHistory = lazy(() => import('./pages/ParentHistory'));
 const ParentMaterials = lazy(() => import('./pages/ParentMaterials'));
 const ParentAttendance = lazy(() => import('./pages/ParentAttendance'));
 const AdminFinanceDashboard = lazy(() => import('./pages/AdminFinanceDashboard'));
+const AdminManagement = lazy(() => import('./pages/AdminManagement'));
+
+// Boarding & Hostel
+const BoardingManagement = lazy(() => import('./pages/BoardingManagement'));
+const HostelManagement = lazy(() => import('./pages/HostelManagement'));
+const HostelRooms = lazy(() => import('./pages/HostelRooms'));
+const HostelAttendance = lazy(() => import('./pages/HostelAttendance'));
+const RoomAllocation = lazy(() => import('./pages/RoomAllocation'));
+const BoardingMedical = lazy(() => import('./pages/BoardingMedical'));
+const BoardingReports = lazy(() => import('./pages/BoardingReports'));
+const MealTracking = lazy(() => import('./pages/MealTracking'));
+const DisciplineManagement = lazy(() => import('./pages/DisciplineManagement'));
+const LeaveManagement = lazy(() => import('./pages/LeaveManagement'));
 
 const PublicLayout = lazy(() => import('./components/PublicLayout'));
 const PublicRoute = lazy(() => import('./components/PublicRoute'));
+const BulkStudentUpload = lazy(() => import('./pages/BulkStudentUpload'));
 
 
 
@@ -79,10 +98,12 @@ function App() {
     <AuthProvider>
       <BrandingProvider>
         <NotificationProvider>
+        <Toaster position="top-right" reverseOrder={false} />
         <Router>
           <Suspense fallback={<Loader fullScreen={true} />}>
             <CookieConsent />
             <Routes>
+              <Route path="/bulk-upload-portal" element={<BulkStudentUpload />} />
               {/* Guest Only Routes (Redirects to dashboard if logged in) */}
               <Route element={<PublicRoute />}>
                 <Route element={<PublicLayout />}>
@@ -117,7 +138,7 @@ function App() {
                     <Route path="/teachers" element={<ProtectedRoute role="school_admin"><TeachersList /></ProtectedRoute>} />
                     <Route path="/teachers/:id" element={<ProtectedRoute role="school_admin"><TeacherDetails /></ProtectedRoute>} />
                     <Route path="/students" element={<ProtectedRoute role="school_admin"><StudentsList /></ProtectedRoute>} />
-                    <Route path="/students/:id" element={<ProtectedRoute role="school_admin"><StudentDetails /></ProtectedRoute>} />
+                    <Route path="/students/:id" element={<ProtectedRoute role={['school_admin', 'teacher']}><StudentDetails /></ProtectedRoute>} />
                     <Route path="/academic" element={<ProtectedRoute role="school_admin"><AcademicSettings /></ProtectedRoute>} />
                     <Route path="/content-oversight" element={<ProtectedRoute role="school_admin"><ContentOversight /></ProtectedRoute>} />
                     <Route path="/learning-settings" element={<ProtectedRoute role="school_admin"><LearningSettings /></ProtectedRoute>} />
@@ -125,6 +146,7 @@ function App() {
                     <Route path="/analytics" element={<ProtectedRoute feature="advancedAnalytics"><AnalyticsDashboard /></ProtectedRoute>} />
                     <Route path="/settings" element={<ProtectedRoute role="school_admin"><SchoolSettings /></ProtectedRoute>} />
                     <Route path="/settings/receipts" element={<ProtectedRoute role="school_admin"><ReceiptSettings /></ProtectedRoute>} />
+                    <Route path="/admin/management" element={<ProtectedRoute role="school_admin"><AdminManagement /></ProtectedRoute>} />
                     <Route path="/assessment-config" element={<ProtectedRoute role="school_admin"><AssessmentSettings /></ProtectedRoute>} />
 
                     <Route path="/admin/reports" element={<ProtectedRoute feature="basicReports"><AdminReportDashboard /></ProtectedRoute>} />
@@ -140,10 +162,24 @@ function App() {
                     <Route path="/my-students" element={<ProtectedRoute role="teacher"><MyStudents /></ProtectedRoute>} />
                     <Route path="/attendance/mark" element={<ProtectedRoute role="teacher"><AttendanceMarking /></ProtectedRoute>} />
                     <Route path="/teacher/ai-marking" element={<ProtectedRoute role="teacher" feature="aiMarking"><AIExamMarking /></ProtectedRoute>} />
+
                     <Route path="/staff/reports" element={<ProtectedRoute feature="basicReports"><StaffReportDashboard /></ProtectedRoute>} />
+                    <Route path="/staff/chat" element={<ProtectedRoute feature="staffAdminComm"><StaffChat /></ProtectedRoute>} />
+                    <Route path="/admin/departments" element={<ProtectedRoute role="school_admin"><DepartmentSettings /></ProtectedRoute>} />
+                    <Route path="/department/review" element={<DepartmentReview />} />
                     <Route path="/teacher/learning-materials" element={<ProtectedRoute role="teacher" feature="learningMaterials"><TeacherMaterialDashboard /></ProtectedRoute>} />
 
-                    
+                    {/* Boarding & Hostel Routes */}
+                    <Route path="/boarding" element={<ProtectedRoute role={['school_admin', 'super_admin', 'hostel_warden', 'house_parent']}><BoardingManagement /></ProtectedRoute>} />
+                    <Route path="/hostel-management" element={<ProtectedRoute role={['school_admin', 'super_admin', 'assistant_admin']}><HostelManagement /></ProtectedRoute>} />
+                    <Route path="/hostel-management/:id/rooms" element={<ProtectedRoute role={['school_admin', 'super_admin', 'assistant_admin']}><HostelRooms /></ProtectedRoute>} />
+                    <Route path="/boarding/roll-call" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']}><HostelAttendance /></ProtectedRoute>} />
+                    <Route path="/boarding/allocate" element={<ProtectedRoute role={['school_admin', 'assistant_admin']}><RoomAllocation /></ProtectedRoute>} />
+                    <Route path="/boarding/medical" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']}><BoardingMedical /></ProtectedRoute>} />
+                    <Route path="/boarding/reports" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']}><BoardingReports /></ProtectedRoute>} />
+                    <Route path="/boarding/meals" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']}><MealTracking /></ProtectedRoute>} />
+                    <Route path="/boarding/discipline" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']}><DisciplineManagement /></ProtectedRoute>} />
+                    <Route path="/boarding/leaves" element={<ProtectedRoute role={['school_admin', 'assistant_admin', 'hostel_warden', 'house_parent']}><LeaveManagement /></ProtectedRoute>} />
 
                     {/* Student Routes */}
                     <Route path="/videos" element={<StudentVideos />} />

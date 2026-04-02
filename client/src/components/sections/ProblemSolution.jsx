@@ -42,9 +42,9 @@ const ProblemSolution = () => {
                     viewport={{ once: true }}
                     className="relative"
                   >
-                       <div className="absolute inset-0 bg-primary-600 rounded-3xl transform rotate-3 opacity-10"></div>
-                       <div className="bg-milk border border-primary-100 rounded-3xl shadow-2xl p-8 lg:p-10 relative z-10">
-                            <h2 className="text-3xl font-bold text-primary-600 mb-8">Start Enjoying...</h2>
+                       <div className="absolute inset-0 bg-hub-600 rounded-3xl transform rotate-3 opacity-10"></div>
+                       <div className="bg-milk border border-hub-100 rounded-3xl shadow-2xl p-8 lg:p-10 relative z-10">
+                            <h2 className="text-3xl font-bold text-hub-600 mb-8">Start Enjoying...</h2>
                             <div className="space-y-6">
                                 {[
                                     { title: "Centralized Management", desc: "One secure database for everything." },
@@ -53,16 +53,16 @@ const ProblemSolution = () => {
                                     { title: "Secure Digital Records", desc: "Never lose a file again. Backed up and encrypted." }
                                 ].map((sol, i) => (
                                     <div key={i} className="flex items-center gap-4">
-                                        <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 flex-shrink-0">
+                                        <div className="w-8 h-8 bg-hub-100 rounded-full flex items-center justify-center text-hub-600 flex-shrink-0">
                                             <CheckCircle size={18} />
                                         </div>
                                         <span className="text-lg font-medium text-gray-800">{sol.title}</span>
                                     </div>
                                 ))}
                             </div>
-                            <div className="mt-10 pt-8 border-t border-primary-100">
+                            <div className="mt-10 pt-8 border-t border-hub-100">
                                 <Link to="/register-school">
-                                    <button className="w-full py-4 rounded-xl bg-primary-800 text-white font-bold shadow-lg hover:bg-primary-900 transition-all">
+                                    <button className="w-full py-4 rounded-xl bg-hub-800 text-white font-bold shadow-lg hover:bg-hub-900 transition-all">
                                         Get Started Today
                                     </button>
                                 </Link>

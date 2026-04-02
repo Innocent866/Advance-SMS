@@ -48,14 +48,32 @@ const staffReportSchema = new mongoose.Schema({
         type: String, // Rich text content
         required: true
     },
-    attachment: {
-        type: String // URL to file
+    // File & Metadata (Strict Production Requirements)
+    attachment: { type: String },          // Legacy/Compatibility
+    url: { type: String },                 // Explicitly requested
+    attachmentFileName: { type: String },  // Legacy/Compatibility
+    originalName: { type: String },        // Explicitly requested
+    public_id: { type: String },           // Explicitly requested
+    mimeType: { type: String },            // Explicitly requested
+    resourceType: { type: String },        // Explicitly requested
+    size: { type: Number },                // Explicitly requested
+    attachmentFileType: { type: String },  // Legacy/Compatibility
+    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Explicitly requested
+    
+    // Departmental Oversight
+    departmentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Department'
+    },
+    hodId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     },
     
     status: {
         type: String,
-        enum: ['Submitted', 'Reviewed', 'Action Required', 'Resolved'],
-        default: 'Submitted'
+        enum: ['Pending HOD', 'HOD Approved', 'HOD Rejected', 'Submitted', 'Reviewed', 'Action Required', 'Resolved'],
+        default: 'Pending HOD'
     },
     
     adminComments: [{

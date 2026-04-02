@@ -54,8 +54,31 @@ app.use('/uploads', express.static('uploads', {
 }));
 
 // 4. Sanitization Middleware (After body parser)
-app.use(mongoSanitize()); // Prevent NoSQL injection
-app.use(xss()); // Prevent XSS attacks
+const skipSanitizationPaths = [
+    '/api/students/verify-upload-token', 
+    '/api/students/bulk-upload', 
+    '/api/files', 
+    '/api/chat',
+    '/api/learning-materials',
+    '/api/staff-reports',
+    '/api/lessons',
+    '/api/marking'
+];
+
+app.use((req, res, next) => {
+    if (skipSanitizationPaths.some(path => req.path.startsWith(path))) {
+        return next();
+    }
+    mongoSanitize()(req, res, next);
+});
+
+app.use((req, res, next) => {
+    if (skipSanitizationPaths.some(path => req.path.startsWith(path))) {
+        return next();
+    }
+    xss()(req, res, next);
+});
+
 app.use(hpp()); // Prevent HTTP Parameter Pollution
 
 // 5. Rate Limiting
@@ -103,6 +126,11 @@ app.use('/api/attendance', require('./routes/attendance.routes'));
 app.use('/api/staff-reports', require('./routes/staffReport.routes'));
 app.use('/api/learning-materials', require('./routes/learningMaterial.routes'));
 app.use('/api/upload', require('./routes/upload.routes'));
+app.use('/api/files', require('./routes/file.routes'));
+app.use('/api/departments', require('./routes/department.routes'));
+app.use('/api/chat', require('./routes/chat.routes'));
+app.use('/api/hostels', require('./routes/hostel.routes'));
+app.use('/api/boarding', require('./routes/boarding.routes'));
 
 
 // Error Middleware

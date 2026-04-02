@@ -17,13 +17,25 @@ const BrandingProvider = ({ children }) => {
     useEffect(() => {
         const root = document.documentElement;
 
-        if (user && user.schoolId) {
-            // Apply Custom Branding
-            const primary = user.schoolId.branding?.primaryColor || '#16a34a';
-            const secondary = user.schoolId.branding?.secondaryColor || '#f59e0b';
-            const name = user.schoolId.name || 'GT-SchoolHub';
-            const logoUrl = user.schoolId.logo || null;
+        const school = user?.schoolId;
+        if (school && typeof school === 'object') {
+            const isPremium = school.subscription?.plan === 'Premium';
 
+            // Base branding attributes
+            const name = school.name || 'GT-SchoolHub';
+            const logoUrl = school.logoUrl || null;
+            
+            // Default colors
+            let primary = '#16a34a';
+            let secondary = '#f59e0b';
+
+            if (isPremium) {
+                // Apply Custom Branding Colors
+                primary = school.branding?.primaryColor || primary;
+                secondary = school.branding?.secondaryColor || secondary;
+            }
+
+            // Inject CSS variables into :root
             root.style.setProperty('--color-primary', primary);
             root.style.setProperty('--color-secondary', secondary);
             

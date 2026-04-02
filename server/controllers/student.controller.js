@@ -1,17 +1,22 @@
 const Student = require('../models/Student');
 const User = require('../models/User');
-const School = require('../models/School'); // Import School model
+const School = require('../models/School');
 const bcrypt = require('bcryptjs');
 const VideoLesson = require('../models/VideoLesson');
 const Quiz = require('../models/Quiz');
 const LearningMaterial = require('../models/LearningMaterial');
 const { createNotification } = require('./notification.controller');
+const crypto = require('crypto');
+const StudentUploadSession = require('../models/StudentUploadSession');
+const ClassLevel = require('../models/ClassLevel');
+const PromotionRecord = require('../models/PromotionRecord');
+const AcademicSession = require('../models/AcademicSession');
 
 // @desc    Create a new student
 // @route   POST /api/students
 // @access  Private (School Admin)
 const createStudent = async (req, res) => {
-    const { firstName, lastName, email, password, gender, level, classId, arm } = req.body;
+    const { firstName, lastName, email, password, gender, level, classId, arm, enrollmentStatus } = req.body;
 
     try {
         // 2. Auto-Generate Student ID (Format: SCHOOL-YEAR-001)
@@ -102,6 +107,7 @@ const createStudent = async (req, res) => {
             classId,
             arm, // Add arm
             subjects: assignedSubjects, // Auto-assigned
+            enrollmentStatus: enrollmentStatus || 'Day',
             status: 'active'
         });
 
@@ -172,7 +178,9 @@ const getStudents = async (req, res) => {
         }
 
         const students = await Student.find(query)
-            .populate('classId', 'name');
+            .populate('classId', 'name')
+            .populate('hostelId', 'name')
+            .populate('roomId', 'roomNumber');
         res.json(students);
     } catch (error) {
         console.error(error);
@@ -226,7 +234,9 @@ const getTeacherStudents = async (req, res) => {
             $or: criteria
         })
         .populate('classId', 'name')
-        .select('firstName lastName email profilePicture classId studentId arm');
+        .populate('hostelId', 'name')
+        .populate('roomId', 'roomNumber')
+        .select('firstName lastName email profilePicture classId studentId arm isBoarder hostelId roomId');
 
         // Transform to match expected frontend structure if needed (frontend expects name, but Student has firstName/lastName)
         // Or updated frontend to use firstName/lastName? MyStudents.jsx uses student.name.
@@ -276,6 +286,8 @@ const getStudentById = async (req, res) => {
     try {
         const student = await Student.findById(req.params.id)
             .populate('classId', 'name')
+            .populate('hostelId', 'name')
+            .populate('roomId', 'roomNumber')
             .populate('subjects', 'name code')
             .populate('videosWatched.videoId', 'title topic'); 
         
@@ -392,12 +404,22 @@ const getStudentById = async (req, res) => {
             totalAssigned: allClassVideos.length,
             completionRate: allClassVideos.length > 0 ? Math.round((takenVideos.length / allClassVideos.length) * 100) : 0
         };
-        studentData.quizProgress = {
+    studentData.quizProgress = {
             taken: takenQuizzes,
             notTaken: notTakenQuizzes,
             totalAssigned: allClassQuizzes.length,
             completionRate: allClassQuizzes.length > 0 ? Math.round((takenQuizzes.length / allClassQuizzes.length) * 100) : 0
         };
+
+        // Fetch Promotion History
+        const PromotionRecord = require('../models/PromotionRecord');
+        const history = await PromotionRecord.find({ studentId: student._id })
+            .populate('fromClassId', 'name')
+            .populate('toClassId', 'name')
+            .populate('promotedBy', 'name')
+            .sort({ date: -1 });
+        
+        studentData.promotionHistory = history;
 
         res.json(studentData);
     } catch (error) {
@@ -446,6 +468,7 @@ const updateStudent = async (req, res) => {
         if (req.body.level) student.level = req.body.level;
         if (req.body.classId) student.classId = req.body.classId;
         if (req.body.arm) student.arm = req.body.arm;
+        if (req.body.enrollmentStatus) student.enrollmentStatus = req.body.enrollmentStatus;
 
         // Also update the linked User account if name/email/password changed
         if (req.body.firstName || req.body.lastName || req.body.email || req.body.password) {
@@ -506,6 +529,306 @@ const deleteStudent = async (req, res) => {
     }
 };
 
+// @desc    Generate a student self-upload link
+// @route   POST /api/students/generate-upload-link
+// @access  Private (Admin)
+const generateUploadLink = async (req, res) => {
+    const { classId, arm } = req.body;
+    try {
+        const token = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48 hours
+
+        const session = await StudentUploadSession.create({
+            schoolId: req.user.schoolId._id || req.user.schoolId,
+            classId,
+            arm,
+            token,
+            expiresAt,
+            createdBy: req.user._id
+        });
+
+        // Populate classId for frontend display
+        const populatedSession = await StudentUploadSession.findById(session._id).populate('classId', 'name');
+
+        const baseUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+        const uploadLink = `${baseUrl}/bulk-upload-portal?token=${token}`;
+
+        res.status(201).json({ uploadLink, session: populatedSession });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error generating upload link' });
+    }
+};
+
+// @desc    Get active upload links for the school
+// @route   GET /api/students/active-upload-links
+// @access  Private (Admin)
+const getActiveUploadLinks = async (req, res) => {
+    try {
+        const links = await StudentUploadSession.find({
+            schoolId: req.user.schoolId._id || req.user.schoolId,
+            expiresAt: { $gt: new Date() }
+        }).populate('classId', 'name');
+        res.json(links);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching active links' });
+    }
+};
+
+// @desc    Revoke an active upload link
+// @route   POST /api/students/revoke-upload-session
+// @access  Private (Admin)
+const revokeUploadSession = async (req, res) => {
+    const { sessionId } = req.body;
+    try {
+        await StudentUploadSession.findOneAndDelete({
+            _id: sessionId,
+            schoolId: req.user.schoolId._id || req.user.schoolId
+        });
+        res.json({ message: 'Session revoked successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error revoking session' });
+    }
+};
+
+// @desc    Verify upload token (Public)
+// @route   POST /api/students/verify-upload-token
+// @access  Public
+const verifyUploadToken = async (req, res) => {
+    const { token } = req.body;
+    try {
+        const session = await StudentUploadSession.findOne({
+            token,
+            expiresAt: { $gt: new Date() }
+        }).populate('classId', 'name');
+
+        if (!session) {
+            return res.status(404).json({ message: 'Invalid or expired upload link' });
+        }
+
+        res.json({
+            context: {
+                className: session.classId.name,
+                arm: session.arm
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error verifying token' });
+    }
+};
+
+// @desc    Bulk upload student (Public registration via link)
+// @route   POST /api/students/bulk-upload
+// @access  Public (needs valid token)
+const bulkUpload = async (req, res) => {
+    const { token, firstName, lastName, email, gender, enrollmentStatus } = req.body;
+    try {
+        const session = await StudentUploadSession.findOne({
+            token,
+            expiresAt: { $gt: new Date() }
+        });
+
+        if (!session) {
+            return res.status(401).json({ message: 'Invalid or expired upload session' });
+        }
+
+        const school = await School.findById(session.schoolId);
+        if (!school) {
+            return res.status(404).json({ message: 'School not found' });
+        }
+
+        // Generate student ID
+        let schoolAbbr = 'SCH';
+        if (school.name) {
+             const nameParts = school.name.split(' ');
+             if (nameParts.length > 1) {
+                 schoolAbbr = nameParts.map(p => p[0]).join('').toUpperCase().substring(0, 3);
+             } else {
+                 schoolAbbr = school.name.substring(0, 3).toUpperCase();
+             }
+        }
+        const year = new Date().getFullYear();
+        const baseId = `${schoolAbbr}-${year}`;
+        const lastStudent = await Student.findOne({
+            schoolId: session.schoolId,
+            studentId: { $regex: `^${baseId}` }
+        }).sort({ studentId: -1 });
+
+        let nextSeq = 1;
+        if (lastStudent && lastStudent.studentId) {
+            const parts = lastStudent.studentId.split('-');
+            const lastSeqObj = parts[parts.length - 1];
+            if (!isNaN(lastSeqObj)) {
+                nextSeq = parseInt(lastSeqObj) + 1;
+            }
+        }
+        const studentId = `${baseId}-${String(nextSeq).padStart(3, '0')}`;
+
+        // Create User (Auth)
+        const finalPassword = school.defaultStudentPassword || 'student123';
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(finalPassword, salt);
+
+        const user = await User.create({
+            schoolId: session.schoolId,
+            name: `${firstName} ${lastName}`,
+            email,
+            passwordHash,
+            role: 'student',
+            classId: session.classId
+        });
+
+        // Get subjects
+        const classLevelDoc = await ClassLevel.findById(session.classId);
+        let assignedSubjects = [];
+        if (classLevelDoc) {
+            assignedSubjects = [...(classLevelDoc.subjects || [])];
+            if (session.arm) {
+                 const armData = classLevelDoc.arms.find(a => a.name === session.arm);
+                 if (armData && armData.subjects) {
+                     assignedSubjects = [...assignedSubjects, ...armData.subjects];
+                 }
+            }
+        }
+
+        // Create Student Profile
+        const student = await Student.create({
+            schoolId: session.schoolId,
+            userId: user._id,
+            firstName,
+            lastName,
+            email,
+            gender,
+            profilePicture: req.file ? req.file.path : null,
+            studentId,
+            level: classLevelDoc?.level || 'JSS',
+            classId: session.classId,
+            arm: session.arm,
+            subjects: assignedSubjects,
+            enrollmentStatus: enrollmentStatus || 'Day',
+            status: 'active'
+        });
+
+        // Update School Usage
+        if (req.file) {
+            await School.findByIdAndUpdate(session.schoolId, {
+                $inc: { 
+                    'mediaUsage.storageBytes': req.file.size,
+                    'mediaUsage.uploadCount': 1
+                }
+            });
+        }
+
+        res.status(201).json({ message: 'Student registered successfully', student });
+
+    } catch (error) {
+        console.error('Bulk Upload Error:', error);
+        if (error.code === 11000) {
+            return res.status(400).json({ message: 'An account with this email already exists.' });
+        }
+        res.status(500).json({ message: 'Error processing bulk upload' });
+    }
+};
+
+// @desc    Promote Students
+// @route   POST /api/students/promote
+// @access  Private (Admin)
+const promoteStudents = async (req, res) => {
+    const { studentIds, toClassId, toArm, session, term, reason } = req.body;
+
+    if (!studentIds || !Array.isArray(studentIds) || studentIds.length === 0) {
+        return res.status(400).json({ message: 'No student IDs provided for promotion' });
+    }
+
+    try {
+        const schoolId = req.user.schoolId._id || req.user.schoolId;
+
+        // 1. Fetch Target Class Details
+        const toClass = await ClassLevel.findById(toClassId);
+        if (!toClass) {
+            return res.status(404).json({ message: 'Target class not found' });
+        }
+
+        // Determine new subjects for the target class
+        const newSubjects = [...(toClass.subjects || [])];
+        if (toArm) {
+            const armData = toClass.arms.find(a => a.name === toArm);
+            if (armData && armData.subjects) {
+                newSubjects.push(...armData.subjects);
+            }
+        }
+
+        const promotionRecords = [];
+        const studentUpdates = [];
+        const userUpdates = [];
+
+        // 2. Fetch Students to be promoted
+        const studentsToPromote = await Student.find({
+            _id: { $in: studentIds },
+            schoolId
+        });
+
+        if (studentsToPromote.length === 0) {
+             return res.status(404).json({ message: 'No valid students found for promotion' });
+        }
+
+        for (const student of studentsToPromote) {
+            // Save log entry data
+            promotionRecords.push({
+                schoolId,
+                studentId: student._id,
+                fromClassId: student.classId,
+                toClassId: toClassId,
+                fromArm: student.arm,
+                toArm: toArm,
+                session: session || 'Current', 
+                term: term || 'Current',
+                promotedBy: req.user._id,
+                reason: reason || 'End of Term Promotion'
+            });
+
+            // Update Student Profile
+            student.classId = toClassId;
+            student.arm = toArm;
+            student.level = toClass.category; // JSS or SSS (mapped from ClassLevel.category)
+            student.subjects = newSubjects;
+            
+            studentUpdates.push(student.save());
+
+            // Update Linked User Account for Subject/Class filtering in other modules
+            userUpdates.push(User.findByIdAndUpdate(student.userId, { classId: toClassId }));
+        }
+
+        // 3. Persist Changes
+        await Promise.all([
+            ...studentUpdates,
+            ...userUpdates,
+            PromotionRecord.insertMany(promotionRecords)
+        ]);
+
+        // 4. Notifications
+        for (const student of studentsToPromote) {
+            await createNotification(
+                student.userId,
+                `Congratulations! You have been promoted to ${toClass.name} ${toArm ? `(${toArm})` : ''}`,
+                'success'
+            );
+        }
+
+        res.json({ 
+            message: `Successfully promoted ${studentsToPromote.length} students to ${toClass.name}`,
+            count: studentsToPromote.length 
+        });
+
+    } catch (error) {
+        console.error('Promotion Error:', error);
+        res.status(500).json({ message: 'Error processing promotion' });
+    }
+};
+
 module.exports = {
     createStudent,
     getStudents,
@@ -513,5 +836,11 @@ module.exports = {
     getMyProfile,
     getStudentById,
     updateStudent,
-    deleteStudent
+    deleteStudent,
+    generateUploadLink,
+    getActiveUploadLinks,
+    revokeUploadSession,
+    verifyUploadToken,
+    bulkUpload,
+    promoteStudents
 };

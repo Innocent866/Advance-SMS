@@ -17,7 +17,7 @@ const HelpCenter = () => {
     <div className="bg-white min-h-screen">
       
       {/* Search Hero */}
-      <div className="bg-primary-900 py-20 sm:py-28 relative overflow-hidden">
+      <div className="bg-hub-900 py-20 sm:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
         <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-8">
@@ -27,7 +27,7 @@ const HelpCenter = () => {
                 <input 
                     type="text" 
                     placeholder="Search for articles, guides, or troubleshooting..." 
-                    className="w-full pl-14 pr-6 py-5 rounded-2xl shadow-2xl text-lg focus:outline-none focus:ring-4 focus:ring-primary-500/30"
+                    className="w-full pl-14 pr-6 py-5 rounded-2xl shadow-2xl text-lg focus:outline-none focus:ring-4 focus:ring-hub-500/30"
                 />
                 <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400" size={24} />
             </div>
@@ -48,12 +48,12 @@ const HelpCenter = () => {
                             transition={{ delay: i * 0.1 }}
                             className="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-xl transition-all hover:-translate-y-1 group cursor-pointer h-full"
                         >
-                            <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center text-primary-600 mb-6 group-hover:bg-primary-600 group-hover:text-white transition-colors">
+                            <div className="w-12 h-12 bg-hub-50 rounded-xl flex items-center justify-center text-hub-600 mb-6 group-hover:bg-hub-600 group-hover:text-white transition-colors">
                                 <cat.icon size={24} />
                             </div>
                             <h3 className="text-xl font-bold text-gray-900 mb-2">{cat.title}</h3>
                             <p className="text-gray-500 leading-relaxed mb-4">{cat.desc}</p>
-                            <div className="flex items-center text-primary-600 font-bold text-sm">
+                            <div className="flex items-center text-hub-600 font-bold text-sm">
                                 View Articles <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
                             </div>
                         </motion.div>

@@ -37,7 +37,7 @@ const protect = async (req, res, next) => {
 
             next();
         } catch (error) {
-            console.error(error);
+            console.error('Auth Error:', error.message);
             res.status(401).json({ message: 'Not authorized, token failed' });
         }
     } else {
@@ -46,27 +46,33 @@ const protect = async (req, res, next) => {
 };
 
 const admin = (req, res, next) => {
-    if (req.user && (req.user.role === 'admin' || req.user.role === 'super_admin' || req.user.role === 'school_admin')) {
-        next();
-    } else {
-        res.status(401).json({ message: 'Not authorized as an admin' });
+    if (req.user && req.user.role) {
+        const role = req.user.role.toLowerCase();
+        if (role === 'admin' || role === 'super_admin' || role === 'school_admin' || role === 'assistant_admin') {
+            return next();
+        }
     }
+    res.status(401).json({ message: 'Not authorized as an admin' });
 };
 
 const teacher = (req, res, next) => {
-    if (req.user && (req.user.role === 'teacher' || req.user.role === 'school_admin')) {
-        next();
-    } else {
-        res.status(401).json({ message: 'Not authorized as a teacher' });
+    if (req.user && req.user.role) {
+        const role = req.user.role.toLowerCase();
+        if (role === 'teacher' || role === 'school_admin') {
+            return next();
+        }
     }
+    res.status(401).json({ message: 'Not authorized as a teacher' });
 };
 
 const teacherStrict = (req, res, next) => {
-    if (req.user && req.user.role === 'teacher') {
-        next();
-    } else {
-        res.status(401).json({ message: 'Not authorized. Teachers only.' });
+    if (req.user && req.user.role) {
+        const role = req.user.role.toLowerCase();
+        if (role === 'teacher') {
+            return next();
+        }
     }
+    res.status(401).json({ message: 'Not authorized. Teachers only.' });
 };
 
 const authorize = (...roles) => {

@@ -1,6 +1,8 @@
 const LearningMaterial = require('../models/LearningMaterial');
 const User = require('../models/User');
-const Notification = require('../models/Notification'); // Assuming Notification model exists
+const Teacher = require('../models/Teacher');
+const Department = require('../models/Department');
+const Notification = require('../models/Notification');
 
 // Helper to Create Notification
 const createNotification = async (recipientId, message, type = 'info', link = null, relatedId = null) => {
@@ -30,13 +32,28 @@ exports.createMaterial = async (req, res) => {
             session,
             description,
             fileUrl,
+            originalName,
+            mimeType,
+            size,
             status // Optional, default is Draft. Teachers can set to 'Pending Approval' immediately.
         } = req.body;
 
         const schoolId = req.user.schoolId?._id || req.user.schoolId;
+        const userId = req.user.userId || req.user._id;
+
+        // Find teacher to get department
+        const teacher = await Teacher.findOne({ userId }).populate('departmentId');
+        let departmentId = null;
+        let hodId = null;
+
+        if (teacher && teacher.departmentId) {
+            departmentId = teacher.departmentId._id;
+            hodId = teacher.departmentId.hodId;
+        }
+
         const material = new LearningMaterial({
             schoolId,
-            teacherId: req.user.userId || req.user._id,
+            teacherId: userId,
             title,
             type,
             subject,
@@ -46,13 +63,21 @@ exports.createMaterial = async (req, res) => {
             session,
             description,
             fileUrl,
+            originalName,
+            mimeType,
+            size,
+            departmentId,
+            hodId,
             status: status || 'Draft'
         });
 
         await material.save();
 
-        // If submitted for approval immediately
-        if (material.status === 'Pending Approval') {
+        // If submitted for approval immediately (Pending HOD or Pending Approval)
+        if (material.status === 'Pending HOD' && hodId) {
+            const notificationMessage = `New Learning Material for Review: ${title} by ${req.user.name}`;
+            await createNotification(hodId, notificationMessage, 'info', `/department/review`, material._id);
+        } else if (material.status === 'Pending Approval') {
             // Notify Admins
             const admins = await User.find({
                 schoolId,
@@ -81,12 +106,12 @@ exports.getMaterials = async (req, res) => {
 
         // Role-based restrictions
         if (req.user.role === 'Student') {
-            query.status = 'Approved'; // Students only see approved
-            // Optionally restrict strict to their class if we had that data handy in req.user, 
-            // but for now we trust the frontend to query correctly or just show all approved for the school.
-        } else if (req.user.role === 'Teacher') {
-             // Teachers generally see their own via getMyMaterials, but this could be used to see a public library?
-             // For now, let's keep this generic or restrict if needed.
+            query.status = 'Approved'; 
+        } else if (['school_admin', 'super_admin', 'admin'].includes(req.user.role?.toLowerCase())) {
+            // [STRICT OVERSIGHT] Admin only sees passed-HOD materials
+            if (!status) {
+                query.status = { $nin: ['Pending HOD', 'Draft', 'HOD Rejected'] };
+            }
         }
 
         if (status) query.status = status;
@@ -95,6 +120,11 @@ exports.getMaterials = async (req, res) => {
         if (type) query.type = type;
         if (term) query.term = term;
         if (session) query.session = session;
+
+        // Added HOD filter for Review page
+        if ((req.user.role === 'teacher' || req.user.role === 'Teacher') && req.query.reviewOnly === 'true') {
+            query.hodId = req.user.userId || req.user._id;
+        }
 
         const materials = await LearningMaterial.find(query)
             .populate('teacherId', 'name email')
@@ -120,6 +150,47 @@ exports.getMyMaterials = async (req, res) => {
     } catch (error) {
         console.error('Error fetching your materials:', error);
         res.status(500).json({ message: 'Error fetching your materials', error: error.message });
+    }
+};
+
+// --- HOD Review (HOD) ---
+exports.hodReview = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { action, feedback } = req.body;
+        const userId = req.user.userId || req.user._id;
+
+        const material = await LearningMaterial.findOne({ _id: id, hodId: userId });
+        if (!material) {
+            return res.status(404).json({ message: 'Material not found or access denied' });
+        }
+
+        if (action === 'Approve') {
+            material.status = 'HOD Approved';
+        } else if (action === 'Reject') {
+            material.status = 'HOD Rejected';
+        }
+        
+        if (feedback) {
+            material.hodFeedback = feedback;
+        }
+
+        await material.save();
+
+        // Notify Teacher
+        const message = `HOD Review: Your material "${material.title}" has been ${material.status}`;
+        await createNotification(
+            material.teacherId,
+            message,
+            action === 'Approve' ? 'success' : 'error',
+            `/teacher/learning-materials`,
+            material._id
+        );
+
+        res.status(200).json({ success: true, material });
+    } catch (error) {
+        console.error('Error in HOD review:', error);
+        res.status(500).json({ message: 'Error in HOD review', error: error.message });
     }
 };
 

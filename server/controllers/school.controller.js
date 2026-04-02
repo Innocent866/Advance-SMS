@@ -1,16 +1,48 @@
 const School = require('../models/School');
 const User = require('../models/User');
+const Student = require('../models/Student');
+const Teacher = require('../models/Teacher');
 
 // @desc    Get school details (for dashboard)
 // @route   GET /api/schools/my-school
 // @access  Private (Admin)
 const getMySchool = async (req, res) => {
     try {
-        const school = await School.findById(req.user.schoolId);
+        let school = await School.findById(req.user.schoolId);
         if (!school) {
             return res.status(404).json({ message: 'School not found' });
         }
-        res.json(school);
+
+        // --- SELF-HEALING: Sync Subscription Limits ---
+        const subscriptionPlans = require('../config/subscriptionPlans');
+        const planConfig = subscriptionPlans[school.subscription?.plan || 'Free'];
+        
+        if (planConfig && (
+            school.subscription.maxStudents !== planConfig.maxStudents || 
+            school.subscription.maxTeachers !== planConfig.maxStaff
+        )) {
+            school.subscription.maxStudents = planConfig.maxStudents;
+            school.subscription.maxTeachers = planConfig.maxStaff;
+            await school.save();
+        }
+        // ----------------------------------------------
+
+        // Calculate live counts
+        const studentCount = await Student.countDocuments({ schoolId: req.user.schoolId });
+        const teacherCount = await User.countDocuments({ 
+            schoolId: req.user.schoolId, 
+            role: 'teacher' 
+        });
+
+        // Convert to object and inject live counts
+        const schoolObj = school.toObject();
+        schoolObj.mediaUsage = {
+            ...schoolObj.mediaUsage,
+            students: studentCount,
+            teachers: teacherCount
+        };
+
+        res.json(schoolObj);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
@@ -123,7 +155,22 @@ const updateSchool = async (req, res) => {
         }
 
         const school = await School.findByIdAndUpdate(req.user.schoolId, updateData, { new: true });
-        res.json(school);
+        
+        // Calculate live counts for the updated response too
+        const studentCount = await Student.countDocuments({ schoolId: req.user.schoolId });
+        const teacherCount = await User.countDocuments({ 
+            schoolId: req.user.schoolId, 
+            role: 'teacher' 
+        });
+
+        const schoolObj = school.toObject();
+        schoolObj.mediaUsage = {
+            ...schoolObj.mediaUsage,
+            students: studentCount,
+            teachers: teacherCount
+        };
+
+        res.json(schoolObj);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });

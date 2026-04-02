@@ -48,6 +48,31 @@ const studentSchema = new mongoose.Schema({
         enum: ['active', 'suspended', 'graduated'], 
         default: 'active' 
     },
+    enrollmentStatus: {
+        type: String,
+        enum: ['Day', 'Border'],
+        default: 'Day'
+    },
+
+    // --- Boarding Details (Active Allocation) ---
+    isBoarder: {
+        type: Boolean,
+        default: false
+    },
+    hostelId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Hostel'
+    },
+    roomId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Room'
+    },
+    bedNumber: {
+        type: String
+    },
+    boardingCheckInDate: {
+        type: Date
+    },
 
     // --- Academic & Learning Tracking ---
     // Note: In high-volume systems, these might be better as separate collections (VideoProgress, Submission).
@@ -64,6 +89,16 @@ const studentSchema = new mongoose.Schema({
         submittedAt: { type: Date, default: Date.now }
     }],
 
+    // --- Document Repository ---
+    documents: [{
+        name: { type: String, required: true },
+        url: { type: String, required: true },
+        type: { type: String },
+        uploadedAt: { type: Date, default: Date.now },
+        status: { type: String, enum: ['pending', 'verified', 'rejected'], default: 'pending' },
+        adminComment: { type: String }
+    }],
+
     // --- Parent Info (Future Phase) ---
     parentName: { type: String },
     parentPhone: { type: String },
@@ -76,5 +111,8 @@ const studentSchema = new mongoose.Schema({
 // Indexes for performance
 studentSchema.index({ schoolId: 1, classId: 1 });
 studentSchema.index({ studentId: 1 });
+studentSchema.index({ schoolId: 1, status: 1 });
+studentSchema.index({ schoolId: 1, isBoarder: 1 });
+studentSchema.index({ schoolId: 1, level: 1 });
 
 module.exports = mongoose.model('Student', studentSchema);

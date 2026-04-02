@@ -1,0 +1,12 @@
+app/(tabs)/settings.tsx(88,60): error TS2345: Argument of type '"/school-settings"' is not assignable to parameter of type '"/students" | "/teachers" | "/results" | "/notifications" | RelativePathString | ExternalPathString | "/login" | `/login?${string}` | `/login#${string}` | ... 99 more ... | { ...; }'.
+app/(tabs)/settings.tsx(94,60): error TS2345: Argument of type '"/user-management"' is not assignable to parameter of type '"/students" | "/teachers" | "/results" | "/notifications" | RelativePathString | ExternalPathString | "/login" | `/login?${string}` | `/login#${string}` | ... 99 more ... | { ...; }'.
+app/school-settings/academics.tsx(76,37): error TS7006: Parameter 'armName' implicitly has an 'any' type.
+app/school-settings/academics.tsx(112,25): error TS2322: Type '{ title: string; size: string; variant: "primary" | "outline"; onPress: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'size' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+app/school-settings/academics.tsx(143,22): error TS2304: Cannot find name 'EmptyState'.
+app/school-settings/sessions.tsx(85,25): error TS2322: Type '{ title: string; size: string; onPress: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'size' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+app/user-management/index.tsx(2,74): error TS2300: Duplicate identifier 'Alert'.
+app/user-management/index.tsx(46,48): error TS2345: Argument of type '"/user-management/students"' is not assignable to parameter of type '"/students" | "/teachers" | "/results" | "/notifications" | RelativePathString | ExternalPathString | "/login" | `/login?${string}` | `/login#${string}` | ... 99 more ... | { ...; }'.
+app/user-management/index.tsx(54,48): error TS2345: Argument of type '"/user-management/teachers"' is not assignable to parameter of type '"/students" | "/teachers" | "/results" | "/notifications" | RelativePathString | ExternalPathString | "/login" | `/login?${string}` | `/login#${string}` | ... 99 more ... | { ...; }'.
+app/user-management/index.tsx(119,10): error TS2300: Duplicate identifier 'Alert'.

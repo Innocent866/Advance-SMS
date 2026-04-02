@@ -29,13 +29,36 @@ exports.createReport = async (req, res) => {
             relatedStudentId,
             title,
             description,
-            attachment
+            attachment,
+            url,
+            attachmentFileName,
+            originalName,
+            attachmentFileType,
+            public_id,
+            mimeType,
+            resourceType,
+            size
         } = req.body;
 
         const schoolId = req.user.schoolId?._id || req.user.schoolId;
+        const userId = req.user.userId || req.user._id;
+
+        // Find teacher to get department/HOD
+        const Teacher = require('../models/Teacher');
+        const teacher = await Teacher.findOne({ userId }).populate('departmentId');
+        let departmentId = null;
+        let hodId = null;
+        let initialStatus = 'Submitted'; // Fallback if no department
+
+        if (teacher && teacher.departmentId) {
+            departmentId = teacher.departmentId._id;
+            hodId = teacher.departmentId.hodId;
+            initialStatus = 'Pending HOD';
+        }
+
         const report = new StaffReport({
             schoolId,
-            creatorId: req.user.userId || req.user._id, // Handle potential difference in auth middleware
+            creatorId: userId,
             senderRole,
             reportType,
             date: date || new Date(),
@@ -43,37 +66,103 @@ exports.createReport = async (req, res) => {
             relatedStudentId: relatedStudentId || null,
             title,
             description,
-            attachment,
-            status: 'Submitted'
+            attachment: attachment || url,
+            url: url || attachment,
+            attachmentFileName: attachmentFileName || originalName,
+            originalName: originalName || attachmentFileName,
+            attachmentFileType: attachmentFileType || mimeType,
+            public_id,
+            mimeType,
+            resourceType,
+            size,
+            uploadedBy: userId,
+            departmentId,
+            hodId,
+            status: initialStatus
         });
 
         await report.save();
 
-        // Notify Admins
-        // Find all users with 'school_admin' or 'super_admin' role in this school
-        const admins = await User.find({
-            schoolId,
-            role: { $in: ['school_admin', 'super_admin'] }
-        });
+        if (initialStatus === 'Pending HOD' && hodId) {
+            // Notify HOD
+            const notificationMessage = `New ${reportType} Report for Review: ${title} from ${req.user.name}`;
+            await createNotification(hodId, notificationMessage, 'info', `/department-review`, report._id);
+        } else {
+            // Notify Admins (Only if it bypassed HOD for some reason or HOD is not assigned)
+            const admins = await User.find({
+                schoolId,
+                role: { $in: ['school_admin', 'super_admin'] }
+            });
 
-        const notificationMessage = `New ${reportType} Report from ${req.user.name} (${senderRole}): ${title}`;
-        
-        // Parallel notification creation
-        const notificationPromises = admins.map(admin => 
-            createNotification(
-                admin._id, 
-                notificationMessage, 
-                'info', 
-                `/admin/reports`, 
-                report._id
-            )
-        );
-        await Promise.all(notificationPromises);
+            const notificationMessage = `New ${reportType} Report from ${req.user.name} (${senderRole}): ${title}`;
+            
+            const notificationPromises = admins.map(admin => 
+                createNotification(admin._id, notificationMessage, 'info', `/admin/reports`, report._id)
+            );
+            await Promise.all(notificationPromises);
+        }
 
         res.status(201).json({ message: 'Report submitted successfully', report });
     } catch (error) {
         console.error('Error creating report:', error);
         res.status(500).json({ message: 'Error submitting report', error: error.message });
+    }
+};
+
+// --- HOD Review (HOD) ---
+exports.hodReview = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { action, feedback } = req.body;
+        const userId = req.user.userId || req.user._id;
+
+        const report = await StaffReport.findOne({ _id: id, hodId: userId });
+        if (!report) {
+            return res.status(404).json({ message: 'Report not found or access denied' });
+        }
+
+        if (action === 'Approve') {
+            report.status = 'Submitted'; 
+        } else if (action === 'Reject') {
+            report.status = 'HOD Rejected';
+        }
+        
+        if (feedback) {
+            report.adminComments.push({
+                comment: `HOD Feedback: ${feedback}`,
+                adminId: userId,
+                createdAt: new Date()
+            });
+        }
+
+        await report.save();
+
+        // Notify Creator
+        await createNotification(
+            report.creatorId,
+            `Your report "${report.title}" has been ${report.status} by the HOD.`,
+            action === 'Approve' ? 'success' : 'error',
+            `/staff/reports`,
+            report._id
+        );
+
+        // If Approved, notify Admins
+        if (action === 'Approve') {
+            const admins = await User.find({
+                schoolId: report.schoolId,
+                role: { $in: ['school_admin', 'super_admin'] }
+            });
+            const adminMsg = `New HOD-Approved Report: ${report.title} from ${report.senderRole}`;
+            const adminNotifs = admins.map(admin => 
+                createNotification(admin._id, adminMsg, 'info', `/admin/reports`, report._id)
+            );
+            await Promise.all(adminNotifs);
+        }
+
+        res.status(200).json({ success: true, report });
+    } catch (error) {
+        console.error('Error in HOD review:', error);
+        res.status(500).json({ message: 'Error in HOD review', error: error.message });
     }
 };
 
@@ -83,7 +172,19 @@ exports.getAllReports = async (req, res) => {
         const { role, type, status, startDate, endDate } = req.query;
         
         const schoolId = req.user.schoolId?._id || req.user.schoolId;
+        const userRole = req.user.role;
+
         let query = { schoolId };
+
+        // [STRICT OVERSIGHT] Admin only sees passed-HOD reports
+        if (['school_admin', 'super_admin'].includes(userRole)) {
+            query.status = { $nin: ['Pending HOD', 'HOD Rejected'] };
+        }
+
+        // HOD Review View
+        if (req.query.reviewOnly === 'true') {
+            query.hodId = req.user.userId || req.user._id;
+        }
 
         if (role) query.senderRole = role;
         if (type) query.reportType = type;
@@ -245,7 +346,15 @@ exports.updateReport = async (req, res) => {
             date,
             title,
             description,
-            attachment
+            attachment,
+            url,
+            attachmentFileName,
+            originalName,
+            attachmentFileType,
+            public_id,
+            mimeType,
+            resourceType,
+            size
         } = req.body;
 
         const schoolId = req.user.schoolId?._id || req.user.schoolId;
@@ -267,7 +376,15 @@ exports.updateReport = async (req, res) => {
         report.date = date || report.date;
         report.title = title || report.title;
         report.description = description || report.description;
-        report.attachment = attachment || report.attachment;
+        report.attachment = attachment !== undefined ? attachment : (url !== undefined ? url : report.attachment);
+        report.url = url !== undefined ? url : (attachment !== undefined ? attachment : report.url);
+        report.attachmentFileName = attachmentFileName !== undefined ? attachmentFileName : (originalName !== undefined ? originalName : report.attachmentFileName);
+        report.originalName = originalName !== undefined ? originalName : (attachmentFileName !== undefined ? attachmentFileName : report.originalName);
+        report.attachmentFileType = attachmentFileType !== undefined ? attachmentFileType : (mimeType !== undefined ? mimeType : report.attachmentFileType);
+        report.public_id = public_id !== undefined ? public_id : report.public_id;
+        report.mimeType = mimeType !== undefined ? mimeType : report.mimeType;
+        report.resourceType = resourceType !== undefined ? resourceType : report.resourceType;
+        report.size = size !== undefined ? size : report.size;
 
         await report.save();
 

@@ -7,8 +7,14 @@ const userSchema = new mongoose.Schema({
     passwordHash: { type: String, required: true },
     role: { 
         type: String, 
-        enum: ['super_admin', 'school_admin', 'teacher', 'student', 'parent'], 
+        enum: ['super_admin', 'school_admin', 'assistant_admin', 'teacher', 'student', 'parent', 'hostel_warden', 'house_parent'], 
         required: true 
+    },
+    permissions: [{ type: String }], // For admins: ['school_setup', 'financials', 'reports', etc.]
+    emergencyContact: {
+        name: String,
+        relationship: String,
+        phone: String
     },
     classId: { type: mongoose.Schema.Types.ObjectId, ref: 'ClassLevel' }, // For students
     // For teachers: Specific assignment to Subject + Class + Arm
@@ -16,7 +22,17 @@ const userSchema = new mongoose.Schema({
         subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject' },
         classId: { type: mongoose.Schema.Types.ObjectId, ref: 'ClassLevel' },
         arm: { type: String } // Optional specific arm
-    }], 
+    }],
+    department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
+    // Password Recovery
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
+    // Email Verification
+    verificationToken: String,
+    isEmailVerified: { type: Boolean, default: false },
+    // 2FA on Login
+    twoFactorCode: String,
+    twoFactorExpire: Date,
     createdAt: { type: Date, default: Date.now }
 });
 

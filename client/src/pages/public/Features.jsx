@@ -44,7 +44,7 @@ const Features = () => {
             {/* 1. Hero Section */}
             <section className="relative py-20 lg:py-32 bg-gray-50 overflow-hidden">
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 filter contrast-125 brightness-100"></div>
-                <div className="absolute top-0 right-0 w-1/2 h-full bg-primary-50 rounded-bl-[100px] transform translate-x-1/3 z-0"></div>
+                <div className="absolute top-0 right-0 w-1/2 h-full bg-hub-50 rounded-bl-[100px] transform translate-x-1/3 z-0"></div>
                 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -53,23 +53,23 @@ const Features = () => {
                             animate="visible"
                             variants={staggerContainer}
                         >
-                            <motion.span variants={fadeInUp} className="inline-block px-4 py-1.5 rounded-full bg-primary-100 text-primary-700 font-bold text-sm mb-6">
+                            <motion.span variants={fadeInUp} className="inline-block px-4 py-1.5 rounded-full bg-hub-100 text-hub-700 font-bold text-sm mb-6">
                                 All-In-One Solution
                             </motion.span>
                             <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">
-                                Powerful Features Built for <span className="text-primary-600">Modern Schools</span>
+                                Powerful Features Built for <span className="text-hub-600">Modern Schools</span>
                             </motion.h1>
                             <motion.p variants={fadeInUp} className="text-xl text-gray-600 mb-8 leading-relaxed">
                                 From admissions to alumni, GT-SchoolHub unifies every aspect of your institution into one seamless, intelligent platform.
                             </motion.p>
                             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4">
                                 <Link to="/register-school">
-                                    <button className="px-8 py-4 rounded-full bg-primary-600 text-white font-bold text-lg shadow-lg hover:bg-primary-700 transition-all hover:translate-y-[-2px]">
+                                    <button className="px-8 py-4 rounded-full bg-hub-600 text-white font-bold text-lg shadow-lg hover:bg-hub-700 transition-all hover:translate-y-[-2px]">
                                         Get Started Free
                                     </button>
                                 </Link>
                                 <Link to="/pricing">
-                                    <button className="px-8 py-4 rounded-full bg-white text-primary-900 font-bold text-lg border border-primary-200 shadow-sm hover:bg-primary-50 transition-all flex items-center justify-center gap-2">
+                                    <button className="px-8 py-4 rounded-full bg-white text-hub-900 font-bold text-lg border border-hub-200 shadow-sm hover:bg-hub-50 transition-all flex items-center justify-center gap-2">
                                         View Pricing <ArrowRight size={18} />
                                     </button>
                                 </Link>
@@ -103,16 +103,16 @@ const Features = () => {
                                        <div className="col-span-12 md:col-span-9 space-y-4">
                                             <div className="grid grid-cols-3 gap-4">
                                                  {[1, 2, 3].map(i => (
-                                                     <div key={i} className="h-24 bg-primary-50 rounded-lg border border-primary-100 flex flex-col justify-end p-3">
+                                                     <div key={i} className="h-24 bg-hub-50 rounded-lg border border-hub-100 flex flex-col justify-end p-3">
                                                          <div className="w-8 h-8 bg-white rounded-full mb-2 shadow-sm"></div>
-                                                         <div className="h-2 w-16 bg-primary-200 rounded"></div>
+                                                         <div className="h-2 w-16 bg-hub-200 rounded"></div>
                                                      </div>
                                                  ))}
                                             </div>
                                             <div className="h-40 bg-gray-50 rounded-lg border border-gray-100 p-4">
                                                  <div className="flex items-end justify-between h-full gap-2">
                                                       {[40, 70, 50, 90, 60, 80, 50].map((h, i) => (
-                                                           <div key={i} className="w-full bg-primary-500 rounded-t" style={{height: `${h}%`}}></div>
+                                                           <div key={i} className="w-full bg-hub-500 rounded-t" style={{height: `${h}%`}}></div>
                                                       ))}
                                                  </div>
                                             </div>
@@ -163,9 +163,9 @@ const Features = () => {
                                  whileInView={{ opacity: 1, y: 0 }}
                                  viewport={{ once: true }}
                                  transition={{ delay: i * 0.1 }}
-                                 className="bg-gray-50 p-6 rounded-2xl border border-gray-100 hover:bg-white hover:shadow-lg hover:border-primary-100 transition-all group"
+                                 className="bg-gray-50 p-6 rounded-2xl border border-gray-100 hover:bg-white hover:shadow-lg hover:border-hub-100 transition-all group"
                              >
-                                 <div className="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center text-primary-600 mb-4 group-hover:bg-primary-600 group-hover:text-white transition-colors">
+                                 <div className="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center text-hub-600 mb-4 group-hover:bg-hub-600 group-hover:text-white transition-colors">
                                      <feat.icon size={24} />
                                  </div>
                                  <h3 className="text-lg font-bold text-gray-900 mb-2">{feat.title}</h3>
@@ -214,7 +214,7 @@ const Features = () => {
                                       <div className="flex justify-between items-center mb-6">
                                            <div className="h-4 w-32 bg-gray-200 rounded"></div>
                                            <div className="flex gap-2">
-                                                <div className="h-8 w-20 bg-primary-100 rounded"></div>
+                                                <div className="h-8 w-20 bg-hub-100 rounded"></div>
                                                 <div className="h-8 w-8 bg-gray-100 rounded"></div>
                                            </div>
                                       </div>
@@ -270,7 +270,7 @@ const Features = () => {
                                        <CreditCard size={64} className="text-gray-300 mb-4" />
                                        <div className="absolute bottom-10 left-10 right-10 bg-white p-4 rounded-xl shadow-lg border border-gray-100 flex items-center justify-between">
                                             <div className="flex items-center gap-3">
-                                                 <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
+                                                 <div className="w-10 h-10 rounded-full bg-hub-100 flex items-center justify-center text-hub-600">
                                                      <Shield size={20} />
                                                  </div>
                                                  <div>
@@ -360,7 +360,7 @@ const Features = () => {
                                   transition={{ delay: i * 0.2 }}
                                   className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm text-center relative"
                               >
-                                  <div className="w-16 h-16 mx-auto bg-primary-50 rounded-full flex items-center justify-center text-primary-600 mb-6 border-4 border-white shadow-sm font-bold text-xl">
+                                  <div className="w-16 h-16 mx-auto bg-hub-50 rounded-full flex items-center justify-center text-hub-600 mb-6 border-4 border-white shadow-sm font-bold text-xl">
                                       {i + 1}
                                   </div>
                                   <h3 className="font-bold text-lg text-gray-900 mb-2">{step.title}</h3>
@@ -388,12 +388,12 @@ const Features = () => {
                                        "Premium: AI tools & advanced analytics"
                                    ].map((item, i) => (
                                        <li key={i} className="flex items-center gap-3 text-gray-300">
-                                           <CheckCircle size={20} className="text-primary-400" /> {item}
+                                           <CheckCircle size={20} className="text-hub-400" /> {item}
                                        </li>
                                    ))}
                                </ul>
                                <Link to="/pricing">
-                                   <button className="px-8 py-3 rounded-full bg-primary-600 text-white font-bold hover:bg-primary-500 transition-all">
+                                   <button className="px-8 py-3 rounded-full bg-hub-600 text-white font-bold hover:bg-hub-500 transition-all">
                                        Upgrade Your Plan
                                    </button>
                                </Link>
@@ -406,14 +406,14 @@ const Features = () => {
                                     <div className="h-1 w-full bg-gray-700 rounded mb-2"></div>
                                     <div className="h-1 w-2/3 bg-gray-700 rounded"></div>
                                </div>
-                               <div className="bg-gradient-to-br from-primary-900 to-primary-800 p-6 rounded-2xl border border-primary-500 shadow-xl transform scale-105 z-10 relative">
-                                    <div className="absolute top-0 right-0 bg-primary-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">POPULAR</div>
+                               <div className="bg-gradient-to-br from-hub-900 to-hub-800 p-6 rounded-2xl border border-hub-500 shadow-xl transform scale-105 z-10 relative">
+                                    <div className="absolute top-0 right-0 bg-hub-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">POPULAR</div>
                                     <div className="text-white font-bold mb-2">Premium</div>
                                     <div className="text-2xl font-bold mb-4">₦500<span className="text-sm font-normal opacity-70">/student</span></div>
                                     <div className="space-y-2">
-                                         <div className="flex items-center gap-2 text-xs text-primary-200"><CheckCircle size={12}/> AI Marking</div>
-                                         <div className="flex items-center gap-2 text-xs text-primary-200"><CheckCircle size={12}/> Finance</div>
-                                         <div className="flex items-center gap-2 text-xs text-primary-200"><CheckCircle size={12}/> CBT Exams</div>
+                                         <div className="flex items-center gap-2 text-xs text-hub-200"><CheckCircle size={12}/> AI Marking</div>
+                                         <div className="flex items-center gap-2 text-xs text-hub-200"><CheckCircle size={12}/> Finance</div>
+                                         <div className="flex items-center gap-2 text-xs text-hub-200"><CheckCircle size={12}/> CBT Exams</div>
                                     </div>
                                </div>
                           </div>
@@ -426,25 +426,25 @@ const Features = () => {
                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                       <div className="flex flex-wrap justify-center gap-8 md:gap-16 items-center opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
                            <div className="flex items-center gap-2 font-bold text-xl text-gray-800">
-                               <Shield size={24} className="text-primary-600" /> Secure Data
+                               <Shield size={24} className="text-hub-600" /> Secure Data
                            </div>
                            <div className="flex items-center gap-2 font-bold text-xl text-gray-800">
-                               <Lock size={24} className="text-primary-600" /> Encrypted Payments
+                               <Lock size={24} className="text-hub-600" /> Encrypted Payments
                            </div>
                            <div className="flex items-center gap-2 font-bold text-xl text-gray-800">
-                               <Award size={24} className="text-primary-600" /> 99.9% Uptime
+                               <Award size={24} className="text-hub-600" /> 99.9% Uptime
                            </div>
                            <div className="flex items-center gap-2 font-bold text-xl text-gray-800">
-                               <Users size={24} className="text-primary-600" /> Verified Schools
+                               <Users size={24} className="text-hub-600" /> Verified Schools
                            </div>
                       </div>
                  </div>
             </section>
 
             {/* 7. Final Call-To-Action */}
-            <section className="py-24 relative overflow-hidden bg-primary-600">
+            <section className="py-24 relative overflow-hidden bg-hub-600">
                  <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 filter contrast-125 brightness-100"></div>
-                 <div className="absolute inset-0 bg-gradient-to-r from-primary-900 via-primary-700 to-primary-500 opacity-90"></div>
+                 <div className="absolute inset-0 bg-gradient-to-r from-hub-900 via-hub-700 to-hub-500 opacity-90"></div>
                  
                  <div className="max-w-4xl mx-auto px-4 relative z-10 text-center text-white">
                       <motion.h2 
@@ -460,7 +460,7 @@ const Features = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
-                        className="text-xl text-primary-100 mb-12 max-w-2xl mx-auto"
+                        className="text-xl text-hub-100 mb-12 max-w-2xl mx-auto"
                       >
                           Join hundreds of forward-thinking schools transforming education with GT-SchoolHub.
                       </motion.p>
@@ -473,7 +473,7 @@ const Features = () => {
                         className="flex flex-col sm:flex-row gap-5 justify-center"
                       >
                           <Link to="/register-school">
-                              <button className="w-full sm:w-auto px-10 py-5 rounded-full bg-white text-primary-900 font-bold text-lg shadow-2xl hover:bg-gray-100 transition-all hover:scale-105">
+                              <button className="w-full sm:w-auto px-10 py-5 rounded-full bg-white text-hub-900 font-bold text-lg shadow-2xl hover:bg-gray-100 transition-all hover:scale-105">
                                   Create Free Account
                               </button>
                           </Link>

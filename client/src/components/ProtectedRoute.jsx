@@ -1,8 +1,8 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const ProtectedRoute = ({ role, feature, children }) => {
-    const { user, loading, checkAccess } = useAuth();
+const ProtectedRoute = ({ role, feature, module, children }) => {
+    const { user, loading, checkAccess, checkFeature } = useAuth();
     const location = useLocation();
 
     if (loading) {
@@ -26,7 +26,32 @@ const ProtectedRoute = ({ role, feature, children }) => {
         }
     }
     
-    // Feature Check
+    // Module Check (School-level toggles)
+    if (module && !checkFeature(module)) {
+        return (
+            <div className="flex flex-col items-center justify-center h-screen bg-gray-50 dark:bg-gray-900 p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-10 max-w-md text-center border border-gray-100 dark:border-gray-700">
+                    <div className="bg-amber-50 dark:bg-amber-900/20 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-8">
+                        <svg className="w-12 h-12 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Module Unavailable</h2>
+                    <p className="text-gray-600 dark:text-gray-300 mb-10 leading-relaxed">
+                        This module has been disabled by your school administrator. If you believe this is an error, please contact your IT department.
+                    </p>
+                    <button 
+                        onClick={() => window.history.back()} 
+                        className="w-full px-8 py-4 bg-primary-600 text-white rounded-2xl font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-200"
+                    >
+                        Return to Safety
+                    </button>
+                </div>
+            </div>
+        );
+    }
+    
+    // Feature Check (Plan-level limits)
     if (feature && !checkAccess(feature)) {
          return (
             <div className="flex flex-col items-center justify-center h-screen bg-gray-50 dark:bg-gray-900 p-6 transition-colors duration-200">

@@ -37,9 +37,9 @@ export default defineConfig(({ mode }) => ({
     port: 5173,
     proxy: {
       "/api": {
-        target: "https://gt-schoolhub.onrender.com",
+        target: "http://localhost:5001",
         changeOrigin: true,
-        secure: true,
+        secure: false,
       },
     },
   } : undefined,

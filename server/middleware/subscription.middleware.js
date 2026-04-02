@@ -7,6 +7,9 @@ const subscriptionPlans = require('../config/subscriptionPlans');
 const checkFeatureAccess = (featureName) => {
     return async (req, res, next) => {
         try {
+            if (!req.user) {
+                return res.status(401).json({ message: 'Not authorized, no user data' });
+            }
             const userSchoolId = req.user.schoolId._id || req.user.schoolId;
             const school = await School.findById(userSchoolId);
 
@@ -35,6 +38,9 @@ const checkFeatureAccess = (featureName) => {
 const checkResourceLimit = (resourceType) => {
     return async (req, res, next) => {
         try {
+            if (!req.user) {
+                return res.status(401).json({ message: 'Not authorized, no user data' });
+            }
             const userSchoolId = req.user.schoolId._id || req.user.schoolId;
             const school = await School.findById(userSchoolId);
 
@@ -90,6 +96,9 @@ const checkResourceLimit = (resourceType) => {
 
 const checkSubscription = async (req, res, next) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({ message: 'Not authorized, no user data' });
+        }
         const userSchoolId = req.user.schoolId._id || req.user.schoolId;
         const school = await School.findById(userSchoolId);
 

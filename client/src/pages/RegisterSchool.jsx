@@ -43,6 +43,7 @@ const RegisterSchool = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [showModal, setShowModal] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -67,7 +68,20 @@ const RegisterSchool = () => {
             setIsLoading(false);
             
             if (res.isVerified === false || res.message) {
-                 setSuccess(res.message || 'Registration successful. Account pending verification.');
+                 setShowModal(true);
+                 // Clear form fields
+                 setFormData({
+                    schoolName: '',
+                    schoolEmail: '',
+                    adminName: '',
+                    adminEmail: '',
+                    password: '',
+                    confirmPassword: '',
+                    address: '',
+                    phone: '',
+                    schoolType: 'primary_secondary',
+                    state: ''
+                 });
             } else {
                  navigate('/dashboard');
             }
@@ -76,6 +90,46 @@ const RegisterSchool = () => {
             setError(err.response?.data?.message || 'Registration failed. Please try again.');
         }
     };
+
+    const SuccessModal = () => (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center relative overflow-hidden"
+            >
+                <div className="absolute top-0 left-0 w-full h-2 bg-green-500"></div>
+                
+                <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600">
+                    <CheckCircle size={40} />
+                </div>
+                
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Submitted Successfully</h2>
+                <p className="text-gray-600 mb-6 font-medium">
+                    It will take a few days to verify the School Account. An email will be sent after verification.
+                </p>
+                
+                <div className="bg-gray-50 rounded-2xl p-4 mb-8 text-left space-y-3 border border-gray-100">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest text-center mb-1">For Emergency</p>
+                    <div className="flex items-center gap-3 text-gray-700">
+                        <Phone size={18} className="text-primary-600" />
+                        <span className="font-semibold">09138095613</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-gray-700">
+                        <Mail size={18} className="text-primary-600" />
+                        <span className="font-semibold">goldima@gt-schoolhub.com.ng</span>
+                    </div>
+                </div>
+                
+                <button 
+                    onClick={() => navigate('/')}
+                    className="w-full py-4 bg-primary-900 text-white rounded-xl font-bold hover:bg-black transition-all shadow-lg flex items-center justify-center gap-2"
+                >
+                    Go Back
+                </button>
+            </motion.div>
+        </div>
+    );
 
     return (
         <div className="h-screen flex bg-white overflow-hidden">
@@ -124,6 +178,9 @@ const RegisterSchool = () => {
                     &copy; {new Date().getFullYear()} Goldima Tech. All rights reserved.
                 </div>
             </div>
+
+            {/* Success Modal Overlay */}
+            {showModal && <SuccessModal />}
 
             {/* Right Side: Form */}
             <div className="w-full lg:w-1/2 h-full overflow-y-auto">

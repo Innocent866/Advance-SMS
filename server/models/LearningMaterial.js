@@ -50,15 +50,32 @@ const learningMaterialSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    departmentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Department',
+        index: true
+    },
+    hodId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        index: true
+    },
     status: {
         type: String,
-        enum: ['Draft', 'Pending Approval', 'Approved', 'Rejected'],
+        enum: ['Draft', 'Pending HOD', 'HOD Approved', 'HOD Rejected', 'Pending Approval', 'Approved', 'Rejected'],
         default: 'Draft',
         index: true
+    },
+    hodFeedback: {
+        type: String
     },
     adminFeedback: {
         type: String
     },
+    // Metadata for multi-format support
+    originalName: { type: String },
+    mimeType: { type: String },
+    size: { type: Number },
     downloadCount: {
         type: Number,
         default: 0

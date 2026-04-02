@@ -13,24 +13,28 @@ const {
     incrementView
 } = require('../controllers/learning.controller');
 const { protect } = require('../middleware/auth.middleware');
+const { checkFeature } = require('../middleware/feature.middleware');
+
+router.use(protect);
+router.use(checkFeature('learningManagement'));
 
 router.route('/videos')
-    .post(protect, createVideo)
-    .get(protect, getVideos);
+    .post(createVideo)
+    .get(getVideos);
 
-router.post('/videos/:id/view', protect, incrementView);
+router.post('/videos/:id/view', incrementView);
 
-router.post('/quizzes', protect, createQuiz);
-router.get('/quizzes/:videoId', protect, getQuizByVideoId);
+router.post('/quizzes', createQuiz);
+router.get('/quizzes/:videoId', getQuizByVideoId);
 
 router.route('/submissions')
-    .post(protect, submitQuiz)
-    .get(protect, getMySubmissions);
+    .post(submitQuiz)
+    .get(getMySubmissions);
 
-router.get('/subjects', protect, getStudentSubjects);
+router.get('/subjects', getStudentSubjects);
 
 // Progress & History
-router.post('/progress/:videoId', protect, markVideoComplete);
-router.get('/history', protect, getLearningHistory);
+router.post('/progress/:videoId', markVideoComplete);
+router.get('/history', getLearningHistory);
 
 module.exports = router;

@@ -75,7 +75,7 @@ const HelpCategory = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Topic Not Found</h2>
-          <Link to="/help" className="text-primary-600 font-bold hover:underline">Return to Help Center</Link>
+          <Link to="/help" className="text-hub-600 font-bold hover:underline">Return to Help Center</Link>
         </div>
       </div>
     );
@@ -87,7 +87,7 @@ const HelpCategory = () => {
         
         {/* Breadcrumb / Back */}
         <div className="mb-8">
-            <Link to="/help" className="inline-flex items-center text-gray-500 hover:text-primary-600 font-medium transition-colors">
+            <Link to="/help" className="inline-flex items-center text-gray-500 hover:text-hub-600 font-medium transition-colors">
                 <ArrowLeft size={18} className="mr-2" /> Back to Help Center
             </Link>
         </div>
@@ -110,12 +110,12 @@ const HelpCategory = () => {
                 >
                     <Link to="#" className="flex items-center justify-between p-6 hover:bg-gray-50 transition-colors group">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-primary-50 text-primary-600 rounded-lg flex items-center justify-center group-hover:bg-primary-600 group-hover:text-white transition-colors">
+                            <div className="w-10 h-10 bg-hub-50 text-hub-600 rounded-lg flex items-center justify-center group-hover:bg-hub-600 group-hover:text-white transition-colors">
                                 <FileText size={20} />
                             </div>
-                            <span className="font-medium text-gray-900 group-hover:text-primary-700 transition-colors">{article.title}</span>
+                            <span className="font-medium text-gray-900 group-hover:text-hub-700 transition-colors">{article.title}</span>
                         </div>
-                        <ChevronRight size={20} className="text-gray-400 group-hover:text-primary-600 transition-colors" />
+                        <ChevronRight size={20} className="text-gray-400 group-hover:text-hub-600 transition-colors" />
                     </Link>
                 </motion.div>
             ))}
@@ -123,7 +123,7 @@ const HelpCategory = () => {
 
         {/* Contact Note */}
         <div className="mt-12 text-center text-gray-500 text-sm">
-            <p>Can't find what you're looking for? <Link to="/contact" className="text-primary-600 font-bold hover:underline">Contact Support</Link></p>
+            <p>Can't find what you're looking for? <Link to="/contact" className="text-hub-600 font-bold hover:underline">Contact Support</Link></p>
         </div>
 
       </div>

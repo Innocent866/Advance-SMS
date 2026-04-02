@@ -108,6 +108,9 @@ const submitResults = async (req, res) => {
             // Let's fail fast if any error? Or collect all errors.
             // Requirement says "Show clear error messages".
             
+            // Round total to nearest integer to conform to discrete grading scales
+            total = Math.round(total);
+
             // Determine Grade (Dynamic scale)
             let grade = 'F';
             let remark = 'Fail';

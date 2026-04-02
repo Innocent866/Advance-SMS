@@ -19,9 +19,14 @@ import {
     ClipboardList,
     PenTool,
     FileText,
-    CreditCard
+    CreditCard,
+    MessageSquare,
+    Utensils,
+    Heart,
+    ShieldAlert,
+    Zap
 } from 'lucide-react';
-import logo from '../assets/logo.png';
+const logo = '/logo.png';
 
 
 const Sidebar = () => {
@@ -35,12 +40,24 @@ const Sidebar = () => {
     const schoolLogo = hasBranding ? (user?.schoolId?.logoUrl || logo) : null; 
     const defaultLogo = '/logo.png'; 
 
-    const isActive = (path) => location.pathname === path;
+    const isActive = (path) => {
+        const [targetPath, targetSearch] = path.split('?');
+        const currentPath = location.pathname;
+        const currentSearch = location.search.substring(1); // remove ?
+
+        if (targetSearch) {
+            return currentPath === targetPath && currentSearch.includes(targetSearch);
+        }
+        // If target has no search, only match if current has no search or different search
+        return currentPath === targetPath && (!currentSearch || !location.search.includes('mode=promotion'));
+    };
 
     const navItems = [
-        { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['super_admin', 'school_admin', 'teacher', 'student'] },
+        { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['super_admin', 'school_admin', 'teacher', 'student', 'house_parent'] },
         { path: '/teachers', label: 'Staff Management', icon: Users, roles: ['school_admin'] },
+        { path: '/admin/management', label: 'Admin Management', icon: ShieldCheck, roles: ['school_admin'] },
         { path: '/students', label: 'Students', icon: GraduationCap, roles: ['school_admin'] },
+        { path: '/students?mode=promotion', label: 'Student Promotion', icon: Zap, roles: ['school_admin'] },
         { path: '/my-students', label: 'My Students', icon: GraduationCap, roles: ['teacher'] },
         { path: '/lessons', label: 'Lesson Plan', icon: BookOpen, roles: ['teacher'] },
         { path: '/teacher-profile', label: 'My Profile', icon: User, roles: ['teacher'] },
@@ -60,8 +77,21 @@ const Sidebar = () => {
         { path: '/attendance/history', label: 'Attendance Report', icon: CheckCircle, roles: ['school_admin', 'super_admin'] },
         { path: '/settings', label: 'School Settings', icon: Building, roles: ['school_admin'] },
         { path: '/finance', label: 'Financial Management', icon: CreditCard, roles: ['school_admin', 'super_admin'] },
+        { path: '/admin/departments', label: 'Manage Departments', icon: Building, roles: ['school_admin'] },
+        { path: '/department/review', label: 'Department Review', icon: FileText, roles: ['teacher'] },
         { path: '/super-admin', label: 'Platform Verification', icon: ShieldCheck, roles: ['super_admin'] },
+        { path: '/boarding', label: 'Boarding Management', icon: Home, roles: ['school_admin', 'super_admin', 'hostel_warden'] },
+        
+        // Boarding Fast-Track (Direct Access)
+        { path: '/boarding/roll-call', label: 'Daily Roll Call', icon: CheckCircle, roles: ['house_parent'] },
+        { path: '/boarding/leaves', label: 'Leave & Exits', icon: Clock, roles: ['house_parent'] },
+        { path: '/boarding/meals', label: 'Meal Attendance', icon: Utensils, roles: ['house_parent'] },
+        { path: '/boarding/medical', label: 'Medical Records', icon: Heart, roles: ['house_parent'] },
+        { path: '/boarding/discipline', label: 'Hostel Discipline', icon: ShieldAlert, roles: ['house_parent'] },
+        { path: '/boarding/reports', label: 'Boarding Reports', icon: FileText, roles: ['house_parent'] },
+
         { path: '/staff/reports', label: 'Staff Reports', icon: FileText, roles: ['teacher'], feature: 'staffAdminComm' },
+        { path: '/staff/chat', label: 'Staff Chat', icon: MessageSquare, roles: ['school_admin', 'teacher', 'super_admin', 'house_parent', 'hostel_warden'], feature: 'staffAdminComm' },
         
         // Health Module
         
@@ -87,6 +117,12 @@ const Sidebar = () => {
         if (!item.roles.includes(user?.role)) return false;
         // Feature check handling
         if (item.feature && !checkAccess(item.feature)) return false;
+        
+        // [STRICT OVERSIGHT] HOD check for Department Review
+        if (item.path === '/department/review' && user?.role === 'teacher' && !user?.isHod) {
+            return false;
+        }
+
         return true;
     });
 

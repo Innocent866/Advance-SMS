@@ -78,9 +78,9 @@ const Contact = () => {
         <div className="bg-white overflow-hidden">
             
             {/* 1. Hero Section */}
-            <section className="relative py-20 lg:py-32 bg-primary-900 text-white overflow-hidden">
+            <section className="relative py-20 lg:py-32 bg-hub-900 text-white overflow-hidden">
                  <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
-                 <div className="absolute top-0 right-0 w-2/3 h-full bg-primary-800 rounded-l-full opacity-50 blur-3xl transform translate-x-1/3"></div>
+                 <div className="absolute top-0 right-0 w-2/3 h-full bg-hub-800 rounded-l-full opacity-50 blur-3xl transform translate-x-1/3"></div>
                  
                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
                      <motion.div
@@ -90,14 +90,14 @@ const Contact = () => {
                         className="max-w-3xl mx-auto"
                      >
                          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight">
-                             Let’s Build a <span className="text-primary-300">Smarter School</span> Together
+                             Let’s Build a <span className="text-hub-300">Smarter School</span> Together
                          </h1>
-                         <p className="text-xl text-primary-100 mb-10 leading-relaxed">
+                         <p className="text-xl text-hub-100 mb-10 leading-relaxed">
                              GT-SchoolHub is here to help schools manage academics, payments, health records, and parent engagement seamlessly.
                          </p>
                          <div className="flex flex-col sm:flex-row gap-4 justify-center">
                              <a href="#contact-form">
-                                 <button className="px-8 py-4 rounded-full bg-white text-primary-900 font-bold text-lg shadow-lg hover:bg-primary-50 transition-all hover:-translate-y-1">
+                                 <button className="px-8 py-4 rounded-full bg-white text-hub-900 font-bold text-lg shadow-lg hover:bg-hub-50 transition-all hover:-translate-y-1">
                                      Send a Message
                                  </button>
                              </a>
@@ -129,11 +129,11 @@ const Contact = () => {
                                 transition={{ delay: i * 0.1 }}
                                 className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 flex flex-col items-center text-center hover:transform hover:-translate-y-2 transition-all duration-300"
                             >
-                                <div className="w-14 h-14 bg-primary-50 rounded-full flex items-center justify-center text-primary-600 mb-4">
+                                <div className="w-14 h-14 bg-hub-50 rounded-full flex items-center justify-center text-hub-600 mb-4">
                                     <item.icon size={28} />
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
-                                <p className="text-primary-600 font-medium">{item.info}</p>
+                                <p className="text-hub-600 font-medium">{item.info}</p>
                             </motion.a>
                         ))}
                     </div>
@@ -157,27 +157,27 @@ const Contact = () => {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
                                         <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
-                                        <input type="text" id="fullName" name="from_name" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" placeholder="Enter your name" required />
+                                        <input type="text" id="fullName" name="from_name" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all" placeholder="Enter your name" required />
                                     </div>
                                     <div>
                                         <label htmlFor="schoolName" className="block text-sm font-semibold text-gray-700 mb-2">School Name</label>
-                                        <input type="text" id="schoolName" name="school_name" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" placeholder="Enter school name" required />
+                                        <input type="text" id="schoolName" name="school_name" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all" placeholder="Enter school name" required />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
                                         <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-                                        <input type="email" id="email" name="from_email" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" placeholder="john@school.com" required />
+                                        <input type="email" id="email" name="from_email" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all" placeholder="john@school.com" required />
                                     </div>
                                     <div>
                                         <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
-                                        <input type="tel" id="phone" name="phone_number" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all" placeholder="+234..." required />
+                                        <input type="tel" id="phone" name="phone_number" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all" placeholder="+234..." required />
                                     </div>
                                 </div>
                                 <div>
                                     <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 mb-2">Subject</label>
                                     <div className="relative">
-                                         <select id="subject" name="subject" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all appearance-none bg-white" required>
+                                         <select id="subject" name="subject" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all appearance-none bg-white" required>
                                             <option value="" disabled selected>Select a subject</option>
                                             <option value="Request a Demo">Request a Demo</option>
                                             <option value="Technical Support">Technical Support</option>
@@ -189,7 +189,7 @@ const Contact = () => {
                                 </div>
                                 <div>
                                      <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">Message</label>
-                                     <textarea id="message" name="message" rows={4} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all resize-none" placeholder="Tell us about your needs..." required></textarea>
+                                     <textarea id="message" name="message" rows={4} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-hub-500 focus:border-transparent outline-none transition-all resize-none" placeholder="Tell us about your needs..." required></textarea>
                                 </div>
 
                                 <button 
@@ -200,7 +200,7 @@ const Contact = () => {
                                         ? 'bg-green-600 hover:bg-green-700' 
                                         : formStatus === 'error' 
                                             ? 'bg-red-600 hover:bg-red-700'
-                                            : 'bg-primary-600 hover:bg-primary-700'
+                                            : 'bg-hub-600 hover:bg-hub-700'
                                     }`}
                                 >
                                     {formStatus === 'idle' && (
@@ -239,15 +239,15 @@ const Contact = () => {
                                      <div className="absolute inset-0 bg-blue-50 pattern-grid-lg opacity-20"></div>
                                      <div className="absolute inset-0 flex items-center justify-center">
                                           <div className="text-center relative z-10">
-                                              <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center text-white shadow-2xl mx-auto mb-4 animate-bounce">
+                                              <div className="w-16 h-16 bg-hub-600 rounded-full flex items-center justify-center text-white shadow-2xl mx-auto mb-4 animate-bounce">
                                                   <MapPin size={32} />
                                               </div>
                                               <h3 className="font-bold text-gray-900 text-lg">GT-SchoolHub HQ</h3>
                                               <p className="text-sm text-gray-600">Lagos, Nigeria</p>
                                           </div>
                                           {/* Decorative circles representing coverage */}
-                                          <div className="absolute w-64 h-64 bg-primary-200 rounded-full opacity-20 animate-pulse"></div>
-                                          <div className="absolute w-96 h-96 bg-primary-100 rounded-full opacity-10"></div>
+                                          <div className="absolute w-64 h-64 bg-hub-200 rounded-full opacity-20 animate-pulse"></div>
+                                          <div className="absolute w-96 h-96 bg-hub-100 rounded-full opacity-10"></div>
                                      </div>
                                 </div>
                             </motion.div>
@@ -257,15 +257,15 @@ const Contact = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: 0.2 }}
-                                className="bg-primary-900 rounded-3xl p-8 text-center text-white relative overflow-hidden"
+                                className="bg-hub-900 rounded-3xl p-8 text-center text-white relative overflow-hidden"
                             >
                                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
                                 <h3 className="text-2xl font-bold mb-4 relative z-10">Want GT-SchoolHub for Your School?</h3>
-                                <p className="text-primary-200 mb-8 relative z-10">
+                                <p className="text-hub-200 mb-8 relative z-10">
                                     Schedule a personalized demo and see how we can transform your school management.
                                 </p>
                                 <Link to="/register-school" className="relative z-10">
-                                    <button className="px-8 py-3 rounded-full bg-white text-primary-900 font-bold hover:bg-gray-100 transition-all shadow-lg w-full sm:w-auto">
+                                    <button className="px-8 py-3 rounded-full bg-white text-hub-900 font-bold hover:bg-gray-100 transition-all shadow-lg w-full sm:w-auto">
                                         Start a Free Demo
                                     </button>
                                 </Link>
@@ -279,7 +279,7 @@ const Contact = () => {
              <section className="py-24 bg-white">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                      <div className="text-center mb-16">
-                         <span className="inline-block px-4 py-1.5 rounded-full bg-primary-50 text-primary-600 font-bold text-sm mb-4">Support</span>
+                         <span className="inline-block px-4 py-1.5 rounded-full bg-hub-50 text-hub-600 font-bold text-sm mb-4">Support</span>
                          <h2 className="text-3xl font-bold text-gray-900">Frequently Asked Questions</h2>
                          <p className="mt-4 text-gray-600">Common questions about getting started with GT-SchoolHub.</p>
                      </div>
@@ -298,7 +298,7 @@ const Contact = () => {
                                     className="w-full flex items-center justify-between p-6 bg-white hover:bg-gray-50 transition-colors text-left"
                                  >
                                      <span className="font-bold text-gray-900 text-lg">{item.q}</span>
-                                     {activeAccordion === index ? <ChevronUp className="text-primary-600" /> : <ChevronDown className="text-gray-400" />}
+                                     {activeAccordion === index ? <ChevronUp className="text-hub-600" /> : <ChevronDown className="text-gray-400" />}
                                  </button>
                                  {activeAccordion === index && (
                                      <div className="p-6 pt-0 bg-white text-gray-600 leading-relaxed border-t border-gray-50">
@@ -317,21 +317,21 @@ const Contact = () => {
                     <h2 className="text-2xl font-bold text-gray-900 mb-8">Trusted by Schools. Built for the Future.</h2>
                     <div className="flex flex-wrap justify-center gap-8 md:gap-16 items-center opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
                            <div className="flex items-center gap-2 font-bold text-lg text-gray-800">
-                               <Shield size={24} className="text-primary-600" /> Secure Payments
+                               <Shield size={24} className="text-hub-600" /> Secure Payments
                            </div>
                            <div className="flex items-center gap-2 font-bold text-lg text-gray-800">
-                               <Lock size={24} className="text-primary-600" /> Role-Based Access
+                               <Lock size={24} className="text-hub-600" /> Role-Based Access
                            </div>
                            <div className="flex items-center gap-2 font-bold text-lg text-gray-800">
-                               <Users size={24} className="text-primary-600" /> Parent Portals
+                               <Users size={24} className="text-hub-600" /> Parent Portals
                            </div>
                            <div className="flex items-center gap-2 font-bold text-lg text-gray-800">
-                               <CheckCircle size={24} className="text-primary-600" /> AI-Powered
+                               <CheckCircle size={24} className="text-hub-600" /> AI-Powered
                            </div>
                     </div>
                     <div className="mt-12">
                          <Link to="/register-school">
-                            <button className="px-10 py-4 rounded-full bg-primary-600 text-white font-bold text-lg shadow-xl hover:bg-primary-700 transition-all hover:-translate-y-1">
+                            <button className="px-10 py-4 rounded-full bg-hub-600 text-white font-bold text-lg shadow-xl hover:bg-hub-700 transition-all hover:-translate-y-1">
                                 Get Started with GT-SchoolHub Today
                             </button>
                          </Link>

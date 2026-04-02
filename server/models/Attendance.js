@@ -56,5 +56,6 @@ const attendanceSchema = new mongoose.Schema({
 // Ensure one attendance record per class per day
 // Ensure one attendance record per class + arm per day
 attendanceSchema.index({ classId: 1, arm: 1, date: 1 }, { unique: true });
+attendanceSchema.index({ schoolId: 1, date: 1 });
 
 module.exports = mongoose.model('Attendance', attendanceSchema);
