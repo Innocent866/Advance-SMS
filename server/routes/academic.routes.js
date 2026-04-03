@@ -10,6 +10,7 @@ const {
     createSession,
     getSessions,
     activateSession,
+    deleteSession,
     assignTeacherToSubject,
     updateClassSettings
 } = require('../controllers/academic.controller');
@@ -30,6 +31,9 @@ router.post('/classes/settings', protect, admin, updateClassSettings); // POST {
 router.route('/sessions')
     .post(protect, admin, createSession)
     .get(protect, getSessions);
+
+router.route('/sessions/:id')
+    .delete(protect, admin, deleteSession);
 
 router.post('/sessions/activate', protect, admin, activateSession);
 

@@ -4,6 +4,8 @@ const cache = require('../utils/cache');
 const AcademicSession = require('../models/AcademicSession');
 const User = require('../models/User');
 const Student = require('../models/Student');
+const Result = require('../models/Result');
+const AssessmentConfig = require('../models/AssessmentConfig');
 
 // --- Subjects ---
 const createSubject = async (req, res) => {
@@ -235,6 +237,40 @@ const activateSession = async (req, res) => {
     }
 };
 
+const deleteSession = async (req, res) => {
+    try {
+        const session = await AcademicSession.findById(req.params.id);
+        if (!session) {
+            return res.status(404).json({ message: 'Session not found' });
+        }
+
+        // Safety check: Are there results for this session?
+        const resultsExist = await Result.exists({ 
+            schoolId: req.user.schoolId._id || req.user.schoolId, 
+            session: session.name 
+        });
+
+        if (resultsExist) {
+            return res.status(400).json({ 
+                message: 'Cannot delete session. Academic results are already recorded for this session. Please clear results first if you wish to proceed.' 
+            });
+        }
+
+        // Optional: Delete associated assessment configs?
+        // Let's also delete configs to keep it clean, but only if user meant to wipe it.
+        await AssessmentConfig.deleteMany({
+            schoolId: req.user.schoolId._id || req.user.schoolId,
+            session: session.name
+        });
+
+        await session.deleteOne();
+        res.json({ message: 'Session deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 // --- Teacher Assignment ---
 const assignTeacherToSubject = async (req, res) => {
     const { teacherId, subjectId, classId, arm } = req.body;
@@ -306,6 +342,7 @@ module.exports = {
     createSession,
     getSessions,
     activateSession,
+    deleteSession,
     assignTeacherToSubject,
     updateClassSettings
 };

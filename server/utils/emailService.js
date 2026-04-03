@@ -28,6 +28,8 @@ const sendEmail = async (options) => {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
         },
+        // Force IPv4 to resolve 'ENETUNREACH' errors on systems without IPv6 routing
+        family: 4
     });
 
     const message = {

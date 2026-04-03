@@ -39,6 +39,10 @@ const verifySchool = async (req, res) => {
             { isEmailVerified: true }
         );
 
+        // Fetch School Admin details for personalization
+        const adminUser = await User.findOne({ schoolId: school._id, role: 'school_admin' });
+        const adminName = adminUser ? adminUser.name : 'School Administrator';
+
         // Send confirmation email to school admin
         const sendEmail = require('../utils/emailService');
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -46,27 +50,61 @@ const verifySchool = async (req, res) => {
 
         const message = `Congratulations! Your school account for ${school.name} has been verified. You can now log in and start managing your school.`;
         const html = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                <h2 style="color: #16a34a; text-align: center;">School Verified!</h2>
-                <p>Hello,</p>
-                <p>We are pleased to inform you that your school account for <strong>${school.name}</strong> has been successfully verified by our team.</p>
-                <p>You can now access your dashboard and begin setting up your staff, students, and academic configurations.</p>
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="${loginUrl}" style="background: #16a34a; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">SIGN IN TO DASHBOARD</a>
+            <div style="background-color: #f3f4f6; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #374151; line-height: 1.6;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);">
+                    <!-- Header with Gradient -->
+                    <div style="padding: 40px 20px; text-align: center; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);">
+                        <img src="https://res.cloudinary.com/dponb9mg9/image/upload/v1775216580/GT_SchoolHub/general/logo_u3c2l8.png" alt="GT-SchoolHub Logo" style="width: 80px; height: 80px; border-radius: 20px; background: white; padding: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <h1 style="margin: 20px 0 0 0; color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: -0.025em;">GT-SchoolHub</h1>
+                    </div>
+                    
+                    <!-- Content Body -->
+                    <div style="padding: 40px;">
+                        <h2 style="margin: 0 0 20px 0; font-size: 22px; font-weight: 700; color: #111827;">School Account Verified!</h2>
+                        <p style="margin: 0 0 24px 0; font-size: 16px; color: #4b5563;">Hello <strong>${adminName}</strong>,</p>
+                        <p style="margin: 0 0 24px 0; font-size: 16px; color: #4b5563;">We are pleased to inform you that your school account for <strong>${school.name}</strong> has been successfully verified by our team.</p>
+                        <p style="margin: 0 0 24px 0; font-size: 16px; color: #4b5563;">You can now access your dashboard to begin setting up your staff, students, and academic configurations. Welcome to our community!</p>
+                        
+                        <div style="text-align: center; margin: 40px 0;">
+                            <a href="${loginUrl}" style="display: inline-block; background-color: #16a34a; color: #ffffff; font-weight: 700; font-size: 16px; padding: 16px 40px; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; box-shadow: 0 4px 14px 0 rgba(22, 163, 74, 0.39);">
+                                Sign In to Dashboard
+                            </a>
+                        </div>
+                        
+                        <p style="margin: 0 0 12px 0; font-size: 14px; color: #9ca3af; text-align: center;">If the button above doesn't work, copy and paste this link into your browser:</p>
+                        <div style="padding: 12px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 12px; color: #16a34a; word-break: break-all; text-align: center;">
+                            ${loginUrl}
+                        </div>
+                    </div>
+                    
+                    <!-- Footer Section -->
+                    <div style="padding: 30px 40px; background-color: #f9fafb; border-top: 1px solid #f3f4f6; text-align: center;">
+                        <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; color: #111827;">GT-SchoolHub Team</p>
+                        <p style="margin: 0 0 20px 0; font-size: 12px; color: #9ca3af;">Innovating Education Management</p>
+                        <div style="border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                            <p style="margin: 0; font-size: 11px; color: #9ca3af; line-height: 1.5;">
+                                &copy; ${new Date().getFullYear()} GT-SchoolHub. All rights reserved.<br>
+                                This is an automated message regarding your institution account.
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <p style="color: #666; font-size: 14px;">If you have any questions, please reach out to our support team.</p>
             </div>
         `;
 
+        // Determine recipient (Admin account email preferred, fallback to school contactEmail)
+        const recipientEmail = adminUser?.email || school.contactEmail;
+
         try {
             await sendEmail({
-                email: school.contactEmail,
+                email: recipientEmail,
                 subject: 'School Account Verified - GT-SchoolHub',
                 message,
                 html
             });
+            console.log(`[Email Service]: Verification email dispatched to ${recipientEmail}`);
         } catch (err) {
-            console.error('Verification email could not be sent', err);
+            console.error(`[Email Service Error]: Failed to send verification email to ${recipientEmail}:`, err.message);
         }
 
         res.json({ message: 'School verified successfully and notification sent.', school });

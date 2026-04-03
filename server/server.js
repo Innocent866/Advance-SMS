@@ -57,6 +57,7 @@ app.use('/uploads', express.static('uploads', {
 const skipSanitizationPaths = [
     '/api/students/verify-upload-token', 
     '/api/students/bulk-upload', 
+    '/api/academic/sessions', 
     '/api/files', 
     '/api/chat',
     '/api/learning-materials',

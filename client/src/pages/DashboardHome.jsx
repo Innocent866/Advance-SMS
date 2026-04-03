@@ -165,7 +165,7 @@ const DashboardHome = () => {
                 />
                 <StatCard 
                     label="Total Teachers" 
-                    value={p.teachers || 1} 
+                    value={p.teachers || 0} 
                     icon={Users} 
                     color="bg-emerald-600 shadow-emerald-500/30" 
                     delay={0.2}

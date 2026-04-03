@@ -4,15 +4,23 @@ const AssessmentConfig = require('../models/AssessmentConfig');
 // @route   POST /api/assessment-config
 // @access  Private (School Admin)
 const createOrUpdateConfig = async (req, res) => {
-    const { session, term, components, gradingScale } = req.body;
-
-    // 1. Validate total score
-    const totalScore = components.reduce((sum, c) => sum + Number(c.maxScore), 0);
-    if (totalScore !== 100) {
-        return res.status(400).json({ message: `Total Max Score must be 100%. Current total: ${totalScore}%` });
-    }
-
     try {
+        const { session, term, components = [], gradingScale = [] } = req.body;
+
+        // 1. Validate total score
+        const totalScore = Array.isArray(components) 
+            ? components.reduce((sum, c) => sum + Number(c.maxScore || 0), 0) 
+            : 0;
+
+        if (totalScore !== 100) {
+            return res.status(400).json({ message: `Total Max Score must be 100%. Current total: ${totalScore}%` });
+        }
+
+        // 2. Clean Grading Scale (Ensures no empty objects cause validation failure)
+        const cleanedScale = Array.isArray(gradingScale) 
+            ? gradingScale.filter(g => g.grade && g.minScore !== undefined && g.maxScore !== undefined)
+            : [];
+
         // Find existing for this Session/Term
         let config = await AssessmentConfig.findOne({
             schoolId: req.user.schoolId._id || req.user.schoolId,
@@ -30,7 +38,7 @@ const createOrUpdateConfig = async (req, res) => {
             { grade: 'F', minScore: 0, maxScore: 39, remark: 'Fail' }
         ];
 
-        const finalScale = gradingScale || defaultScale;
+        const finalScale = cleanedScale.length > 0 ? cleanedScale : defaultScale;
 
         if (config) {
             // Update
@@ -52,8 +60,11 @@ const createOrUpdateConfig = async (req, res) => {
             return res.status(201).json(config);
         }
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Assessment Config Error:', error);
+        res.status(500).json({ 
+            message: 'Server error processing assessment configuration',
+            details: error.message 
+        });
     }
 };
 

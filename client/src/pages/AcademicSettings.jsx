@@ -499,6 +499,18 @@ const SessionsManager = () => {
         }
     };
 
+    const handleDelete = async (id) => {
+        if(confirm('Are you sure you want to delete this session? This will also remove any assessment configurations set for this session.')) {
+            try {
+                await api.delete(`/academic/sessions/${id}`);
+                fetch();
+            } catch (error) {
+                console.error(error);
+                // Notification event is handled by api.js interceptor
+            }
+        }
+    };
+
     return (
         <div className="space-y-12">
              <motion.div 
@@ -543,7 +555,12 @@ const SessionsManager = () => {
                                     </div>
                                 )}
                             </div>
-                            <button className="p-4 bg-rose-50 text-rose-300 hover:text-rose-600 hover:bg-rose-100 rounded-3xl transition-all"><Trash2 size={24} /></button>
+                            <button 
+                                onClick={() => handleDelete(s._id)}
+                                className="p-4 bg-rose-50 text-rose-300 hover:text-rose-600 hover:bg-rose-100 rounded-3xl transition-all"
+                            >
+                                <Trash2 size={24} />
+                            </button>
                         </div>
                         
                         <div className="grid grid-cols-1 gap-4">

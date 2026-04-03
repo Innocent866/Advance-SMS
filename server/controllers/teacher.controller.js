@@ -15,7 +15,7 @@ const createTeacher = async (req, res) => {
         } = req.body;
     
     // Default to 'teacher' if no role provided or invalid role
-    const validRoles = ['teacher', 'hostel_warden', 'house_parent', 'assistant_admin'];
+    const validRoles = ['teacher', 'hostel_warden', 'house_parent', 'assistant_admin', 'school_admin'];
     const finalRole = (role && validRoles.includes(role)) ? role : 'teacher';
 
     // Handle subjects from FormData (JSON string or array already)
@@ -129,6 +129,30 @@ const getTeachers = async (req, res) => {
             .filter(staff => !['school_admin', 'assistant_admin', 'super_admin'].includes(staff.role));
         
         res.json(staffWithRoles);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// @desc    Get all administrative staff for the school
+// @route   GET /api/teachers/staff/admins
+// @access  Private (School Admin)
+const getAdmins = async (req, res) => {
+    try {
+        const schoolId = req.user.schoolId?._id || req.user.schoolId;
+        const staff = await Teacher.find({ schoolId })
+            .populate('userId', 'role')
+            .sort({ createdAt: -1 });
+            
+        const admins = staff
+            .map(t => ({
+                ...t.toObject(),
+                role: t.userId?.role || 'teacher'
+            }))
+            .filter(staff => ['school_admin', 'assistant_admin'].includes(staff.role));
+        
+        res.json(admins);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
@@ -318,6 +342,7 @@ const deleteTeacher = async (req, res) => {
 module.exports = {
     createTeacher,
     getTeachers,
+    getAdmins,
     getTeacherById,
     getMyProfile,
     updateTeacher,

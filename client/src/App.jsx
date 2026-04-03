@@ -13,6 +13,9 @@ const DashboardLayout = lazy(() => import('./components/DashboardLayout'));
 
 // Lazy load everything else
 const RegisterSchool = lazy(() => import('./pages/RegisterSchool'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
+const VerifyEmail = lazy(() => import('./pages/auth/VerifyEmail'));
 const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard'));
 const DashboardHome = lazy(() => import('./pages/DashboardHome'));
 const AcademicSettings = lazy(() => import('./pages/AcademicSettings'));
@@ -111,6 +114,9 @@ function App() {
                 </Route>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register-school" element={<RegisterSchool />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password/:token" element={<ResetPassword />} />
+                <Route path="/verify-email/:token" element={<VerifyEmail />} />
               </Route>
               
               {/* Public Pages (Accessible by everyone) */}

@@ -56,10 +56,8 @@ const AdminManagement = () => {
 
     const fetchAdmins = async () => {
         try {
-            const res = await api.get('/teachers'); 
-            const adminRoles = ['assistant_admin', 'school_admin'];
-            const filtered = res.data.filter(staff => adminRoles.includes(staff.role));
-            setAdmins(filtered);
+            const res = await api.get('/teachers/staff/admins'); 
+            setAdmins(res.data);
             setLoading(false);
         } catch (error) {
             console.error('Failed to fetch admins:', error);

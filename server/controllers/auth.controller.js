@@ -63,11 +63,48 @@ const registerSchool = async (req, res) => {
         const verifyUrl = `${frontendUrl}/verify-email/${verificationToken}`;
         const message = `Welcome to GT-SchoolHub! Please verify your email by clicking the link: \n\n ${verifyUrl}`;
         const html = `
-            <h1>Welcome to GT-SchoolHub!</h1>
-            <p>Please verify your email to get started with your school management portal.</p>
-            <a href="${verifyUrl}" style="background: #16a34a; color: white; padding: 10px 20px; text-decoration: none; borderRadius: 5px;">VERIFY EMAIL</a>
+            <div style="background-color: #f3f4f6; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #374151; line-height: 1.6;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);">
+                    <!-- Header -->
+                    <div style="padding: 40px 20px; text-align: center; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);">
+                        <img src="https://res.cloudinary.com/dponb9mg9/image/upload/v1775216580/GT_SchoolHub/general/logo_u3c2l8.png" alt="GT-SchoolHub Logo" style="width: 80px; height: 80px; border-radius: 20px; background: white; padding: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <h1 style="margin: 20px 0 0 0; color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: -0.025em;">GT-SchoolHub</h1>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div style="padding: 40px;">
+                        <h2 style="margin: 0 0 20px 0; font-size: 22px; font-weight: 700; color: #111827;">Confirm your email address</h2>
+                        <p style="margin: 0 0 24px 0; font-size: 16px; color: #4b5563;">Hello <strong>${adminName}</strong>,</p>
+                        <p style="margin: 0 0 24px 0; font-size: 16px; color: #4b5563;">Thank you for joining <strong>GT-SchoolHub</strong>. We're excited to help you transform your school's management experience. To get started, please verify your email address by clicking the button below.</p>
+                        
+                        <div style="text-align: center; margin: 40px 0;">
+                            <a href="${verifyUrl}" style="display: inline-block; background-color: #16a34a; color: #ffffff; font-weight: 700; font-size: 16px; padding: 16px 40px; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; box-shadow: 0 4px 14px 0 rgba(22, 163, 74, 0.39);">
+                                Verify Email Address
+                            </a>
+                        </div>
+                        
+                        <p style="margin: 0 0 12px 0; font-size: 14px; color: #9ca3af; text-align: center;">If the button above doesn't work, copy and paste this link into your browser:</p>
+                        <div style="padding: 12px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 12px; color: #16a34a; word-break: break-all; text-align: center;">
+                            ${verifyUrl}
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div style="padding: 30px 40px; background-color: #f9fafb; border-top: 1px solid #f3f4f6; text-align: center;">
+                        <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; color: #111827;">GT-SchoolHub Team</p>
+                        <p style="margin: 0 0 20px 0; font-size: 12px; color: #9ca3af;">Empowering Education through Innovation</p>
+                        <div style="border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                            <p style="margin: 0; font-size: 11px; color: #9ca3af; line-height: 1.5;">
+                                &copy; ${new Date().getFullYear()} GT-SchoolHub. All rights reserved.<br>
+                                You received this email because you signed up for a GT-SchoolHub account.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         `;
 
+        /*
         try {
             await sendEmail({
                 email: adminEmail,
@@ -78,6 +115,7 @@ const registerSchool = async (req, res) => {
         } catch (err) {
             console.error('Email could not be sent', err);
         }
+        */
 
         res.status(201).json({
             message: 'Registration successful! Please check your email to verify your account.',
@@ -118,14 +156,38 @@ const loginUser = async (req, res) => {
             // Send OTP Email
             const message = `Your login verification code is: ${otpCode}. It expires in 10 minutes.`;
             const html = `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                    <h2 style="color: #16a34a; text-align: center;">Login Verification</h2>
-                    <p>Hello ${user.name},</p>
-                    <p>You are attempting to sign in to GT-SchoolHub. Please use the verification code below to complete your login:</p>
-                    <div style="background: #f4f4f4; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #333; border-radius: 5px; margin: 20px 0;">
-                        ${otpCode}
+                <div style="background-color: #f3f4f6; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #374151; line-height: 1.6;">
+                    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);">
+                        <!-- Header -->
+                        <div style="padding: 40px 20px; text-align: center; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);">
+                            <img src="https://res.cloudinary.com/dponb9mg9/image/upload/v1775216580/GT_SchoolHub/general/logo_u3c2l8.png" alt="GT-SchoolHub Logo" style="width: 80px; height: 80px; border-radius: 20px; background: white; padding: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <h1 style="margin: 20px 0 0 0; color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: -0.025em;">GT-SchoolHub</h1>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div style="padding: 40px;">
+                            <h2 style="margin: 0 0 20px 0; font-size: 22px; font-weight: 700; color: #111827; text-align: center;">Login Verification</h2>
+                            <p style="margin: 0 0 24px 0; font-size: 16px; color: #4b5563; text-align: center;">Hello <strong>${user.name}</strong>,</p>
+                            <p style="margin: 0 0 24px 0; font-size: 16px; color: #4b5563; text-align: center;">You are attempting to sign in to your GT-SchoolHub account. Please use the verification code below to complete your login:</p>
+                            
+                            <div style="background: #f9fafb; padding: 30px; text-align: center; border-radius: 12px; border: 2px dashed #e5e7eb; margin: 30px 0;">
+                                <div style="font-size: 42px; font-weight: 800; letter-spacing: 12px; color: #16a34a; font-family: monospace;">
+                                    ${otpCode}
+                                </div>
+                            </div>
+                            
+                            <p style="margin: 0; font-size: 14px; color: #9ca3af; text-align: center;">This code will expire in <strong>10 minutes</strong>. If you did not attempt to sign in, please secure your account immediately.</p>
+                        </div>
+                        
+                        <!-- Footer -->
+                        <div style="padding: 30px 40px; background-color: #f9fafb; border-top: 1px solid #f3f4f6; text-align: center;">
+                            <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; color: #111827;">GT-SchoolHub Security</p>
+                            <p style="margin: 0; font-size: 11px; color: #9ca3af; line-height: 1.5;">
+                                &copy; ${new Date().getFullYear()} GT-SchoolHub. All rights reserved.<br>
+                                This is a secure automated message. Please do not reply.
+                            </p>
+                        </div>
                     </div>
-                    <p style="color: #666; font-size: 14px;">This code will expire in 10 minutes. If you did not attempt to sign in, please secure your account.</p>
                 </div>
             `;
 
@@ -343,9 +405,46 @@ const forgotPassword = async (req, res) => {
         const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
         const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a put request to: \n\n ${resetUrl}`;
         const html = `
-            <h3>Password Reset Request</h3>
-            <p>You requested a password reset. Please click the button below to set a new password:</p>
-            <a href="${resetUrl}" style="background: #16a34a; color: white; padding: 10px 20px; text-decoration: none; borderRadius: 5px;">RESET PASSWORD</a>
+            <div style="background-color: #f3f4f6; padding: 40px 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #374151; line-height: 1.6;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);">
+                    <!-- Header -->
+                    <div style="padding: 40px 20px; text-align: center; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);">
+                        <img src="https://res.cloudinary.com/dponb9mg9/image/upload/v1775216580/GT_SchoolHub/general/logo_u3c2l8.png" alt="GT-SchoolHub Logo" style="width: 80px; height: 80px; border-radius: 20px; background: white; padding: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <h1 style="margin: 20px 0 0 0; color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: -0.025em;">GT-SchoolHub</h1>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div style="padding: 40px;">
+                        <h2 style="margin: 0 0 20px 0; font-size: 22px; font-weight: 700; color: #111827;">Password Reset Request</h2>
+                        <p style="margin: 0 0 24px 0; font-size: 16px; color: #4b5563;">Hello <strong>${user.name}</strong>,</p>
+                        <p style="margin: 0 0 24px 0; font-size: 16px; color: #4b5563;">You are receiving this email because we received a request to reset the password for your account. Please click the button below to set a new password:</p>
+                        
+                        <div style="text-align: center; margin: 40px 0;">
+                            <a href="${resetUrl}" style="display: inline-block; background-color: #16a34a; color: #ffffff; font-weight: 700; font-size: 16px; padding: 16px 40px; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 14px 0 rgba(22, 163, 74, 0.39);">
+                                Reset Password
+                            </a>
+                        </div>
+                        
+                        <p style="margin: 0 0 12px 0; font-size: 14px; color: #9ca3af; text-align: center;">If the button above doesn't work, copy and paste this link into your browser:</p>
+                        <div style="padding: 12px; background-color: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; font-size: 12px; color: #16a34a; word-break: break-all; text-align: center;">
+                            ${resetUrl}
+                        </div>
+                        
+                        <p style="margin: 30px 0 0 0; font-size: 14px; color: #6b7280; text-align: center;">If you did not request this, you can safely ignore this email. Your password will remain unchanged.</p>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div style="padding: 30px 40px; background-color: #f9fafb; border-top: 1px solid #f3f4f6; text-align: center;">
+                        <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; color: #111827;">GT-SchoolHub Team</p>
+                        <div style="border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                            <p style="margin: 0; font-size: 11px; color: #9ca3af; line-height: 1.5;">
+                                &copy; ${new Date().getFullYear()} GT-SchoolHub. All rights reserved.<br>
+                                This is a secure automated message.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         `;
 
         try {
