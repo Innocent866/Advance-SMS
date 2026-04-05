@@ -1,58 +1,81 @@
 const nodemailer = require('nodemailer');
 const dns = require('dns');
 
+// Private Transporter Singleton (Lazy)
+let _transporter = null;
+
 /**
- * Send an email using SMTP
- * @param {Object} options - Email options
- * @param {string} options.email - Recipient email
- * @param {string} options.subject - Email subject
- * @param {string} options.message - Plain text message
- * @param {string} options.html - HTML message content
+ * Initialize the SMTP Transporter lazily
+ * This ensures dotenv.config() has been called before the transporter is created.
+ */
+const getTransporter = () => {
+    if (_transporter) return _transporter;
+
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
+        console.error('CRITICAL: Email credentials missing in process.env!');
+        return null;
+    }
+
+    try {
+        _transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: process.env.SMTP_PORT || 465,
+            secure: Number(process.env.SMTP_PORT) === 465,
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
+            },
+            pool: true,
+            maxConnections: 5,
+            connectionTimeout: 15000,
+            greetingTimeout: 15000,
+            socketTimeout: 30000,
+            lookup: (hostname, options, callback) => {
+                // Strict IPv4 filter to prevent Render's Node.js from using a non-functional IPv6 route
+                dns.lookup(hostname, { family: 4, all: false }, (err, address, family) => {
+                    callback(err, address, family);
+                });
+            }
+        });
+        console.log('✅ Real SMTP Transporter Created Successfully');
+        return _transporter;
+    } catch (err) {
+        console.error('Failed to create SMTP transporter:', err.message);
+        return null;
+    }
+};
+
+/**
+ * Send an email using SMTP (Lazy Singleton)
  */
 const sendEmail = async (options) => {
-    // Create a transporter
-    // For local dev without env vars, logging fallback
-    if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
-        console.log('--- MOCK EMAIL SENT ---');
+    const transporter = getTransporter();
+
+    // Fallback if Transporter initialization failed
+    if (!transporter) {
+        console.error('--- MOCK EMAIL FALLBACK ---');
         console.log(`To: ${options.email}`);
         console.log(`Subject: ${options.subject}`);
-        console.log(`Body: ${options.message}`);
-        console.log('-----------------------');
+        console.log('---------------------------');
         return;
     }
 
-    const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-        },
-        // Performance & Stability
-        connectionTimeout: 5000, // 5 seconds
-        greetingTimeout: 5000,   // 5 seconds
-        socketTimeout: 10000,    // 10 seconds
-        // Force IPv4 to resolve 'ENETUNREACH' errors on systems without IPv6 routing
-        // This custom lookup handles cases where the host default-resolves to IPv6 first.
-        lookup: (hostname, options, callback) => {
-            dns.lookup(hostname, { family: 4 }, (err, address, family) => {
-                callback(err, address, family);
-            });
-        }
-    });
-
     const message = {
-        from: `${process.env.FROM_NAME || 'GT-SchoolHub'} <${process.env.FROM_EMAIL || 'goldima@gt-schoolhub.com.ng'}>`,
+        from: `"${process.env.FROM_NAME || 'GT-SchoolHub'}" <${process.env.FROM_EMAIL || process.env.SMTP_USER}>`,
         to: options.email,
         subject: options.subject,
         text: options.message,
         html: options.html,
     };
 
-    const info = await transporter.sendMail(message);
-
-    console.log('Message sent: %s', info.messageId);
+    try {
+        const info = await transporter.sendMail(message);
+        console.log('Message sent successfully: %s', info.messageId);
+        return info;
+    } catch (error) {
+        console.error('CRITICAL: Email Delivery Failed!', error.message);
+        throw error;
+    }
 };
 
 module.exports = sendEmail;

@@ -1,7 +1,7 @@
+require('dotenv').config();
 require('dns').setDefaultResultOrder('ipv4first');
 const express = require('express'); // Server entry point - Restart Triggered
 
-const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
@@ -12,13 +12,14 @@ const mongoSanitize = require('@exortek/express-mongo-sanitize');
 const { xss } = require('express-xss-sanitizer');
 const compression = require('compression'); // Performance: Payload compression
 
-// Load env vars
-dotenv.config();
-
-// Connect to database
+// Load env vars (Handled at top of file)
+// connect to database
 connectDB();
 
 const app = express();
+
+// 0. Trust Render Proxy (Mandatory for Rate Limiting/Identification)
+app.set('trust proxy', 1);
 
 // 0. Compression - MUST BE EARLY
 app.use(compression());
