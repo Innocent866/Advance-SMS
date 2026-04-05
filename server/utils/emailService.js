@@ -1,80 +1,66 @@
-const nodemailer = require('nodemailer');
-const dns = require('dns');
+const { Resend } = require('resend');
 
-// Private Transporter Singleton (Lazy)
-let _transporter = null;
+// Private Resend Singleton (Lazy)
+let _resend = null;
 
 /**
- * Initialize the SMTP Transporter lazily
- * This ensures dotenv.config() has been called before the transporter is created.
+ * Initialize Resend lazily to ensure environment variables are ready.
  */
-const getTransporter = () => {
-    if (_transporter) return _transporter;
+const getResend = () => {
+    if (_resend) return _resend;
 
-    if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
-        console.error('CRITICAL: Email credentials missing in process.env!');
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+        console.error('CRITICAL: RESEND_API_KEY missing in process.env!');
         return null;
     }
 
     try {
-        _transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: process.env.SMTP_PORT || 465,
-            secure: Number(process.env.SMTP_PORT) === 465,
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
-            },
-            pool: true,
-            maxConnections: 5,
-            connectionTimeout: 15000,
-            greetingTimeout: 15000,
-            socketTimeout: 30000,
-            lookup: (hostname, options, callback) => {
-                // Strict IPv4 filter to prevent Render's Node.js from using a non-functional IPv6 route
-                dns.lookup(hostname, { family: 4, all: false }, (err, address, family) => {
-                    callback(err, address, family);
-                });
-            }
-        });
-        console.log('✅ Real SMTP Transporter Created Successfully');
-        return _transporter;
+        _resend = new Resend(apiKey);
+        console.log('✅ Resend API Client Initialized Successfully');
+        return _resend;
     } catch (err) {
-        console.error('Failed to create SMTP transporter:', err.message);
+        console.error('Failed to initialize Resend:', err.message);
         return null;
     }
 };
 
 /**
- * Send an email using SMTP (Lazy Singleton)
+ * Send an email using Resend HTTP API (Bypasses SMTP port blocks)
+ * @param {Object} options - Email options
  */
 const sendEmail = async (options) => {
-    const transporter = getTransporter();
+    const resend = getResend();
 
-    // Fallback if Transporter initialization failed
-    if (!transporter) {
-        console.error('--- MOCK EMAIL FALLBACK ---');
+    if (!resend) {
+        console.warn('--- MOCK EMAIL FALLBACK ---');
         console.log(`To: ${options.email}`);
         console.log(`Subject: ${options.subject}`);
         console.log('---------------------------');
         return;
     }
 
-    const message = {
-        from: `"${process.env.FROM_NAME || 'GT-SchoolHub'}" <${process.env.FROM_EMAIL || process.env.SMTP_USER}>`,
-        to: options.email,
-        subject: options.subject,
-        text: options.message,
-        html: options.html,
-    };
-
     try {
-        const info = await transporter.sendMail(message);
-        console.log('Message sent successfully: %s', info.messageId);
-        return info;
-    } catch (error) {
-        console.error('CRITICAL: Email Delivery Failed!', error.message);
-        throw error;
+        // NOTE: Resend's free tier requires 'from' to be 'onboarding@resend.dev' 
+        // until you verify your own domain.
+        const { data, error } = await resend.emails.send({
+            from: 'GT-SchoolHub <onboarding@resend.dev>',
+            to: options.email,
+            subject: options.subject,
+            text: options.message,
+            html: options.html,
+        });
+
+        if (error) {
+            console.error('CRITICAL: Resend Delivery Failed!', error.message);
+            throw new Error(error.message);
+        }
+
+        console.log('Message sent successfully via Resend API: %s', data.id);
+        return data;
+    } catch (err) {
+        console.error('CRITICAL: Email Delivery Error!', err.message);
+        throw err;
     }
 };
 
