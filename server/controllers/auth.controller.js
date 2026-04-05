@@ -193,7 +193,8 @@ const loginUser = async (req, res) => {
             `;
 
             try {
-                await sendEmail({
+                // Fire-and-forget: do not 'await' so UI stays fast
+                sendEmail({
                     email: user.email,
                     subject: 'Login Verification Code - GT-SchoolHub',
                     message,

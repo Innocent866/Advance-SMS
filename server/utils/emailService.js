@@ -29,6 +29,10 @@ const sendEmail = async (options) => {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
         },
+        // Performance & Stability
+        connectionTimeout: 5000, // 5 seconds
+        greetingTimeout: 5000,   // 5 seconds
+        socketTimeout: 10000,    // 10 seconds
         // Force IPv4 to resolve 'ENETUNREACH' errors on systems without IPv6 routing
         // This custom lookup handles cases where the host default-resolves to IPv6 first.
         lookup: (hostname, options, callback) => {
