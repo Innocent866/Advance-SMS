@@ -1,3 +1,4 @@
+require('dns').setDefaultResultOrder('ipv4first');
 const express = require('express'); // Server entry point - Restart Triggered
 
 const dotenv = require('dotenv');

@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
 
 /**
  * Send an email using SMTP
@@ -29,7 +30,12 @@ const sendEmail = async (options) => {
             pass: process.env.SMTP_PASS,
         },
         // Force IPv4 to resolve 'ENETUNREACH' errors on systems without IPv6 routing
-        family: 4
+        // This custom lookup handles cases where the host default-resolves to IPv6 first.
+        lookup: (hostname, options, callback) => {
+            dns.lookup(hostname, { family: 4 }, (err, address, family) => {
+                callback(err, address, family);
+            });
+        }
     });
 
     const message = {
