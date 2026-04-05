@@ -16,10 +16,8 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register-school
 // @access  Public
 const registerSchool = async (req, res) => {
-    const { schoolName, schoolEmail, adminName, adminEmail, password } = req.body;
-
-    if (!schoolName || !schoolEmail || !adminName || !adminEmail || !password) {
-        return res.status(400).json({ message: 'Please add all fields' });
+    if (!req.body || !schoolName || !schoolEmail || !adminName || !adminEmail || !password) {
+        return res.status(400).json({ message: 'Please add all required fields' });
     }
 
     try {
@@ -133,6 +131,9 @@ const registerSchool = async (req, res) => {
 // @route   POST /api/auth/login
 // @access  Public
 const loginUser = async (req, res) => {
+    if (!req.body) {
+        return res.status(400).json({ message: 'Invalid request body' });
+    }
     const { email, password } = req.body;
 
     try {
@@ -223,6 +224,9 @@ const loginUser = async (req, res) => {
 // @route   POST /api/auth/verify-2fa
 // @access  Public
 const verify2FA = async (req, res) => {
+    if (!req.body) {
+        return res.status(400).json({ message: 'Invalid request body' });
+    }
     const { userId, otpCode } = req.body;
 
     if (!userId || !otpCode) {

@@ -132,6 +132,7 @@ app.use('/api/departments', require('./routes/department.routes'));
 app.use('/api/chat', require('./routes/chat.routes'));
 app.use('/api/hostels', require('./routes/hostel.routes'));
 app.use('/api/boarding', require('./routes/boarding.routes'));
+app.use('/api/staff', require('./routes/staff.routes'));
 
 
 // Error Middleware
