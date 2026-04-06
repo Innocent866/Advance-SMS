@@ -44,7 +44,7 @@ const sendEmail = async (options) => {
         // NOTE: Resend's free tier requires 'from' to be 'onboarding@resend.dev' 
         // until you verify your own domain.
         const { data, error } = await resend.emails.send({
-            from: 'GT-SchoolHub <onboarding@resend.dev>',
+            from: 'GT-SchoolHub <no-reply@gt-schoolhub.com.ng>',
             to: options.email,
             subject: options.subject,
             text: options.message,
